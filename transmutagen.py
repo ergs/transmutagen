@@ -3,6 +3,8 @@ import sys
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
     chebyshevt_root, Tuple, diff, plot, N, solve, together, Poly)
 
+from sympy.utilities.decorator import conserve_mpmath_dps
+
 def general_rat_func(d, x, chebyshev=False):
     """
     Return a general rational function with numerator and denominator degree d
@@ -51,7 +53,6 @@ def nsolve_intervals(expr, bounds, division=30, warn=False, verbose=False, solve
 
     return roots
 
-from sympy.utilities.decorator import conserve_mpmath_dps
 
 @conserve_mpmath_dps
 def CRAM_exp2(degree, prec=128, *, max_loops=10):
