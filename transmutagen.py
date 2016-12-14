@@ -53,16 +53,13 @@ def nsolve_intervals(expr, bounds, division=30, warn=False, verbose=False, solve
 
     return roots
 
-
 @conserve_mpmath_dps
-def CRAM_exp2(degree, prec=128, *, max_loops=10):
-    #mpmath.mp.dps = prec
-
+def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=10000,
+    division=200):
 
     epsilon, t, i, y = symbols("epsilon t i y")
-    #c = S(1)/2
-    #c = 10
-    c = degree*0.6
+
+    c = c or degree*0.6
 
     r, num_coeffs, den_coeffs = general_rat_func(degree, t, chebyshev=True)
     E = exp(c*(t + 1)/(t - 1)) - r
@@ -88,10 +85,8 @@ def CRAM_exp2(degree, prec=128, *, max_loops=10):
         #plot(E.subs(sol), (t, 0.9, 1))
         # we can't use 1 because of the singularity
         print(E.subs(sol))
-        points = [-1, *nsolve_intervals(D, [-1, 0.999999], maxsteps=10000, prec=prec, division=200, warn=True, tol=10**-(2*prec)), 1]
-        #points2 = [-1, *nsolve_intervals(D, [-1, 0.999999], maxsteps=300, prec=prec, solver='illinois', verify=True), 1]
+        points = [-1, *nsolve_intervals(D, [-1, 0.999999], maxsteps=maxsteps, prec=prec, division=division, warn=True, tol=10**-(2*prec)), 1]
         #print('points', points)
-        #print('points2', points2)
         print('D', D)
         print('[(i, D.subs(t, i)) for i in points]', [(i, D.subs(t, i)) for i in points])
         assert len(points) == 2*(degree + 1), len(points)
@@ -106,18 +101,13 @@ def CRAM_exp2(degree, prec=128, *, max_loops=10):
     else:
         print("!!!WARNING: DID NOT CONVERGE AFTER", max_loops, "ITERATIONS!!!", file=sys.stderr)
 
-    #print(sol)
-    #sol = {i: Rational(str(sol[i])) for i in sol}
-    #print(sol)
     inv = solve(-c*(t + 1)/(t - 1) - y, t)[0].subs(y, t)
     n, d = together(r.subs(sol).subs(t, inv)).as_numer_denom() # simplify/cancel here will add degree to the numerator and denominator
     rat_func = (Poly(n)/Poly(d).TC())/(Poly(d)/Poly(d).TC())
     return rat_func.evalf(prec)
 
-#D = CRAM_exp2()
-
 if __name__ == '__main__':
     t = symbols('t')
-    rat_func = CRAM_exp2(15, 1000)
+    rat_func = CRAM_exp(15, 1000)
     print(rat_func)
     plot(rat_func - exp(-t), (t, 0, 100))
