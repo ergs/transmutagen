@@ -53,14 +53,17 @@ def nsolve_intervals(expr, bounds, division=30, solver='bisect', **kwargs):
 
     return roots
 
-def plot_in_terminal(*args, **kwargs):
+def plot_in_terminal(*args, logname=None, **kwargs):
     """
     Run plot() but show in terminal if possible
     """
     try:
         from iterm2_tools.images import display_image_bytes
     except ImportError:
-        plot(*args, **kwargs)
+        p = plot(*args, **kwargs)
+        if logname:
+            os.makedirs('plots', exist_ok=True)
+            p.save('plots/%s.png' % logname)
     else:
         from sympy.plotting.plot import unset_show
         from io import BytesIO
@@ -68,6 +71,9 @@ def plot_in_terminal(*args, **kwargs):
         p = plot(*args, **kwargs, show=False)
         b = BytesIO()
         p.save(b)
+        if logname:
+            os.makedirs('plots', exist_ok=True)
+            p.save('plots/%s.png' % logname)
         print(display_image_bytes(b.getvalue()))
         p._backend.close()
 
@@ -81,7 +87,7 @@ def _get_log_file_name(locals_dict):
     prec = d.pop('prec')
     info = 'degree=%s prec=%s ' % (degree, prec)
     info += ' '.join('%s=%s' % (i, d[i]) for i in sorted(d))
-    return info + '.log'
+    return info
 
 # This decorator is actually not needed any more, but we leave it in as it
 # will fail early if we are not running in SymPy master.
@@ -115,9 +121,11 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, **kwargs):
 
     if kwargs.get('log', True):
         os.makedirs('logs', exist_ok=True)
-        logname = 'logs/%s' % _get_log_file_name(locals())
-        logger.addHandler(logging.FileHandler(logname))
+        logname = _get_log_file_name(locals())
+        logger.addHandler(logging.FileHandler('logs/%s.log' % logname))
         logger.info("Logging to file %s", logname)
+    else:
+        logname = None
 
     epsilon, t, i, y = symbols("epsilon t i y")
 
@@ -142,9 +150,8 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, **kwargs):
         logger.info('sol: %s', sol)
         logger.info('system.subs(sol): %s', [i.evalf() for i in system.subs(sol)])
         D = diff(E.subs(sol), t)
-        plot_in_terminal(E.subs(sol), (t, -1, 0.999), adaptive=False, nb_of_points=1000)
-        plot_in_terminal(E.subs(sol), (t, -0.5, 0.5), adaptive=False, nb_of_points=1000)
-        # plot(E.subs(sol), (t, 0.9, 1))
+        plot_in_terminal(E.subs(sol), (t, -1, 0.999), adaptive=False,
+            nb_of_points=1000, logname=logname + 'iteration=%s' % iteration)
         logger.info('E.subs(sol): %s', E.subs(sol))
 
         # we can't use 1 because of the singularity
@@ -173,4 +180,5 @@ if __name__ == '__main__':
     t = symbols('t')
     rat_func = CRAM_exp(4, 30, division=30)
     logger.info('rat_func: %s', rat_func)
+    # XXX: log these
     plot_in_terminal(rat_func - exp(-t), (t, 0, 100), adaptive=False, nb_of_points=1000)
