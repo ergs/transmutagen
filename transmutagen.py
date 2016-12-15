@@ -69,6 +69,7 @@ def plot_in_terminal(*args, **kwargs):
         b = BytesIO()
         p.save(b)
         print(display_image_bytes(b.getvalue()))
+        p._backend.close()
 
 @conserve_mpmath_dps
 def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=10000,
