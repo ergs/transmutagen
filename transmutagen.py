@@ -1,9 +1,14 @@
-import sys
+import logging
 
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
     chebyshevt_root, Tuple, diff, plot, N, solve, together, Poly)
 
 from sympy.utilities.decorator import conserve_mpmath_dps
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler())
+# Change INFO to DEBUG for more output
+logger.setLevel(logging.INFO)
 
 def general_rat_func(d, x, chebyshev=False):
     """
@@ -24,32 +29,26 @@ def general_rat_func(d, x, chebyshev=False):
     return rat_func, num_coeffs, den_coeffs
 
 
-def nsolve_intervals(expr, bounds, division=30, warn=False, verbose=False, solver='bisect', **kwargs):
+def nsolve_intervals(expr, bounds, division=30, solver='bisect', **kwargs):
     """
     Divide bounds into division intervals and nsolve in each one
     """
-    if verbose:
-        warn = True
     roots = []
     L = bounds[1] - bounds[0]
     for i in range(division):
         interval = [bounds[0] + i*L/division, bounds[0] + (i + 1)*L/division]
         try:
-            if verbose:
-                print("Solving in interval", interval)
+            logger.debug("Solving in interval %s", interval)
             root = nsolve(expr, interval, solver=solver, **kwargs)
         except ValueError:
-            if verbose:
-                print("No solution found")
+            logger.debug("No solution found")
             continue
         else:
             if interval[0] < root < interval[1]:
-                if verbose:
-                    print("Solution found:", root)
+                logger.debug("Solution found: %s", root)
                 roots.append(root)
             else:
-                if warn:
-                    print(root, "is not in", interval, 'discarding', file=sys.stderr)
+                logger.warn("%s is not in %s, discarding", root, interval)
 
     return roots
 
@@ -88,36 +87,37 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=10000,
     points = [chebyshevt_root(2*(degree + 1) + 1, 2*(degree + 1) - j) for j in range(1, 2*(degree + 1) + 1)]
     points = [i.evalf(prec) for i in points]
     for iteration in range(max_loops):
-        print('-'*80)
-        print("Iteration %s:" % iteration)
+        logger.info('-'*80)
+        logger.info("Iteration %s:", iteration)
         system = Tuple(*[expr.subs({i: j, t: points[j]}) for j in range(2*degree + 1)])
         system = system + Tuple(expr.replace(exp, lambda i: 0).subs({i: 2*degree + 1, t: 1}))
-        #print(system)
-        #print([*num_coeffs, *den_coeffs, epsilon])
+        logger.debug('system: %s', system)
+        logger.debug('[*num_coeffs, *den_coeffs, epsilon]: %s', [*num_coeffs, *den_coeffs, epsilon])
         sol = dict(zip([*num_coeffs, *den_coeffs, epsilon], nsolve(system, [*num_coeffs, *den_coeffs, epsilon], [*[1]*(2*(degree + 1) - 1), 0], prec=prec)))
-        print('sol', sol)
-        print('system.subs(sol)', [i.evalf() for i in system.subs(sol)])
+        logger.info('sol: %s', sol)
+        logger.info('system.subs(sol): %s', [i.evalf() for i in system.subs(sol)])
         D = diff(E.subs(sol), t)
         plot_in_terminal(E.subs(sol), (t, -1, 0.999), adaptive=False, nb_of_points=1000)
         plot_in_terminal(E.subs(sol), (t, -0.5, 0.5), adaptive=False, nb_of_points=1000)
-        #plot(E.subs(sol), (t, 0.9, 1))
+        # plot(E.subs(sol), (t, 0.9, 1))
+        logger.info('E.subs(sol): %s', E.subs(sol))
+
         # we can't use 1 because of the singularity
-        print(E.subs(sol))
-        points = [-1, *nsolve_intervals(D, [-1, 0.999999], maxsteps=maxsteps, prec=prec, division=division, warn=True, tol=10**-(2*prec)), 1]
-        #print('points', points)
-        print('D', D)
-        print('[(i, D.subs(t, i)) for i in points]', [(i, D.subs(t, i)) for i in points])
+        points = [-1, *nsolve_intervals(D, [-1, 0.999999], maxsteps=maxsteps, prec=prec, division=division, tol=10**-(2*prec)), 1]
+        logger.debug('points: %s', points)
+        logger.info('D: %s', D)
+        logger.info('[(i, D.subs(t, i)) for i in points]: %s', [(i, D.subs(t, i)) for i in points])
         assert len(points) == 2*(degree + 1), len(points)
         Evals = [E.evalf(prec, subs={**sol, t: point}) for point in points[:-1]] + [-r.evalf(prec, subs={**sol, t: 1})]
-        print('Evals', Evals)
+        logger.info('Evals: %s', Evals)
         maxmin = N(max(map(abs, Evals)) - min(map(abs, Evals)))
-        print('max - min', maxmin)
-        print('epsilon', N(sol[epsilon]))
+        logger.info('max - min: %s', maxmin)
+        logger.info('epsilon: %s', N(sol[epsilon]))
         if maxmin < 10**-prec:
-            print("Converged in", iteration + 1, "iterations.")
+            logger.info("Converged in %d iterations.", iteration + 1)
             break
     else:
-        print("!!!WARNING: DID NOT CONVERGE AFTER", max_loops, "ITERATIONS!!!", file=sys.stderr)
+        logger.warn("!!!WARNING: DID NOT CONVERGE AFTER %d ITERATIONS!!!", max_loops)
 
     inv = solve(-c*(t + 1)/(t - 1) - y, t)[0].subs(y, t)
     n, d = together(r.subs(sol).subs(t, inv)).as_numer_denom() # simplify/cancel here will add degree to the numerator and denominator
@@ -126,6 +126,6 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=10000,
 
 if __name__ == '__main__':
     t = symbols('t')
-    rat_func = CRAM_exp(15, 1000)
-    print(rat_func)
+    rat_func = CRAM_exp(4, 30, division=30)
+    logger.info('rat_func: %s', rat_func)
     plot_in_terminal(rat_func - exp(-t), (t, 0, 100), adaptive=False, nb_of_points=1000)
