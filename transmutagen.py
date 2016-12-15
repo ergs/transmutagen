@@ -73,8 +73,7 @@ def plot_in_terminal(*args, **kwargs):
 # This decorator is actually not needed any more, but we leave it in as it
 # will fail early if we are not running in SymPy master.
 @conserve_mpmath_dps
-def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=10000,
-    division=200):
+def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, **kwargs):
     logger.info("CRAM_exp with arguments %s", locals())
 
     epsilon, t, i, y = symbols("epsilon t i y")
@@ -106,7 +105,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=10000,
         logger.info('E.subs(sol): %s', E.subs(sol))
 
         # we can't use 1 because of the singularity
-        points = [-1, *nsolve_intervals(D, [-1, 0.999999], maxsteps=maxsteps, prec=prec, division=division, tol=10**-(2*prec)), 1]
+        points = [-1, *nsolve_intervals(D, [-1, 0.999999], prec=prec, tol=10**-(2*prec), **kwargs), 1]
         logger.debug('points: %s', points)
         logger.info('D: %s', D)
         logger.info('[(i, D.subs(t, i)) for i in points]: %s', [(i, D.subs(t, i)) for i in points])
