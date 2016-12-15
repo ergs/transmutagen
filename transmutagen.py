@@ -70,6 +70,8 @@ def plot_in_terminal(*args, **kwargs):
         print(display_image_bytes(b.getvalue()))
         p._backend.close()
 
+# This decorator is actually not needed any more, but we leave it in as it
+# will fail early if we are not running in SymPy master.
 @conserve_mpmath_dps
 def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=10000,
     division=200):
