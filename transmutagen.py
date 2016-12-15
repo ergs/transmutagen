@@ -74,6 +74,30 @@ def plot_in_terminal(*args, **kwargs):
 # will fail early if we are not running in SymPy master.
 @conserve_mpmath_dps
 def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, **kwargs):
+    """
+    Compute the CRAM approximation of exp(-t) from t in [0, oo) of the given degree
+
+    The Remez algorithm is used.
+
+    degree is the degree of the numerator and denominator of the
+    approximation.
+
+    prec is the precision of the floats used in the calculation. Note that, as
+    of now, the result may not be accurate to prec digits.
+
+    max_loops is the number of loops to run the Remez algorithm before giving
+    up (default 10).
+
+    c is the coefficient of the transformation c*(t + 1)/(t - 1) that is
+    applied to exp(-t) to translate it to the interval [-1, 1]. It should be
+    chosen so that the maximal errors of the approximation are equally spaced
+    in that interval. The default is 0.6*degree.
+
+    Additional keyword arguments are passed to nsolve_intervals. Useful ones
+    are maxsteps and division.
+
+    The SymPy master branch is required for this to work.
+    """
     logger.info("CRAM_exp with arguments %s", locals())
 
     epsilon, t, i, y = symbols("epsilon t i y")
