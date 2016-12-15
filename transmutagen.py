@@ -128,4 +128,4 @@ if __name__ == '__main__':
     t = symbols('t')
     rat_func = CRAM_exp(15, 1000)
     print(rat_func)
-    plot_in_terminal(rat_func - exp(-t), (t, 0, 100))
+    plot_in_terminal(rat_func - exp(-t), (t, 0, 100), adaptive=False, nb_of_points=1000)
