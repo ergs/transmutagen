@@ -1,3 +1,4 @@
+import os
 import logging
 
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
@@ -70,6 +71,18 @@ def plot_in_terminal(*args, **kwargs):
         print(display_image_bytes(b.getvalue()))
         p._backend.close()
 
+def _get_log_file_name(locals_dict):
+    d = locals_dict.copy()
+    kwargs = d.pop('kwargs')
+    d.update(kwargs)
+    d.setdefault('maxsteps')
+    d.setdefault('division')
+    degree = d.pop('degree')
+    prec = d.pop('prec')
+    info = 'degree=%s prec=%s ' % (degree, prec)
+    info += ' '.join('%s=%s' % (i, d[i]) for i in sorted(d))
+    return info + '.log'
+
 # This decorator is actually not needed any more, but we leave it in as it
 # will fail early if we are not running in SymPy master.
 @conserve_mpmath_dps
@@ -99,6 +112,12 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, **kwargs):
     The SymPy master branch is required for this to work.
     """
     logger.info("CRAM_exp with arguments %s", locals())
+
+    if kwargs.get('log', True):
+        os.makedirs('logs', exist_ok=True)
+        logname = 'logs/%s' % _get_log_file_name(locals())
+        logger.addHandler(logging.FileHandler(logname))
+        logger.info("Logging to file %s", logname)
 
     epsilon, t, i, y = symbols("epsilon t i y")
 
