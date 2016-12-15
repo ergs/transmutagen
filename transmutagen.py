@@ -73,6 +73,7 @@ def plot_in_terminal(*args, **kwargs):
 @conserve_mpmath_dps
 def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=10000,
     division=200):
+    logger.info("CRAM_exp with arguments %s", locals())
 
     epsilon, t, i, y = symbols("epsilon t i y")
 
