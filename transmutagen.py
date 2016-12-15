@@ -53,6 +53,23 @@ def nsolve_intervals(expr, bounds, division=30, warn=False, verbose=False, solve
 
     return roots
 
+def plot_in_terminal(*args, **kwargs):
+    """
+    Run plot() but show in terminal if possible
+    """
+    try:
+        from iterm2_tools.images import display_image_bytes
+    except ImportError:
+        plot(*args, **kwargs)
+    else:
+        from sympy.plotting.plot import unset_show
+        from io import BytesIO
+        unset_show()
+        p = plot(*args, **kwargs, show=False)
+        b = BytesIO()
+        p.save(b)
+        print(display_image_bytes(b.getvalue()))
+
 @conserve_mpmath_dps
 def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=10000,
     division=200):
@@ -80,8 +97,8 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=10000,
         print('sol', sol)
         print('system.subs(sol)', [i.evalf() for i in system.subs(sol)])
         D = diff(E.subs(sol), t)
-        plot(E.subs(sol), (t, -1, 0.999), adaptive=False, nb_of_points=1000)
-        plot(E.subs(sol), (t, -0.5, 0.5), adaptive=False, nb_of_points=1000)
+        plot_in_terminal(E.subs(sol), (t, -1, 0.999), adaptive=False, nb_of_points=1000)
+        plot_in_terminal(E.subs(sol), (t, -0.5, 0.5), adaptive=False, nb_of_points=1000)
         #plot(E.subs(sol), (t, 0.9, 1))
         # we can't use 1 because of the singularity
         print(E.subs(sol))
@@ -110,4 +127,4 @@ if __name__ == '__main__':
     t = symbols('t')
     rat_func = CRAM_exp(15, 1000)
     print(rat_func)
-    plot(rat_func - exp(-t), (t, 0, 100))
+    plot_in_terminal(rat_func - exp(-t), (t, 0, 100))
