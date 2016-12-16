@@ -123,7 +123,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, **kwargs):
         os.makedirs('logs', exist_ok=True)
         logname = _get_log_file_name(locals())
         logger.addHandler(logging.FileHandler('logs/%s.log' % logname))
-        logger.info("Logging to file %s", logname)
+        logger.info("Logging to file 'logs/%s.log'", logname)
     else:
         logname = None
 
