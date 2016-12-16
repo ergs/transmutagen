@@ -92,7 +92,7 @@ def _get_log_file_name(locals_dict):
 # This decorator is actually not needed any more, but we leave it in as it
 # will fail early if we are not running in SymPy master.
 @conserve_mpmath_dps
-def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, **kwargs):
+def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None, **kwargs):
     """
     Compute the CRAM approximation of exp(-t) from t in [0, oo) of the given degree
 
@@ -112,10 +112,15 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, **kwargs):
     chosen so that the maximal errors of the approximation are equally spaced
     in that interval. The default is 0.6*degree.
 
-    Additional keyword arguments are passed to nsolve_intervals. Useful ones
-    are maxsteps and division.
+    maxsteps is the argument passed to the mpmath bisection solver. The
+    default is 1.7*prec. See also
+    https://github.com/fredrik-johansson/mpmath/issues/339.
+
+    Additional keyword arguments are passed to nsolve_intervals, such as
+    division.
 
     The SymPy master branch is required for this to work.
+
     """
     logger.info("CRAM_exp with arguments %s", locals())
 
@@ -129,7 +134,8 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, **kwargs):
 
     epsilon, t, i, y = symbols("epsilon t i y")
 
-    c = c or degree*0.6
+    c = c or 0.6*degree
+    maxsteps = maxsteps or 1.7*maxsteps
 
     r, num_coeffs, den_coeffs = general_rat_func(degree, t, chebyshev=True)
     E = exp(c*(t + 1)/(t - 1)) - r
