@@ -79,7 +79,7 @@ def nsolve_points(expr, bounds, division=30, **kwargs):
             else:
                 logger.debug("%s already found, discarding", root)
 
-    return roots
+    return sorted(roots)
 
 def plot_in_terminal(*args, logname=None, **kwargs):
     """
