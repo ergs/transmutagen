@@ -208,19 +208,18 @@ def main():
         pass
     args = parser.parse_args()
 
-    if args.log_level:
-        logger.setLevel(getattr(logging, args.log_level.upper()))
-
-    t = symbols('t')
     arguments = args.__dict__.copy()
     for i in arguments.copy():
         if not arguments[i]:
            del arguments[i]
-    del arguments['log_level']
+    if args.log_level:
+        logger.setLevel(getattr(logging, args.log_level.upper()))
+        del arguments['log_level']
 
     rat_func = CRAM_exp(**arguments)
     logger.info('rat_func: %s', rat_func)
-    # XXX: log these
+    # TODO: log this plot
+    t = symbols('t')
     plot_in_terminal(rat_func - exp(-t), (t, 0, 100), adaptive=False, nb_of_points=1000)
 
 if __name__ == '__main__':
