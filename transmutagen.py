@@ -1,3 +1,4 @@
+import argparse
 import os
 import logging
 
@@ -185,9 +186,28 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None, **kwargs)
     rat_func = (Poly(n)/Poly(d).TC())/(Poly(d)/Poly(d).TC())
     return rat_func.evalf(prec)
 
-if __name__ == '__main__':
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+
+    parser.add_argument('degree', type=int)
+    parser.add_argument('prec', type=int)
+    parser.add_argument('--division', type=int)
+    parser.add_argument('--c', type=float)
+    parser.add_argument('--maxsteps', type=int)
+    parser.add_argument('--max-loops', type=int)
+    args = parser.parse_args()
+
     t = symbols('t')
-    rat_func = CRAM_exp(4, 30, division=30)
+    arguments = args.__dict__.copy()
+    for i in arguments.copy():
+        if not arguments[i]:
+            del arguments[i]
+
+    rat_func = CRAM_exp(**arguments)
     logger.info('rat_func: %s', rat_func)
     # XXX: log these
     plot_in_terminal(rat_func - exp(-t), (t, 0, 100), adaptive=False, nb_of_points=1000)
+
+if __name__ == '__main__':
+    main()
