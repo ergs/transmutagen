@@ -3,6 +3,8 @@ import argparse
 import os
 import logging
 
+# PYTHON_ARGCOMPLETE_OK
+
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
     chebyshevt_root, Tuple, diff, plot, N, solve, together, Poly)
 
@@ -197,6 +199,11 @@ def main():
     parser.add_argument('--c', type=float)
     parser.add_argument('--maxsteps', type=int)
     parser.add_argument('--max-loops', type=int)
+    try:
+        import argcomplete
+        argcomplete.autocomplete(parser)
+    except ImportError:
+        pass
     args = parser.parse_args()
 
     t = symbols('t')
