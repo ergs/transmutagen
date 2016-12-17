@@ -1,10 +1,11 @@
 #!/usr/bin/env python
+# PYTHON_ARGCOMPLETE_OK
+
 import argparse
 import os
 import logging
 
-# PYTHON_ARGCOMPLETE_OK
-
+import mpmath
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
     chebyshevt_root, Tuple, diff, plot, N, solve, together, Poly)
 
@@ -45,8 +46,8 @@ def nsolve_intervals(expr, bounds, division=30, solver='bisect', **kwargs):
         try:
             logger.debug("Solving in interval %s", interval)
             root = nsolve(expr, interval, solver=solver, **kwargs)
-        except ValueError:
-            logger.debug("No solution found")
+        except ValueError as e:
+            logger.debug("No solution found: %s", e)
             continue
         else:
             if interval[0] < root < interval[1]:
@@ -202,7 +203,7 @@ def main():
     parser.add_argument('--c', type=float)
     parser.add_argument('--maxsteps', type=int)
     parser.add_argument('--max-loops', type=int)
-    parser.add_argument('--tol', type=float)
+    parser.add_argument('--tol', type=mpmath.mpf)
     parser.add_argument('--log-level', default=None, choices=['debug', 'info',
         'warning', 'error', 'critical'])
     try:
