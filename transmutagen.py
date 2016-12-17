@@ -235,7 +235,9 @@ def main():
     parser.add_argument('--maxsteps', type=int)
     parser.add_argument('--max-loops', type=int)
     parser.add_argument('--tol', type=mpmath.mpf)
-    parser.add_argument('--nsolve-type', default=None, choices=['points', 'intervals'])
+    parser.add_argument('--nsolve-type', default=None, choices=['points',
+        'intervals'])
+    parser.add_argument('--solver', default=None)
     parser.add_argument('--log-level', default=None, choices=['debug', 'info',
         'warning', 'error', 'critical'])
     try:
