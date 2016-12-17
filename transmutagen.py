@@ -58,6 +58,29 @@ def nsolve_intervals(expr, bounds, division=30, solver='bisect', **kwargs):
 
     return roots
 
+def nsolve_points(expr, bounds, division=30, **kwargs):
+    """
+    Divide bounds into division points and nsolve near each one
+    """
+    roots = []
+    L = bounds[1] - bounds[0]
+    for i in range(division):
+        point = bounds[0] + i*L/division
+        try:
+            logger.debug("Solving near point %s", point)
+            root = nsolve(expr, point, **kwargs)
+        except ValueError as e:
+            logger.debug("No solution found: %s", e)
+            continue
+        else:
+            if root not in roots:
+                logger.debug("Solution found: %s", root)
+                roots.append(root)
+            else:
+                logger.debug("%s already found, discarding", root)
+
+    return roots
+
 def plot_in_terminal(*args, logname=None, **kwargs):
     """
     Run plot() but show in terminal if possible
@@ -98,7 +121,7 @@ def _get_log_file_name(locals_dict):
 # will fail early if we are not running in SymPy master.
 @conserve_mpmath_dps
 def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
-    tol=None, **kwargs):
+    tol=None, nsolve_type='points', **kwargs):
     """
     Compute the CRAM approximation of exp(-t) from t in [0, oo) of the given degree
 
@@ -124,6 +147,8 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
 
     tol is the tolerance passed to nsolve.
 
+    nsolve_type can be 'points' or 'intervals'.
+
     Additional keyword arguments are passed to nsolve_intervals, such as
     division.
 
@@ -144,6 +169,12 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
 
     c = c or 0.6*degree
     maxsteps = int(maxsteps or 1.7*prec)
+    if nsolve_type == 'points':
+        nsolve_func = nsolve_points
+    elif nsolve_type == 'intervals':
+        nsolve_func = nsolve_intervals
+    else:
+        raise ValueError("nsolve_type must be 'points' or 'intervals'")
 
     r, num_coeffs, den_coeffs = general_rat_func(degree, t, chebyshev=True)
     E = exp(c*(t + 1)/(t - 1)) - r
@@ -169,7 +200,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
         logger.info('E.subs(sol): %s', E.subs(sol))
 
         # we can't use 1 because of the singularity
-        points = [-1, *nsolve_intervals(D, [-1, 0.999999], prec=prec, tol=tol, **kwargs), 1]
+        points = [-1, *nsolve_func(D, [-1, 0.999999], prec=prec, tol=tol, **kwargs), 1]
         logger.debug('points: %s', points)
         logger.info('D: %s', D)
         logger.info('[(i, D.subs(t, i)) for i in points]: %s', [(i, D.subs(t, i)) for i in points])
@@ -204,6 +235,7 @@ def main():
     parser.add_argument('--maxsteps', type=int)
     parser.add_argument('--max-loops', type=int)
     parser.add_argument('--tol', type=mpmath.mpf)
+    parser.add_argument('--nsolve-type', default=None, choices=['points', 'intervals'])
     parser.add_argument('--log-level', default=None, choices=['debug', 'info',
         'warning', 'error', 'critical'])
     try:
