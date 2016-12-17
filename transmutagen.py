@@ -200,7 +200,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
         logger.info('E.subs(sol): %s', E.subs(sol))
 
         # we can't use 1 because of the singularity
-        points = [-1, *nsolve_func(D, [-1, 0.999999], prec=prec, tol=tol, **kwargs), 1]
+        points = [-1, *nsolve_func(D, [-1, 0.999999], prec=prec, tol=tol, maxsteps=maxsteps, **kwargs), 1]
         logger.debug('points: %s', points)
         logger.info('D: %s', D)
         logger.info('[(i, D.subs(t, i)) for i in points]: %s', [(i, D.subs(t, i)) for i in points])
