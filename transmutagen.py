@@ -199,6 +199,8 @@ def main():
     parser.add_argument('--c', type=float)
     parser.add_argument('--maxsteps', type=int)
     parser.add_argument('--max-loops', type=int)
+    parser.add_argument('--log-level', default=None, choices=['debug', 'info',
+        'warning', 'error', 'critical'])
     try:
         import argcomplete
         argcomplete.autocomplete(parser)
@@ -206,11 +208,15 @@ def main():
         pass
     args = parser.parse_args()
 
+    if args.log_level:
+        logger.setLevel(getattr(logging, args.log_level.upper()))
+
     t = symbols('t')
     arguments = args.__dict__.copy()
     for i in arguments.copy():
         if not arguments[i]:
-            del arguments[i]
+           del arguments[i]
+    del arguments['log_level']
 
     rat_func = CRAM_exp(**arguments)
     logger.info('rat_func: %s', rat_func)
