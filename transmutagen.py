@@ -135,7 +135,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None, **kwargs)
     epsilon, t, i, y = symbols("epsilon t i y")
 
     c = c or 0.6*degree
-    maxsteps = maxsteps or 1.7*prec
+    maxsteps = int(maxsteps or 1.7*prec)
 
     r, num_coeffs, den_coeffs = general_rat_func(degree, t, chebyshev=True)
     E = exp(c*(t + 1)/(t - 1)) - r
