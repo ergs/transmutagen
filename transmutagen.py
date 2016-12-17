@@ -253,7 +253,12 @@ def main():
         logger.setLevel(getattr(logging, args.log_level.upper()))
         del arguments['log_level']
 
-    rat_func = CRAM_exp(**arguments)
+    try:
+        rat_func = CRAM_exp(**arguments)
+    except BaseException as e:
+        logger.error("Exception raised", exc_info=True)
+        raise
+
     logger.info('rat_func: %s', rat_func)
     # TODO: log this plot
     t = symbols('t')
