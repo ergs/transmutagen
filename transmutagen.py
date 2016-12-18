@@ -199,7 +199,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
         logger.info('sol: %s', sol)
         logger.info('system.subs(sol): %s', [i.evalf() for i in system.subs(sol)])
         D = diff(E.subs(sol), t)
-        plot_in_terminal(E.subs(sol), (-1, 0.999), logname=logname + 'iteration=%s' % iteration)
+        plot_in_terminal(E.subs(sol), (-1, 0.999), logname=logname + 'iteration=%s' % iteration, points=1000)
         logger.info('E.subs(sol): %s', E.subs(sol))
 
         D *= D_scale
@@ -269,7 +269,7 @@ def main():
     logger.info('rat_func: %s', rat_func)
     # TODO: log this plot
     t = symbols('t')
-    plot_in_terminal(rat_func - exp(-t), (0, 100))
+    plot_in_terminal(rat_func - exp(-t), (0, 100), points=1000)
 
 if __name__ == '__main__':
     main()
