@@ -16,6 +16,8 @@ logger.addHandler(logging.StreamHandler())
 # Change INFO to DEBUG for more output
 logger.setLevel(logging.INFO)
 
+t = symbols('t')
+
 def general_rat_func(d, x, chebyshev=False):
     """
     Return a general rational function with numerator and denominator degree d
@@ -86,7 +88,6 @@ def plot_in_terminal(expr, *args, logname=None, **kwargs):
     Run plot() but show in terminal if possible
     """
     from mpmath import plot
-    t = symbols('t')
     f = lambdify(t, expr, mpmath)
     try:
         from iterm2_tools.images import display_image_bytes
@@ -268,7 +269,6 @@ def main():
 
     logger.info('rat_func: %s', rat_func)
     # TODO: log this plot
-    t = symbols('t')
     plot_in_terminal(rat_func - exp(-t), (0, 100), points=1000)
 
 if __name__ == '__main__':
