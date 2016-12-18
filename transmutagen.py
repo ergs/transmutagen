@@ -121,7 +121,7 @@ def _get_log_file_name(locals_dict):
 # will fail early if we are not running in SymPy master.
 @conserve_mpmath_dps
 def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
-    tol=None, nsolve_type='points', **kwargs):
+    tol=None, nsolve_type='points', D_scale=1, **kwargs):
     """
     Compute the CRAM approximation of exp(-t) from t in [0, oo) of the given degree
 
@@ -148,6 +148,8 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     tol is the tolerance passed to nsolve.
 
     nsolve_type can be 'points' or 'intervals'.
+
+    D_scale is a factor used to scale the derivative before root finding.
 
     Additional keyword arguments are passed to nsolve_intervals, such as
     division.
@@ -199,6 +201,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
             nb_of_points=1000, logname=logname + 'iteration=%s' % iteration)
         logger.info('E.subs(sol): %s', E.subs(sol))
 
+        D *= D_scale
         # we can't use 1 because of the singularity
         points = [-1, *nsolve_func(D, [-1, 0.999999], prec=prec, tol=tol, maxsteps=maxsteps, **kwargs), 1]
         logger.debug('points: %s', points)
@@ -238,6 +241,7 @@ def main():
     parser.add_argument('--nsolve-type', default=None, choices=['points',
         'intervals'])
     parser.add_argument('--solver', default=None)
+    parser.add_argument('--D-scale', default=None, type=float)
     parser.add_argument('--log-level', default=None, choices=['debug', 'info',
         'warning', 'error', 'critical'])
     try:
