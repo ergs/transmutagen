@@ -204,7 +204,9 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
         system = system + Tuple(expr.replace(exp, lambda i: 0).subs({i: 2*degree + 1, t: 1}))
         logger.debug('system: %s', system)
         logger.debug('[*num_coeffs, *den_coeffs, epsilon]: %s', [*num_coeffs, *den_coeffs, epsilon])
-        sol = dict(zip([*num_coeffs, *den_coeffs, epsilon], nsolve(system, [*num_coeffs, *den_coeffs, epsilon], [*[1]*(2*(degree + 1) - 1), 0], prec=prec)))
+        sol = dict(zip([*num_coeffs, *den_coeffs, epsilon], nsolve(system,
+            [*num_coeffs, *den_coeffs, epsilon], [*[1]*(2*(degree + 1) - 1), 0],
+            prec=prec, maxsteps=maxsteps)))
         logger.info('sol: %s', sol)
         logger.info('system.subs(sol): %s', [i.evalf() for i in system.subs(sol)])
         D = diff(E.subs(sol), t)
