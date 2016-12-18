@@ -7,7 +7,7 @@ import logging
 
 import mpmath
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
-    chebyshevt_root, Tuple, diff, plot, N, solve, together, Poly)
+    chebyshevt_root, Tuple, diff, plot, N, solve, together, Poly, lambdify)
 
 from sympy.utilities.decorator import conserve_mpmath_dps
 
@@ -81,29 +81,31 @@ def nsolve_points(expr, bounds, division=30, **kwargs):
 
     return sorted(roots)
 
-def plot_in_terminal(*args, logname=None, **kwargs):
+def plot_in_terminal(expr, *args, logname=None, **kwargs):
     """
     Run plot() but show in terminal if possible
     """
+    from mpmath import plot
+    t = symbols('t')
+    f = lambdify(t, expr, mpmath)
     try:
         from iterm2_tools.images import display_image_bytes
     except ImportError:
-        p = plot(*args, **kwargs)
         if logname:
             os.makedirs('plots', exist_ok=True)
-            p.save('plots/%s.png' % logname)
+            file = 'plots/%s.png' % logname
+        else:
+            file = None
+        plot(f, *args, file=file, **kwargs)
     else:
-        from sympy.plotting.plot import unset_show
         from io import BytesIO
-        unset_show()
-        p = plot(*args, **kwargs, show=False)
         b = BytesIO()
-        p.save(b)
+        plot(f, *args, **kwargs, file=b)
         if logname:
             os.makedirs('plots', exist_ok=True)
-            p.save('plots/%s.png' % logname)
+            with open('plots/%s.png' % logname, 'wb') as f:
+                f.write(b.getvalue())
         print(display_image_bytes(b.getvalue()))
-        p._backend.close()
 
 def _get_log_file_name(locals_dict):
     d = locals_dict.copy()
@@ -197,8 +199,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
         logger.info('sol: %s', sol)
         logger.info('system.subs(sol): %s', [i.evalf() for i in system.subs(sol)])
         D = diff(E.subs(sol), t)
-        plot_in_terminal(E.subs(sol), (t, -1, 0.999), adaptive=False,
-            nb_of_points=1000, logname=logname + 'iteration=%s' % iteration)
+        plot_in_terminal(E.subs(sol), (-1, 0.999), logname=logname + 'iteration=%s' % iteration)
         logger.info('E.subs(sol): %s', E.subs(sol))
 
         D *= D_scale
@@ -268,7 +269,7 @@ def main():
     logger.info('rat_func: %s', rat_func)
     # TODO: log this plot
     t = symbols('t')
-    plot_in_terminal(rat_func - exp(-t), (t, 0, 100), adaptive=False, nb_of_points=1000)
+    plot_in_terminal(rat_func - exp(-t), (0, 100))
 
 if __name__ == '__main__':
     main()
