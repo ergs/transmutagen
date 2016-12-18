@@ -37,7 +37,7 @@ def general_rat_func(d, x, chebyshev=False):
     return rat_func, num_coeffs, den_coeffs
 
 
-def nsolve_intervals(expr, bounds, division=30, solver='bisect', **kwargs):
+def nsolve_intervals(expr, bounds, division=30, solver='bisect', scale=True, **kwargs):
     """
     Divide bounds into division intervals and nsolve in each one
     """
@@ -47,6 +47,10 @@ def nsolve_intervals(expr, bounds, division=30, solver='bisect', **kwargs):
         interval = [bounds[0] + i*L/division, bounds[0] + (i + 1)*L/division]
         try:
             logger.debug("Solving in interval %s", interval)
+            if scale:
+                val = expr.evalf(kwargs['prec'], subs={t:interval[0]})
+                logger.debug("Scaling by %s", val)
+                expr /= val
             root = nsolve(expr, interval, solver=solver, **kwargs)
         except ValueError as e:
             logger.debug("No solution found: %s", e)
@@ -60,7 +64,7 @@ def nsolve_intervals(expr, bounds, division=30, solver='bisect', **kwargs):
 
     return roots
 
-def nsolve_points(expr, bounds, division=30, **kwargs):
+def nsolve_points(expr, bounds, division=30, scale=True, **kwargs):
     """
     Divide bounds into division points and nsolve near each one
     """
@@ -70,6 +74,10 @@ def nsolve_points(expr, bounds, division=30, **kwargs):
         point = bounds[0] + i*L/division
         try:
             logger.debug("Solving near point %s", point)
+            if scale:
+                val = expr.evalf(kwargs['prec'], subs={t:point})
+                logger.debug("Scaling by %s", val)
+                expr /= val
             root = nsolve(expr, point, **kwargs)
         except ValueError as e:
             logger.debug("No solution found: %s", e)
@@ -155,7 +163,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     D_scale is a factor used to scale the derivative before root finding.
 
     Additional keyword arguments are passed to nsolve_intervals, such as
-    division.
+    division and scale.
 
     The SymPy master branch is required for this to work.
 
@@ -244,6 +252,7 @@ def main():
         'intervals'])
     parser.add_argument('--solver', default=None)
     parser.add_argument('--D-scale', default=None, type=float)
+    parser.add_argument('--scale', default=None, type=bool)
     parser.add_argument('--log-level', default=None, choices=['debug', 'info',
         'warning', 'error', 'critical'])
     try:
