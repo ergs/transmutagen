@@ -4,6 +4,7 @@
 import argparse
 import os
 import logging
+import datetime
 
 import mpmath
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
@@ -272,11 +273,15 @@ def main():
         logger.setLevel(getattr(logging, args.log_level.upper()))
         del arguments['log_level']
 
+
+    logger.info("Start time: %s", datetime.datetime.now())
     try:
         rat_func = CRAM_exp(**arguments)
     except BaseException as e:
         logger.error("Exception raised", exc_info=True)
         raise
+    finally:
+        logger.info("End time: %s", datetime.datetime.now())
 
     logger.info('rat_func: %s', rat_func)
     # TODO: log this plot
