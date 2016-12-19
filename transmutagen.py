@@ -7,7 +7,7 @@ import logging
 
 import mpmath
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
-    chebyshevt_root, Tuple, diff, plot, N, solve, together, Poly, lambdify)
+    chebyshevt_root, Tuple, diff, N, solve, together, Poly, lambdify)
 
 from sympy.utilities.decorator import conserve_mpmath_dps
 
