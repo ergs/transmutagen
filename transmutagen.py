@@ -46,9 +46,10 @@ def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True, pr
     """
     roots = []
     L = bounds[1] - bounds[0]
-    # These are only needed for scaling and sign checks
+    # These are only needed for scaling and sign checks, so don't bother with
+    # full precision
     points = [bounds[0] + i*L/division for i in range(division+1)]
-    low_prec_values = [expr.evalf(prec, subs={t: point}) for point in points]
+    low_prec_values = [expr.evalf(subs={t: point}) for point in points]
     for i in range(division):
         interval = [bounds[0] + i*L/division, bounds[0] + (i + 1)*L/division]
         try:
