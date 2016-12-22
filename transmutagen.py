@@ -153,7 +153,7 @@ def log_function_args(func):
 
         logger.info("Start time: %s", datetime.datetime.now())
         try:
-            func(*args, **kwargs)
+            return func(*args, **kwargs)
         except BaseException as e:
             logger.error("Exception raised", exc_info=True)
             raise
