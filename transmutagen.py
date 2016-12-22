@@ -229,9 +229,9 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
         maxmin = N(max(map(abs, Evals)) - min(map(abs, Evals)))
         logger.info('max - min: %s', maxmin)
         logger.info('epsilon: %s', N(sol[epsilon]))
-        if maxmin < 10**-prec:
-            logger.info("Converged in %d iterations.", iteration + 1)
-            break
+        # if maxmin < 10**-prec:
+        #     logger.info("Converged in %d iterations.", iteration + 1)
+        #     break
     else:
         logger.warn("!!!WARNING: DID NOT CONVERGE AFTER %d ITERATIONS!!!", max_loops)
 
