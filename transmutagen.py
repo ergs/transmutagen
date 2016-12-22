@@ -58,6 +58,7 @@ def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True, pr
             s2 = expr.evalf(prec, subs={t: interval[1]})
             if sign(s1) == sign(s2):
                 logger.debug("Expr doesn't change signs on %s, skipping", interval)
+                continue
 
             root = nsolve(expr, interval, solver=solver, prec=prec, **kwargs)
         except ValueError as e:
