@@ -5,6 +5,8 @@ import argparse
 import os
 import logging
 import datetime
+import inspect
+from functools import wraps
 
 import mpmath
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
@@ -129,9 +131,34 @@ def _get_log_file_name(locals_dict):
     info += ' '.join('%s=%s' % (i, d[i]) for i in sorted(d))
     return info
 
+
+def log_function_args(func):
+    """
+    Decorator to log the arguments to func, and other info
+    """
+    @wraps(func)
+    def _func(*args, **kwargs):
+        func_name = func.__name__
+        logger.info("%s with arguments %s", func_name, args)
+        logger.info("%s with keyword arguments %s", func_name, kwargs)
+
+        os.makedirs('logs', exist_ok=True)
+        binding = inspect.signature(func).bind(*args, **kwargs)
+        binding.apply_defaults()
+        logname = _get_log_file_name(binding.arguments)
+        logger.addHandler(logging.FileHandler('logs/%s.log' % logname))
+        logger.info("Logging to file 'logs/%s.log'", logname)
+
+        kwargs['logname'] = logname
+
+        func(*args, **kwargs)
+
+    return _func
+
 # This decorator is actually not needed any more, but we leave it in as it
 # will fail early if we are not running in SymPy master.
 @conserve_mpmath_dps
+@log_function_args
 def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     tol=None, nsolve_type='intervals', D_scale=1, **kwargs):
     """
@@ -169,15 +196,8 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     The SymPy master branch is required for this to work.
 
     """
-    logger.info("CRAM_exp with arguments %s", locals())
-
-    if kwargs.get('log', True):
-        os.makedirs('logs', exist_ok=True)
-        logname = _get_log_file_name(locals())
-        logger.addHandler(logging.FileHandler('logs/%s.log' % logname))
-        logger.info("Logging to file 'logs/%s.log'", logname)
-    else:
-        logname = None
+    # From the log_function_args decorator
+    logname = kwargs['logname']
 
     epsilon, t, i, y = symbols("epsilon t i y")
 
