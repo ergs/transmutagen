@@ -151,7 +151,14 @@ def log_function_args(func):
 
         kwargs['logname'] = logname
 
-        func(*args, **kwargs)
+        logger.info("Start time: %s", datetime.datetime.now())
+        try:
+            func(*args, **kwargs)
+        except BaseException as e:
+            logger.error("Exception raised", exc_info=True)
+            raise
+        finally:
+            logger.info("End time: %s", datetime.datetime.now())
 
     return _func
 
@@ -293,15 +300,8 @@ def main():
         logger.setLevel(getattr(logging, args.log_level.upper()))
         del arguments['log_level']
 
+    rat_func = CRAM_exp(**arguments)
 
-    logger.info("Start time: %s", datetime.datetime.now())
-    try:
-        rat_func = CRAM_exp(**arguments)
-    except BaseException as e:
-        logger.error("Exception raised", exc_info=True)
-        raise
-    finally:
-        logger.info("End time: %s", datetime.datetime.now())
 
     logger.info('rat_func: %s', rat_func)
     # TODO: log this plot
