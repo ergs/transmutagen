@@ -133,7 +133,7 @@ def _get_log_file_name(locals_dict):
 # will fail early if we are not running in SymPy master.
 @conserve_mpmath_dps
 def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
-    tol=None, nsolve_type='points', D_scale=1, **kwargs):
+    tol=None, nsolve_type='intervals', D_scale=1, **kwargs):
     """
     Compute the CRAM approximation of exp(-t) from t in [0, oo) of the given degree
 
