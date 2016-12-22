@@ -46,21 +46,28 @@ def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True, pr
     """
     roots = []
     L = bounds[1] - bounds[0]
+    # These are only needed for scaling and sign checks
+    points = [bounds[0] + i*L/division for i in range(division+1)]
+    low_prec_values = [expr.evalf(prec, subs={t: point}) for point in points]
     for i in range(division):
         interval = [bounds[0] + i*L/division, bounds[0] + (i + 1)*L/division]
         try:
             logger.debug("Solving in interval %s", interval)
-            if scale:
-                val = expr.evalf(prec, subs={t:interval[0]})
-                logger.debug("Scaling by %s", val)
-                expr /= val
-            s1 = expr.evalf(prec, subs={t: interval[0]})
-            s2 = expr.evalf(prec, subs={t: interval[1]})
+            s1 = low_prec_values[i]
+            s2 = low_prec_values[i+1]
             if sign(s1) == sign(s2):
                 logger.debug("Expr doesn't change signs on %s, skipping", interval)
+                # logger.debug("Expr values, %s, %s", s1, s2)
                 continue
 
-            root = nsolve(expr, interval, solver=solver, prec=prec, **kwargs)
+            if scale:
+                val = low_prec_values[i]
+                logger.debug("Scaling by %s", val)
+                scaled_expr = expr/val
+            else:
+                scaled_expr = expr
+
+            root = nsolve(scaled_expr, interval, solver=solver, prec=prec, **kwargs)
         except ValueError as e:
             logger.debug("No solution found: %s", e)
             continue
