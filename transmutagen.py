@@ -40,7 +40,7 @@ def general_rat_func(d, x, chebyshev=False):
     return rat_func, num_coeffs, den_coeffs
 
 
-def nsolve_intervals(expr, bounds, division=30, solver='bisect', scale=True, **kwargs):
+def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True, **kwargs):
     """
     Divide bounds into division intervals and nsolve in each one
     """
