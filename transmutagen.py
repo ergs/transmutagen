@@ -65,7 +65,7 @@ def nsolve_intervals(expr, bounds, division=30, solver='bisect', scale=True, **k
 
     return roots
 
-def nsolve_points(expr, bounds, division=30, scale=True, **kwargs):
+def nsolve_points(expr, bounds, division=200, scale=True, **kwargs):
     """
     Divide bounds into division points and nsolve near each one
     """
