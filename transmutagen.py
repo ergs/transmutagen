@@ -167,14 +167,17 @@ def log_function_args(func):
 
         kwargs['logname'] = logname
 
-        logger.info("Start time: %s", datetime.datetime.now())
+        starttime = datetime.datetime.now()
+        logger.info("Start time: %s", starttime)
         try:
             return func(*args, **kwargs)
         except BaseException as e:
             logger.error("Exception raised", exc_info=True)
             raise
         finally:
-            logger.info("End time: %s", datetime.datetime.now())
+            endtime = datetime.datetime.now()
+            logger.info("End time: %s", endtime)
+            logger.info("Total time: %s", endtime - starttime)
 
     return _func
 
