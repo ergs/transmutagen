@@ -284,8 +284,13 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     inv = solve(-c*(t + 1)/(t - 1) - y, t)[0].subs(y, t)
     n, d = together(r.subs(sol).subs(t, inv)).as_numer_denom() # simplify/cancel here will add degree to the numerator and denominator
     rat_func = (Poly(n)/Poly(d).TC())/(Poly(d)/Poly(d).TC())
-    return rat_func.evalf(prec)
+    ret = rat_func.evalf(prec)
 
+    logger.info('rat_func: %s', rat_func)
+    plot_in_terminal(rat_func - exp(-t), (0, 100), points=1000,
+        logname=logname + 'final')
+
+    return ret
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -319,12 +324,7 @@ def main():
         logger.setLevel(getattr(logging, args.log_level.upper()))
         del arguments['log_level']
 
-    rat_func = CRAM_exp(**arguments)
-
-
-    logger.info('rat_func: %s', rat_func)
-    # TODO: log this plot
-    plot_in_terminal(rat_func - exp(-t), (0, 100), points=1000)
+    CRAM_exp(**arguments)
 
 if __name__ == '__main__':
     main()
