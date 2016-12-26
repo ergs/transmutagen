@@ -110,11 +110,14 @@ def nsolve_points(expr, bounds, division=200, scale=True, **kwargs):
 
     return sorted(roots)
 
-def plot_in_terminal(expr, *args, logname=None, **kwargs):
+@conserve_mpmath_dps
+def plot_in_terminal(expr, *args, prec=None, logname=None, **kwargs):
     """
     Run plot() but show in terminal if possible
     """
     from mpmath import plot
+    if prec:
+        mpmath.mp.dps = prec
     f = lambdify(t, expr, mpmath)
     try:
         from iterm2_tools.images import display_image_bytes
@@ -257,7 +260,8 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
         logger.info('sol: %s', sol)
         logger.info('system.subs(sol): %s', [i.evalf() for i in system.subs(sol)])
         D = diff(E.subs(sol), t)
-        plot_in_terminal(E.subs(sol), (-1, 0.999), logname=logname + ' iteration=%s' % iteration, points=1000)
+        plot_in_terminal(E.subs(sol), (-1, 0.999), prec=prec, points=1000,
+            logname=logname + ' iteration=%s' % iteration)
         logger.info('E.subs(sol): %s', E.subs(sol))
 
         D *= D_scale
@@ -287,7 +291,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     ret = rat_func.evalf(prec)
 
     logger.info('rat_func: %s', rat_func)
-    plot_in_terminal(rat_func - exp(-t), (0, 100), points=1000,
+    plot_in_terminal(rat_func - exp(-t), (0, 100), prec=prec, points=1000,
         logname=logname + ' final')
 
     return ret
