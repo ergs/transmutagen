@@ -1,5 +1,5 @@
 """
-exp(-t) best CRAM coefficients from the appendix of the paper
+exp(-t) on [0, oo) best CRAM coefficients from the appendix of the paper
 "Extended Numerical Computations on the '1/9' Conjecture in Rational
 Approximation Theory", A. J. Carpenter, A. Ruttan, and R.S. Varga
 
@@ -112,4 +112,15 @@ def create_expression(n, t=None):
     return num/den
 
 if __name__ == '__main__':
-    print(create_expression(17))
+    # Run this with
+    # PYTHONPATH=/path/to/development/sympy python -m transmutagen.tests.crv_coeffs
+    from sympy import exp, symbols
+
+    from .. import plot_in_terminal
+
+    rat_func = create_expression(17)
+
+    print(rat_func)
+
+    t = symbols('t')
+    plot_in_terminal(rat_func - exp(-t), (0, 100), prec=20)
