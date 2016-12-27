@@ -5,7 +5,12 @@ Approximation Theory", A. J. Carpenter, A. Ruttan, and R.S. Varga
 
 The coefficients have been OCRed from https://finereaderonline.com which uses
 Abbyy, and verified by hand.
+
+p are the numerator coefficients and q are the denominator coefficients. They
+are ordered from the 0th (constant) to the nth (t**n) term. The constant term
+in the denominator is always normalized to 1.
 """
+
 
 coeffs = {}
 
@@ -87,3 +92,24 @@ coeffs[18] = {'p': [
 
     ]
 }
+
+def create_expression(n, t=None):
+    if n not in coeffs:
+        raise ValueError("Don't have coefficients for {}".format(n))
+
+    from sympy import Float, symbols, Add
+
+    if not t:
+        t = symbols('t')
+
+    p = coeffs[n]['p']
+    q = coeffs[n]['q']
+
+    # Don't use Poly here, it loses precision
+    num = Add(*[Float(p[i])*t**i for i in range(n+1)])
+    den = Add(*[Float(q[i])*t**i for i in range(n+1)])
+
+    return num/den
+
+if __name__ == '__main__':
+    print(create_expression(17))
