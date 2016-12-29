@@ -285,7 +285,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     else:
         logger.warn("!!!WARNING: DID NOT CONVERGE AFTER %d ITERATIONS!!!", max_loops)
 
-    inv = solve(-c*(t + 1)/(t - 1) - y, t)[0].subs(y, t)
+    inv = solve(-c*(t + 1)/(t - 1) - y, t, rational=True)[0].subs(y, t)
     n, d = together(r.subs(sol).subs(t, inv)).as_numer_denom() # simplify/cancel here will add degree to the numerator and denominator
     rat_func = (Poly(n)/Poly(d).TC())/(Poly(d)/Poly(d).TC())
     ret = rat_func.evalf(prec)
