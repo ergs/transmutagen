@@ -10,7 +10,8 @@ from functools import wraps
 
 import mpmath
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
-    chebyshevt_root, Tuple, diff, N, solve, together, Poly, lambdify, sign)
+    chebyshevt_root, Tuple, diff, N, solve, together, Poly, lambdify, sign,
+    fraction)
 
 from sympy.utilities.decorator import conserve_mpmath_dps
 
@@ -285,9 +286,48 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     else:
         logger.warn("!!!WARNING: DID NOT CONVERGE AFTER %d ITERATIONS!!!", max_loops)
 
-    inv = solve(-c*(t + 1)/(t - 1) - y, t, rational=True)[0].subs(y, t)
-    n, d = together(r.subs(sol).subs(t, inv)).as_numer_denom() # simplify/cancel here will add degree to the numerator and denominator
-    rat_func = (Poly(n)/Poly(d).TC())/(Poly(d)/Poly(d).TC())
+
+    # Workaround an issue. Poly loses precision unless the mpmath precision is
+    # set.
+    mpmath.mp.dps = prec
+
+    # We need to be very careful about doing the inverse Mobius
+    # transformation. See SymPy issue
+    # https://github.com/sympy/sympy/issues/12003.
+    #
+    # TODO: generate this programmatically
+    #
+    # C = Symbol("C")
+    # inv = solve(-C*(t + 1)/(t - 1) - y, t, rational=True)[0].subs(y, t)
+    # inv == -2*c/(c + t) + 1
+    #
+    # this means:
+    #
+    # Shift by 1
+    # Compose (multiply) with -2*c*t
+    # Invert (replace t with 1/t)
+    # Shift by c
+
+    # The inversion can be done by reversing the terms, since P(1/t) ==
+    # t**d*P'(t), where d = deg(P) and P' is P with the terms reversed. The
+    # t**d will cancel in the numerator and denominator.
+
+    # fraction is better than as_numer_denom(). It doesn't try to do anything
+    # smart, which is what we want ("smart" things can lose precision)
+    frac = list(map(Poly, fraction(r.subs(sol))))
+    for i in range(len(frac)):
+        # Shift by 1
+        frac[i] = frac[i].shift(1)
+        # Compose with -2*c*t
+        frac[i] = frac[i].compose(Poly(-2*c*t))
+        # Invert
+        # XXX: Is there a better way than rep.rep
+        frac[i] = Poly(reversed(frac[i].rep.rep), t)
+        # Shift by c
+        frac[i] = frac[i].shift(c)
+
+    n, d = frac
+    rat_func = n/d.TC()/(d/d.TC())
     ret = rat_func.evalf(prec)
 
     logger.info('rat_func: %s', rat_func)
