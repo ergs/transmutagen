@@ -7,11 +7,12 @@ import logging
 import datetime
 import inspect
 from functools import wraps
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 import mpmath
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
     chebyshevt_root, Tuple, diff, N, solve, together, Poly, lambdify, sign,
-    fraction)
+    fraction, srepr, sympify)
 
 from sympy.utilities.decorator import conserve_mpmath_dps
 
@@ -41,7 +42,9 @@ def general_rat_func(d, x, chebyshev=False):
     return rat_func, num_coeffs, den_coeffs
 
 
-def _nsolve_in_interval(expr, interval, i, low_prec_values, solver='bisect', scale=True, prec=None, **kwargs):
+def _nsolve_in_interval(expr_repr, interval, i, low_prec_values,
+    solver='bisect', scale=True, prec=None, **kwargs):
+    expr = sympify(expr_repr)
     try:
         logger.debug("Solving in interval %s", interval)
         s1 = low_prec_values[i]
@@ -65,13 +68,14 @@ def _nsolve_in_interval(expr, interval, i, low_prec_values, solver='bisect', sca
     else:
         if interval[0] < root < interval[1]:
             logger.debug("Solution found: %s", root)
-            return root
+            return srepr(root)
             if sign(s1) == sign(s2):
                 logger.debug("Root found even though signs did not change")
         else:
             logger.warn("%s is not in %s, discarding", root, interval)
 
-def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True, prec=None, **kwargs):
+def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True,
+    prec=None, max_workers=4, **kwargs):
     """
     Divide bounds into division intervals and nsolve in each one
     """
@@ -81,12 +85,17 @@ def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True, pr
     # full precision
     points = [bounds[0] + i*L/division for i in range(division+1)]
     low_prec_values = [expr.evalf(subs={t: point}) for point in points]
-    for i in range(division):
-        interval = [bounds[0] + i*L/division, bounds[0] + (i + 1)*L/division]
-        root = _nsolve_in_interval(expr, interval, i, low_prec_values,
-            solver=solver, scale=scale, prec=prec, **kwargs)
-        if root:
-            roots.append(root)
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        futures = []
+        for i in range(division):
+            interval = [bounds[0] + i*L/division, bounds[0] + (i + 1)*L/division]
+            futures.append(executor.submit(_nsolve_in_interval, srepr(expr), interval, i, low_prec_values,
+                solver=solver, scale=scale, prec=prec, **kwargs))
+
+        for future in as_completed(futures):
+            root_repr = future.result()
+            if root_repr:
+                roots.append(sympify(root_repr))
     return roots
 
 def nsolve_points(expr, bounds, division=200, scale=True, **kwargs):
