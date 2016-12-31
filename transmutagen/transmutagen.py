@@ -41,6 +41,36 @@ def general_rat_func(d, x, chebyshev=False):
     return rat_func, num_coeffs, den_coeffs
 
 
+def _nsolve_in_interval(expr, interval, i, low_prec_values, solver='bisect', scale=True, prec=None, **kwargs):
+    try:
+        logger.debug("Solving in interval %s", interval)
+        s1 = low_prec_values[i]
+        s2 = low_prec_values[i+1]
+        if sign(s1) == sign(s2):
+            logger.debug("Expr doesn't change signs on %s, skipping", interval)
+            # logger.debug("Expr values, %s, %s", s1, s2)
+            return None
+
+        if scale:
+            val = low_prec_values[i]
+            logger.debug("Scaling by %s", val)
+            scaled_expr = expr/val
+        else:
+            scaled_expr = expr
+
+        root = nsolve(scaled_expr, interval, solver=solver, prec=prec, **kwargs)
+    except ValueError as e:
+        logger.debug("No solution found: %s", e)
+        return None
+    else:
+        if interval[0] < root < interval[1]:
+            logger.debug("Solution found: %s", root)
+            return root
+            if sign(s1) == sign(s2):
+                logger.debug("Root found even though signs did not change")
+        else:
+            logger.warn("%s is not in %s, discarding", root, interval)
+
 def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True, prec=None, **kwargs):
     """
     Divide bounds into division intervals and nsolve in each one
@@ -53,35 +83,10 @@ def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True, pr
     low_prec_values = [expr.evalf(subs={t: point}) for point in points]
     for i in range(division):
         interval = [bounds[0] + i*L/division, bounds[0] + (i + 1)*L/division]
-        try:
-            logger.debug("Solving in interval %s", interval)
-            s1 = low_prec_values[i]
-            s2 = low_prec_values[i+1]
-            if sign(s1) == sign(s2):
-                logger.debug("Expr doesn't change signs on %s, skipping", interval)
-                # logger.debug("Expr values, %s, %s", s1, s2)
-                continue
-
-            if scale:
-                val = low_prec_values[i]
-                logger.debug("Scaling by %s", val)
-                scaled_expr = expr/val
-            else:
-                scaled_expr = expr
-
-            root = nsolve(scaled_expr, interval, solver=solver, prec=prec, **kwargs)
-        except ValueError as e:
-            logger.debug("No solution found: %s", e)
-            continue
-        else:
-            if interval[0] < root < interval[1]:
-                logger.debug("Solution found: %s", root)
-                roots.append(root)
-                if sign(s1) == sign(s2):
-                    logger.debug("Root found even though signs did not change")
-            else:
-                logger.warn("%s is not in %s, discarding", root, interval)
-
+        root = _nsolve_in_interval(expr, interval, i, low_prec_values,
+            solver=solver, scale=scale, prec=prec, **kwargs)
+        if root:
+            roots.append(root)
     return roots
 
 def nsolve_points(expr, bounds, division=200, scale=True, **kwargs):
