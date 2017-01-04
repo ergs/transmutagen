@@ -45,25 +45,31 @@ def general_rat_func(d, x, chebyshev=False):
 def _nsolve_in_interval(expr_repr, interval, i, low_prec_values,
     solver='bisect', scale=True, prec=None, **kwargs):
     expr = sympify(expr_repr)
+    # Don't log from the different processes. There are better ways to do this
+    # with a queue but this is the poor-man's way. Downside: messages won't be
+    # logged until after the function returns.
+    log_messages = []
     try:
-        logger.debug("Solving in interval %s", interval)
+        log_messages.append(('debug', ("Solving in interval %s", interval)))
         if scale:
             val = low_prec_values[i]
-            logger.debug("Scaling by %s", val)
+            log_messages.append(('debug', ("Scaling by %s", val)))
             scaled_expr = expr/val
         else:
             scaled_expr = expr
 
         root = nsolve(scaled_expr, interval, solver=solver, prec=prec, **kwargs)
     except ValueError as e:
-        logger.debug("No solution found: %s", e)
-        return None
+        log_messages.append(('warn', ("No solution found: %s", e)))
+        return (None, log_messages)
     else:
         if interval[0] < root < interval[1]:
-            logger.debug("Solution found: %s", root)
-            return srepr(root)
+            log_messages.append(('debug', ("Solution found: %s", root)))
+            return (srepr(root), log_messages)
         else:
-            logger.warn("%s is not in %s, discarding", root, interval)
+            log_messages.append(('warn', ("%s is not in %s, discarding", root, interval)))
+
+    return (None, log_messages)
 
 def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True,
     prec=None, max_workers=4, **kwargs):
@@ -92,7 +98,9 @@ def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True,
                 solver=solver, scale=scale, prec=prec, **kwargs))
 
         for future in as_completed(futures):
-            root_repr = future.result()
+            (root_repr, log_messages) = future.result()
+            for message_type, message in log_messages:
+                getattr(logger, message_type)(*message)
             if root_repr:
                 roots.append(sympify(root_repr))
     return roots
