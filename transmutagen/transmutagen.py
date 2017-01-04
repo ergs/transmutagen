@@ -47,13 +47,6 @@ def _nsolve_in_interval(expr_repr, interval, i, low_prec_values,
     expr = sympify(expr_repr)
     try:
         logger.debug("Solving in interval %s", interval)
-        s1 = low_prec_values[i]
-        s2 = low_prec_values[i+1]
-        if sign(s1) == sign(s2):
-            logger.debug("Expr doesn't change signs on %s, skipping", interval)
-            # logger.debug("Expr values, %s, %s", s1, s2)
-            return None
-
         if scale:
             val = low_prec_values[i]
             logger.debug("Scaling by %s", val)
@@ -69,8 +62,6 @@ def _nsolve_in_interval(expr_repr, interval, i, low_prec_values,
         if interval[0] < root < interval[1]:
             logger.debug("Solution found: %s", root)
             return srepr(root)
-            if sign(s1) == sign(s2):
-                logger.debug("Root found even though signs did not change")
         else:
             logger.warn("%s is not in %s, discarding", root, interval)
 
@@ -89,6 +80,14 @@ def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True,
         futures = []
         for i in range(division):
             interval = [bounds[0] + i*L/division, bounds[0] + (i + 1)*L/division]
+
+            s1 = low_prec_values[i]
+            s2 = low_prec_values[i+1]
+            if sign(s1) == sign(s2):
+                logger.debug("Expr doesn't change signs on %s, skipping", interval)
+                # logger.debug("Expr values, %s, %s", s1, s2)
+                continue
+
             futures.append(executor.submit(_nsolve_in_interval, srepr(expr), interval, i, low_prec_values,
                 solver=solver, scale=scale, prec=prec, **kwargs))
 
