@@ -15,6 +15,16 @@ from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
 
 from sympy.utilities.decorator import conserve_mpmath_dps
 
+# Give a better error message if not using SymPy master
+try:
+    @conserve_mpmath_dps
+    def test(a):
+        return a
+
+    test(1)
+except TypeError:
+    raise ImportError("transmutagen requires the git master version of SymPy")
+
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
 # Change INFO to DEBUG for more output
@@ -185,9 +195,6 @@ def log_function_args(func):
 
     return _func
 
-# This decorator is actually not needed any more, but we leave it in as it
-# will fail early if we are not running in SymPy master.
-@conserve_mpmath_dps
 @log_function_args
 def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     tol=None, nsolve_type='intervals', D_scale=1, **kwargs):
