@@ -10,8 +10,7 @@ from functools import wraps
 
 import mpmath
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
-    chebyshevt_root, Tuple, diff, N, solve, together, Poly, lambdify, sign,
-    fraction)
+    chebyshevt_root, Tuple, diff, N, solve, Poly, lambdify, sign, fraction)
 
 from sympy.utilities.decorator import conserve_mpmath_dps
 
