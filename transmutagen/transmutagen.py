@@ -16,12 +16,8 @@ from sympy.utilities.decorator import conserve_mpmath_dps
 
 # Give a better error message if not using SymPy master
 try:
-    @conserve_mpmath_dps
-    def test(a):
-        return a
-
-    test(1)
-except TypeError:
+    Poly.transform
+except AttributeError:
     raise ImportError("transmutagen requires the git master version of SymPy")
 
 logger = logging.getLogger(__name__)
@@ -299,41 +295,12 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     mpmath.mp.dps = prec
 
     # We need to be very careful about doing the inverse Mobius
-    # transformation. See SymPy issue
-    # https://github.com/sympy/sympy/issues/12003.
-    #
-    # TODO: generate this programmatically
-    #
-    # C = Symbol("C")
-    # inv = solve(-C*(t + 1)/(t - 1) - y, t, rational=True)[0].subs(y, t)
-    # inv == -2*c/(c + t) + 1
-    #
-    # this means:
-    #
-    # Shift by 1
-    # Compose (multiply) with -2*c*t
-    # Invert (replace t with 1/t)
-    # Shift by c
-
-    # The inversion can be done by reversing the terms, since P(1/t) ==
-    # t**d*P'(t), where d = deg(P) and P' is P with the terms reversed. The
-    # t**d will cancel in the numerator and denominator.
-
-    # fraction is better than as_numer_denom(). It doesn't try to do anything
-    # smart, which is what we want ("smart" things can lose precision)
-    frac = list(map(Poly, fraction(r.subs(sol))))
-    for i in range(len(frac)):
-        # Shift by 1
-        frac[i] = frac[i].shift(1)
-        # Compose with -2*c*t
-        frac[i] = frac[i].compose(Poly(-2*c*t))
-        # Invert
-        # XXX: Is there a better way than rep.rep
-        frac[i] = Poly(reversed(frac[i].rep.rep), t)
-        # Shift by c
-        frac[i] = frac[i].shift(c)
-
-    n, d = frac
+    # transformation. Poly.transform does the transformation without losing
+    # precision. See SymPy issue https://github.com/sympy/sympy/issues/12003.
+    n, d = map(Poly, fraction(r.subs(sol)))
+    inv = solve(-c*(t + 1)/(t - 1) - y, t, rational=True)[0].subs(y, t)
+    p, q = map(lambda i: Poly(i, t), fraction(inv))
+    n, d = n.transform(p, q), d.transform(p, q)
     rat_func = n/d.TC()/(d/d.TC())
     ret = rat_func.evalf(prec)
 
