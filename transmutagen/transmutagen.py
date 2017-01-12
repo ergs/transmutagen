@@ -221,7 +221,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     default is 1.7*prec. See also
     https://github.com/fredrik-johansson/mpmath/issues/339.
 
-    tol is the tolerance passed to nsolve.
+    tol is the tolerance passed to nsolve. The default is 10**-(prec - 7).
 
     nsolve_type can be 'points' or 'intervals'.
 
@@ -240,6 +240,8 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
 
     c = c or 0.6*degree
     maxsteps = int(maxsteps or 1.7*prec)
+    tol = tol or 10**-(prec - 7)
+
     if nsolve_type == 'points':
         nsolve_func = nsolve_points
     elif nsolve_type == 'intervals':
