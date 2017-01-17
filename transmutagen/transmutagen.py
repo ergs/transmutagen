@@ -44,6 +44,7 @@ def general_rat_func(d, x, chebyshev=False):
         rat_func = Poly(reversed(num_coeffs), x)/Poly([*reversed(den_coeffs), 1], x)
     return rat_func, num_coeffs, den_coeffs
 
+@conserve_mpmath_dps
 def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True, prec=None, **kwargs):
     """
     Divide bounds into division intervals and nsolve in each one
@@ -53,25 +54,28 @@ def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True, pr
     # These are only needed for scaling and sign checks, so don't bother with
     # full precision
     points = [bounds[0] + i*L/division for i in range(division+1)]
-    low_prec_values = []
+
+    expr_values = []
+    mpmath.mp.dps = prec
     f = lambdify(t, expr, 'mpmath')
     for i, point in enumerate(points):
         if not i % 10000:
             logger.debug("low_prec_values %s/%s", i, division)
-        low_prec_values.append(f(point))
+        expr_values.append(f(mpmath.mpf(point)))
+
     for i in range(division):
         interval = [bounds[0] + i*L/division, bounds[0] + (i + 1)*L/division]
         try:
             logger.debug("Solving in interval %s", interval)
-            s1 = low_prec_values[i]
-            s2 = low_prec_values[i+1]
+            s1 = expr_values[i]
+            s2 = expr_values[i+1]
             if sign(s1) == sign(s2):
                 logger.debug("Expr doesn't change signs on %s, skipping", interval)
                 # logger.debug("Expr values, %s, %s", s1, s2)
                 continue
 
             if scale:
-                val = low_prec_values[i]
+                val = expr_values[i]
                 logger.debug("Scaling by %s", val)
                 scaled_expr = expr/val
             else:
