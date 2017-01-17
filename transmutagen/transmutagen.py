@@ -56,7 +56,7 @@ def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True, pr
     low_prec_values = []
     f = lambdify(t, expr, 'mpmath')
     for i, point in enumerate(points):
-        if not i % 1000:
+        if not i % 10000:
             logger.debug("low_prec_values %s/%s", i, division)
         low_prec_values.append(f(point))
     for i in range(division):
