@@ -44,7 +44,6 @@ def general_rat_func(d, x, chebyshev=False):
         rat_func = Poly(reversed(num_coeffs), x)/Poly([*reversed(den_coeffs), 1], x)
     return rat_func, num_coeffs, den_coeffs
 
-
 def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True, prec=None, **kwargs):
     """
     Divide bounds into division intervals and nsolve in each one
@@ -54,7 +53,12 @@ def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True, pr
     # These are only needed for scaling and sign checks, so don't bother with
     # full precision
     points = [bounds[0] + i*L/division for i in range(division+1)]
-    low_prec_values = [expr.evalf(subs={t: point}) for point in points]
+    low_prec_values = []
+    f = lambdify(t, expr, 'mpmath')
+    for i, point in enumerate(points):
+        if not i % 1000:
+            logger.debug("low_prec_values %s/%s", i, division)
+        low_prec_values.append(f(point))
     for i in range(division):
         interval = [bounds[0] + i*L/division, bounds[0] + (i + 1)*L/division]
         try:
