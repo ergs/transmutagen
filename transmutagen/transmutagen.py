@@ -24,7 +24,7 @@ logger.addHandler(logging.StreamHandler())
 # Change INFO to DEBUG for more output
 logger.setLevel(logging.INFO)
 
-t = symbols('t')
+t = symbols('t', real=True)
 
 def general_rat_func(d, x, chebyshev=False):
     """

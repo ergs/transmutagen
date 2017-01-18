@@ -2,7 +2,7 @@ from sympy import symbols, fraction, nsimplify, intervals, div, LC, Add, degree
 
 from sympy.utilities.decorator import conserve_mpmath_dps
 
-t = symbols('t')
+t = symbols('t', real=True)
 
 @conserve_mpmath_dps
 def thetas_alphas(rat_func, prec, eps=None):
