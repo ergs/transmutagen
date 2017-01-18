@@ -108,6 +108,10 @@ class MatrixNumPyPrinter(NumPyPrinter):
 
         return eye + self._print(rest)
 
+    def _print_Pow(self, expr):
+        if expr.exp.is_Integer and expr.exp > 1:
+            return self._print_Mul(Mul(*[expr.base]*expr.exp, evaluate=False))
+
 class autoeye:
     __array_priority__ = 11
 
