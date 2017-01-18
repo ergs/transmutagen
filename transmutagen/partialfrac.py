@@ -49,7 +49,7 @@ def thetas_alphas(rat_func, prec, eps=None):
     # anyway.
     # XXX: Make sure to change the evalf precision if eps is lowered.
     thetas = [((i + j)/2).evalf(prec) for ((i, j), _) in roots]
-    error = [(j - i).evalf(prec) for ((i, j), _) in roots]
+    # error = [(j - i).evalf(prec) for ((i, j), _) in roots]
     alphas = []
     for theta in thetas:
         q, r = div(den, t - theta)
