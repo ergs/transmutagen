@@ -1,5 +1,5 @@
 from sympy import (symbols, fraction, nsimplify, intervals, div, LC, Add,
-    degree, re)
+    degree, re, together, expand_complex)
 
 from sympy.utilities.decorator import conserve_mpmath_dps
 
@@ -59,5 +59,9 @@ def thetas_alphas(rat_func, prec, eps=None):
     return thetas, alphas, alpha0
 
 def thetas_alphas_to_expr(thetas, alphas, alpha0):
-    return re(alpha0 + Add(*[alpha/(t - theta) for theta,
-        alpha in zip(thetas, alphas)]))
+    theta, alpha = symbols('theta, alpha')
+
+    re_form = together(expand_complex(re(alpha/(t - theta))))
+
+    return alpha0 + Add(*[re_form.subs({alpha: al, theta: th}) for th,
+        al in zip(thetas, alphas)])
