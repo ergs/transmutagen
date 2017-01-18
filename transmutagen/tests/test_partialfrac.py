@@ -25,6 +25,20 @@ def test_autoeye():
     assert np.all(res == np.array([[3, 2], [3, 6]]))
     assert res.dtype == int
 
+    res = np.array([[1, 2], [3, 4]]) + e
+    assert np.all(res == np.array([[3, 2], [3, 6]]))
+    assert res.dtype == int
+
     res = e + np.array([[1., 2.], [3., 4.]])
     assert np.all(res == np.array([[3., 2.], [3., 6.]]))
     assert res.dtype == float
+
+    res = e + np.matrix([[1, 2], [3, 4]])
+    assert np.all(res == np.matrix([[3, 2], [3, 6]]))
+    assert res.dtype == int
+    assert isinstance(res, np.matrix)
+
+    res = np.matrix([[1, 2], [3, 4]]) + e
+    assert np.all(res == np.matrix([[3, 2], [3, 6]]))
+    assert res.dtype == int
+    assert isinstance(res, np.matrix)

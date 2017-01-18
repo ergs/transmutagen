@@ -109,13 +109,15 @@ class MatrixNumPyPrinter(NumPyPrinter):
         return eye + self._print(rest)
 
 class autoeye:
+    __array_priority__ = 11
+
     def __init__(self, coeff=1):
         self.coeff = coeff
 
     def __add__(self, other):
         import numpy
         if not isinstance(other, numpy.ndarray):
-            raise TypeError("autoeye can only be added to numpy.array")
+            raise TypeError("autoeye can only be added to numpy.array, not %s" % type(other))
 
         if len(other.shape) != 2:
             raise ValueError("autoeye can only be added to 2-dim numpy arrays")
