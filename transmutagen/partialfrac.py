@@ -5,7 +5,7 @@ from sympy.utilities.decorator import conserve_mpmath_dps
 t = symbols('t')
 
 @conserve_mpmath_dps
-def theta_alphas(rat_func, prec, eps=None):
+def thetas_alphas(rat_func, prec, eps=None):
     """
     Do a partial fraction decomposition of rat_func
 
