@@ -107,3 +107,27 @@ class MatrixNumPyPrinter(NumPyPrinter):
             return super()._print_Add(rest)
 
         return eye + self._print(rest)
+
+class autoeye:
+    def __init__(self, coeff=1):
+        self.coeff = coeff
+
+    def __add__(self, other):
+        import numpy
+        if not isinstance(other, numpy.ndarray):
+            raise TypeError("autoeye can only be added to numpy.array")
+
+        if len(other.shape) != 2:
+            raise ValueError("autoeye can only be added to 2-dim numpy arrays")
+
+        if other.shape[0] != other.shape[1]:
+            raise ValueError("autoeye can only be added to square numpy arrays")
+
+        return self.coeff*numpy.eye(other.shape[0], dtype=other.dtype) + other
+
+    __radd__ = __add__
+
+    def __str__(self):
+        return 'autoeye(%s)' % self.coeff
+
+    __repr__ = __str__
