@@ -239,7 +239,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     # From the log_function_args decorator
     logname = kwargs['logname']
 
-    epsilon, t, i, y = symbols("epsilon t i y")
+    epsilon, i, y = symbols("epsilon i y")
 
     c = c or 0.6*degree
     maxsteps = int(maxsteps or 1.7*prec)
