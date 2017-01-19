@@ -69,6 +69,11 @@ def thetas_alphas_to_expr(thetas, alphas, alpha0):
     return alpha0 + Add(*[re_form.subs({alpha: al, theta: th}) for th,
         al in zip(thetas, alphas)])
 
+
+def thetas_alphas_to_expr_complex(thetas, alphas, alpha0):
+    return alpha0 + Add(*[alpha/(t - theta) for theta,
+        alpha in zip(thetas, alphas)])
+
 class MatrixNumPyPrinter(NumPyPrinter):
     """
     Print an expression for numpy assuming the variables are matrices
