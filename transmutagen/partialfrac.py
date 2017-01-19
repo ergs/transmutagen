@@ -1,3 +1,5 @@
+import random
+
 from sympy import (symbols, fraction, nsimplify, intervals, div, LC, Add,
     degree, re, together, expand_complex, Mul, I, nsolve)
 
@@ -73,6 +75,19 @@ def thetas_alphas_to_expr(thetas, alphas, alpha0):
 def thetas_alphas_to_expr_complex(thetas, alphas, alpha0):
     return alpha0 + Add(*[alpha/(t - theta) for theta,
         alpha in zip(thetas, alphas)])
+
+def allroots(expr, degree, prec):
+    roots = set()
+    start = random.random() + random.random()*I
+    while len(roots) < degree:
+        try:
+            r = nsolve(expr/Mul(*[t - r for r in roots]), start,
+                maxsteps=1.7*prec, prec=prec)
+        except ValueError:
+            start *= random.random() + random.random()*I
+        else:
+            roots.add(r)
+    return roots
 
 class MatrixNumPyPrinter(NumPyPrinter):
     """
