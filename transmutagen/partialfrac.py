@@ -142,6 +142,11 @@ class autoeye:
     def __init__(self, coeff=1):
         self.coeff = coeff
 
+    def __eq__(self, other):
+        if isinstance(other, autoeye):
+            return self.coeff == other.coeff
+        return False
+
     def __add__(self, other):
         if isinstance(other, autoeye):
             return autoeye(self.coeff + other.coeff)
