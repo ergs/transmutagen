@@ -1,5 +1,5 @@
 from sympy import (symbols, fraction, nsimplify, intervals, div, LC, Add,
-    degree, re, together, expand_complex, Mul)
+    degree, re, together, expand_complex, Mul, I, nsolve)
 
 from sympy.printing.lambdarepr import NumPyPrinter
 from sympy.printing.precedence import precedence
@@ -115,7 +115,11 @@ class MatrixNumPyPrinter(NumPyPrinter):
 
     def _print_Pow(self, expr):
         if expr.exp.is_Integer and expr.exp > 1:
-            return self._print_Mul(Mul(*[expr.base]*expr.exp, evaluate=False))
+            return 'matrix_power(%s, %s)' % (self._print(expr.base), expr.exp)
+        return super()._print_Pow(expr)
+
+    def _print_ImaginaryUnit(self, expr):
+        return 'autoeye(1j)'
 
 class autoeye:
     __array_priority__ = 11
@@ -124,6 +128,12 @@ class autoeye:
         self.coeff = coeff
 
     def __add__(self, other):
+        if isinstance(other, autoeye):
+            return autoeye(self.coeff + other.coeff)
+
+        if isinstance(other, (int, float, complex)):
+            return autoeye(self.coeff + other)
+
         import numpy
         if not isinstance(other, numpy.ndarray):
             raise TypeError("autoeye can only be added to numpy.array, not %s" % type(other))
@@ -137,6 +147,15 @@ class autoeye:
         return self.coeff*numpy.eye(other.shape[0], dtype=other.dtype) + other
 
     __radd__ = __add__
+
+    def __mul__(self, other):
+        if isinstance(other, autoeye):
+            return autoeye(self.coeff * other.coeff)
+
+        if isinstance(other, (int, float, complex)):
+            return autoeye(self.coeff * other)
+
+    __rmul__ = __mul__
 
     def __str__(self):
         return 'autoeye(%s)' % self.coeff
