@@ -117,16 +117,8 @@ class MatrixNumPyPrinter(NumPyPrinter):
 
         return 'solve(%s, %s)' % (self._print(1/pow), self._print(rest))
 
-    def _print_Add(self, expr):
-        coeff, rest = expr.as_coeff_Add()
-        if coeff:
-            # This is a custom object that automatically creates an
-            # identity*coeff array of the right shape.
-            eye = 'autoeye(%s) + ' % self._print(coeff)
-        else:
-            return super()._print_Add(rest)
-
-        return eye + self._print(rest)
+    def _print_Float(self, expr):
+        return 'autoeye(%s)' % super()._print_Float(expr)
 
     def _print_Pow(self, expr):
         if expr.exp.is_Integer and expr.exp > 1:
