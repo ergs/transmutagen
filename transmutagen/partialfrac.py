@@ -84,7 +84,7 @@ def allroots(expr, degree, prec):
             r = nsolve(expr/Mul(*[t - r for r in roots]), start,
                 maxsteps=1.7*prec, prec=prec)
         except ValueError:
-            start *= random.random() + random.random()*I
+            start = expand(start*random.random() + random.random()*I)
         else:
             roots.add(r)
     return roots
