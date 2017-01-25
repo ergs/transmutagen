@@ -1,7 +1,7 @@
 import random
 
 from sympy import (symbols, fraction, nsimplify, intervals, div, LC, Add,
-    degree, re, together, expand_complex, Mul, I, nsolve, expand)
+    degree, re, together, expand_complex, Mul, I, nsolve)
 
 from sympy.printing.lambdarepr import NumPyPrinter
 from sympy.printing.precedence import precedence
