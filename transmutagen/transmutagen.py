@@ -45,7 +45,7 @@ def general_rat_func(d, x, chebyshev=False):
     return rat_func, num_coeffs, den_coeffs
 
 @conserve_mpmath_dps
-def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True, prec=None, **kwargs):
+def nsolve_intervals(expr, bounds, division=300, solver='bisect', scale=True, prec=None, **kwargs):
     """
     Divide bounds into division intervals and nsolve in each one
     """
@@ -96,7 +96,7 @@ def nsolve_intervals(expr, bounds, division=200, solver='bisect', scale=True, pr
 
     return roots
 
-def nsolve_points(expr, bounds, division=200, scale=True, **kwargs):
+def nsolve_points(expr, bounds, division=300, scale=True, **kwargs):
     """
     Divide bounds into division points and nsolve near each one
     """
