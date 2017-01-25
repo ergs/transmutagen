@@ -1,7 +1,7 @@
 import random
 
 from sympy import (symbols, fraction, nsimplify, intervals, div, LC, Add,
-    degree, re, together, expand_complex, Mul, I, nsolve)
+    degree, re, together, expand_complex, Mul, I, nsolve, expand)
 
 from sympy.printing.lambdarepr import NumPyPrinter
 from sympy.printing.precedence import precedence
@@ -11,7 +11,7 @@ from sympy.utilities.decorator import conserve_mpmath_dps
 t = symbols('t', real=True)
 
 @conserve_mpmath_dps
-def thetas_alphas(rat_func, prec, eps=None):
+def thetas_alphas(rat_func, prec, *, use_intervals=False, eps=None):
     """
     Do a partial fraction decomposition of rat_func
 
@@ -25,36 +25,44 @@ def thetas_alphas(rat_func, prec, eps=None):
 
     Assumes that rat_func has the same degree numerator as denominator.
 
-    This uses the intevals() algorithm to do root finding, since apart() loses
-    precision.
+    If use_intervals=True, this uses the intevals() algorithm to do root
+    finding. This algorithm is very slow, but has guaranteed precision, and is
+    guaranteed to find all the roots. If it is False (the default), nsolve is
+    used.
 
     eps is the length of the intervals for root finding. By default it is set
     to 10**-prec but it may need to be set smaller if there are roots smaller
-    than ~1/10 to get full precision.
+    than ~1/10 to get full precision. If use_intervals=False, eps is ignored.
     """
     import mpmath
     mpmath.mp.dps = prec
 
-    rational_rat_func = nsimplify(rat_func)
-    num, den = fraction(rational_rat_func)
+    num, den = fraction(rat_func)
+    d = degree(den)
 
-    if degree(den) % 1:
-        raise NotImplementedError("Odd degrees are not yet supported")
+    if use_intervals:
+        rational_rat_func = nsimplify(rat_func)
+        num, den = fraction(rational_rat_func)
 
-    # Note, eps is NOT the precision. It's the length of the interval.
-    # If a root is small (say, on the order of 10**-N), then eps will need to be 10**(-N - d)
-    # to get d digits of precision. For our exp(-t) approximations, the roots
-    # (thetas) are all
-    # within order 10**-1...10**1, so eps is *roughly* the precision.
-    eps = eps or 10**-prec
+        if d % 1:
+            raise NotImplementedError("Odd degrees are not yet supported with use_intervals=True")
 
-    roots = intervals(den, all=True, eps=eps)[1]
-    # eps ought to be small enough that either side of the interval is the
-    # precision we want, but take the average (center of the rectangle)
-    # anyway.
-    # XXX: Make sure to change the evalf precision if eps is lowered.
-    thetas = [((i + j)/2).evalf(prec) for ((i, j), _) in roots]
-    # error = [(j - i).evalf(prec) for ((i, j), _) in roots]
+        # Note, eps is NOT the precision. It's the length of the interval.
+        # If a root is small (say, on the order of 10**-N), then eps will need to be 10**(-N - d)
+        # to get d digits of precision. For our exp(-t) approximations, the roots
+        # (thetas) are all
+        # within order 10**-1...10**1, so eps is *roughly* the precision.
+        eps = eps or 10**-prec
+
+        roots = intervals(den, all=True, eps=eps)[1]
+        # eps ought to be small enough that either side of the interval is the
+        # precision we want, but take the average (center of the rectangle)
+        # anyway.
+        # XXX: Make sure to change the evalf precision if eps is lowered.
+        thetas = [((i + j)/2).evalf(prec) for ((i, j), _) in roots]
+        # error = [(j - i).evalf(prec) for ((i, j), _) in roots]
+    else:
+        thetas = list(allroots(den, d, prec))
     alphas = []
     for theta in thetas:
         q, r = div(den, t - theta)
@@ -70,7 +78,6 @@ def thetas_alphas_to_expr(thetas, alphas, alpha0):
 
     return alpha0 + Add(*[re_form.subs({alpha: al, theta: th}) for th,
         al in zip(thetas, alphas)])
-
 
 def thetas_alphas_to_expr_complex(thetas, alphas, alpha0):
     return alpha0 + Add(*[alpha/(t - theta) for theta,
