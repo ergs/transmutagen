@@ -79,7 +79,12 @@ def thetas_alphas_to_expr_complex(thetas, alphas, alpha0):
 def allroots(expr, degree, prec):
     roots = set()
     start = random.random() + random.random()*I
+    MAX_ITERATIONS = 10*degree
+    i = 0
     while len(roots) < degree:
+        i += 1
+        if i > MAX_ITERATIONS:
+            raise RuntimeError("MAX_ITERATIONS exceeded. Could only find %s roots" % len(roots))
         try:
             r = nsolve(expr/Mul(*[t - r for r in roots]), start,
                 maxsteps=1.7*prec, prec=prec)
