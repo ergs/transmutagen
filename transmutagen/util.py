@@ -33,6 +33,9 @@ def diff_strs(a, b):
 def relative_error(exact, approx):
     return abs(exact - approx)/exact
 
+def mean_log10_relative_error(exact, approx):
+    import numpy as np
+    return np.mean(np.log10(abs(relative_error(exact, approx))))
 
 # Function to create plot like in "Computing the Matrix Exponential in Burnup
 # Calculations", Pusa and Leppänen:
