@@ -32,3 +32,8 @@ def diff_strs(a, b):
 
 def relative_error(exact, approx):
     return abs(exact - approx)/exact
+
+
+# Function to create plot like in "Computing the Matrix Exponential in Burnup
+# Calculations", Pusa and Leppänen:
+# mpmath.cplot(lambdify(t, rat_func14 - exp(-t), 'mpmath'), re=[0, 100], im=[-30, 30], color=lambda i: -mpmath.floor(mpmath.log(abs(i), 10))/(30 - mpmath.floor(mpmath.log(abs(i), 10))), points=100000, verbose=True)
