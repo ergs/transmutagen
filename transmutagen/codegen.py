@@ -48,6 +48,10 @@ class autoeye:
     def __init__(self, coeff=1):
         self.coeff = coeff
 
+    def eval(self, shape, dtype=None):
+        import numpy
+        return self.coeff*numpy.eye(shape, dtype=dtype)
+
     def __eq__(self, other):
         if isinstance(other, autoeye):
             return self.coeff == other.coeff
@@ -70,7 +74,7 @@ class autoeye:
         if other.shape[0] != other.shape[1]:
             raise ValueError("autoeye can only be added to square numpy arrays")
 
-        return self.coeff*numpy.eye(other.shape[0], dtype=other.dtype) + other
+        return self.eval(other.shape[0], dtype=other.dtype) + other
 
     __radd__ = __add__
 
