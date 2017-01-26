@@ -29,3 +29,6 @@ def diff_strs(a, b):
             print(colorama.Fore.RED, a[i1:j1], sep='', end='')
         print(colorama.Style.RESET_ALL, end='')
     print()
+
+def relative_error(exact, approx):
+    return abs(exact - approx)/exact
