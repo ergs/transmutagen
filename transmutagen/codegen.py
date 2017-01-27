@@ -85,7 +85,24 @@ class autoeye:
         if isinstance(other, (int, float, complex)):
             return autoeye(self.coeff * other)
 
+        return NotImplemented
+
     __rmul__ = __mul__
+
+    def __matmul__(self, other):
+        import numpy
+        if not isinstance(other, numpy.ndarray):
+            raise TypeError("autoeye can only be added to numpy.array, not %s" % type(other))
+
+        if len(other.shape) != 2:
+            raise ValueError("autoeye can only be added to 2-dim numpy arrays")
+
+        if other.shape[0] != other.shape[1]:
+            raise ValueError("autoeye can only be added to square numpy arrays")
+
+        return self.eval(other.shape[0], dtype=other.dtype) @ other
+
+    __rmatmul__ = __matmul__
 
     def __str__(self):
         return 'autoeye(%s)' % self.coeff

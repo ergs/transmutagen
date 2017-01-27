@@ -40,3 +40,28 @@ def test_autoeye():
     assert 2*e == e*2 == autoeye(4)
     assert e + e == autoeye(4)
     assert e*e == autoeye(4)
+
+    raises(ValueError, lambda: e @ np.array([1]))
+    raises(ValueError, lambda: e @ np.array([[1, 2]]))
+
+    res = e @ np.array([[1, 2], [3, 4]])
+    assert_array_equal(res, np.array([[2, 4], [6, 8]]))
+    assert res.dtype == int
+
+    res = np.array([[1, 2], [3, 4]]) @ e
+    assert_array_equal(res, np.array([[2, 4], [6, 8]]))
+    assert res.dtype == int
+
+    res = e @ np.array([[1., 2.], [3., 4.]])
+    assert_array_equal(res, np.array([[2., 4.], [6., 8.]]))
+    assert res.dtype == float
+
+    res = e @ np.matrix([[1, 2], [3, 4]])
+    assert_array_equal(res, np.matrix([[2., 4.], [6., 8.]]))
+    assert res.dtype == int
+    assert isinstance(res, np.matrix)
+
+    res = np.matrix([[1, 2], [3, 4]]) @ e
+    assert_array_equal(res, np.matrix([[2, 4], [6, 8]]))
+    assert res.dtype == int
+    assert isinstance(res, np.matrix)
