@@ -18,12 +18,8 @@ class MatrixNumPyPrinter(NumPyPrinter):
             raise NotImplementedError("Need exactly one inverted Pow, not %s" % len(pows))
 
         if not pows:
-            consts = [self._print(self.parenthesize(i, prec)) for i in expr.args if i.is_Number]
-            rest = [self._print(self.parenthesize(i, prec)) for i in expr.args if not i.is_Number]
-            if consts and rest:
-                return '*'.join(consts) + '*' + '@'.join(rest)
-            else:
-                return '*'.join(consts) + '@'.join(rest)
+            terms = [self._print(self.parenthesize(i, prec)) for i in expr.args]
+            return '@'.join(terms)
 
         [pow] = pows
 
