@@ -108,3 +108,13 @@ class autoeye:
         return 'autoeye(%s)' % self.coeff
 
     __repr__ = __str__
+
+def solve_with_autoeye(a, b, **kwargs):
+    import numpy.linalg
+
+    if isinstance(a, autoeye):
+        a = a.eval(b.shape[0])
+    if isinstance(b, autoeye):
+        b = b.eval(a.shape[0])
+
+    return numpy.linalg.solve(a, b, **kwargs)
