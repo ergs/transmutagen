@@ -14,6 +14,6 @@ from .codegen import MatrixNumPyPrinter, autoeye
 
 __all__ += ['MatrixNumPyPrinter', 'autoeye']
 
-from .util import diff_strs, relative_error
+from .util import diff_strs, relative_error, mean_log10_relative_error
 
-__all__ += ['diff_strs', 'relative_error']
+__all__ += ['diff_strs', 'relative_error', 'mean_log10_relative_error']
