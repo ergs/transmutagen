@@ -65,3 +65,6 @@ def test_autoeye():
     assert_array_equal(res, np.matrix([[2, 4], [6, 8]]))
     assert res.dtype == int
     assert isinstance(res, np.matrix)
+
+    res = e @ e
+    assert res == autoeye(4)
