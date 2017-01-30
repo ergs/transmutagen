@@ -1,6 +1,5 @@
 # PYTHON_ARGCOMPLETE_OK
 
-import argparse
 import logging
 
 import mpmath
