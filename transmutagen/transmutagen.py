@@ -1,17 +1,14 @@
 # PYTHON_ARGCOMPLETE_OK
 
-import argparse
-import os
 import logging
-import datetime
-import inspect
-from functools import wraps
 
 import mpmath
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
     chebyshevt_root, Tuple, diff, N, solve, Poly, lambdify, sign, fraction)
 
 from sympy.utilities.decorator import conserve_mpmath_dps
+
+from .util import plot_in_terminal, log_function_args
 
 # Give a better error message if not using SymPy master
 try:
@@ -122,80 +119,6 @@ def nsolve_points(expr, bounds, division=300, scale=True, **kwargs):
                 logger.debug("%s already found, discarding", root)
 
     return sorted(roots)
-
-@conserve_mpmath_dps
-def plot_in_terminal(expr, *args, prec=None, logname=None, **kwargs):
-    """
-    Run plot() but show in terminal if possible
-    """
-    from mpmath import plot
-    if prec:
-        mpmath.mp.dps = prec
-    f = lambdify(t, expr, mpmath)
-    try:
-        from iterm2_tools.images import display_image_bytes
-    except ImportError:
-        if logname:
-            os.makedirs('plots', exist_ok=True)
-            file = 'plots/%s.png' % logname
-        else:
-            file = None
-        plot(f, *args, file=file, **kwargs)
-    else:
-        from io import BytesIO
-        b = BytesIO()
-        plot(f, *args, **kwargs, file=b)
-        if logname:
-            os.makedirs('plots', exist_ok=True)
-            with open('plots/%s.png' % logname, 'wb') as f:
-                f.write(b.getvalue())
-        print(display_image_bytes(b.getvalue()))
-
-def _get_log_file_name(locals_dict):
-    d = locals_dict.copy()
-    kwargs = d.pop('kwargs')
-    d.update(kwargs)
-    d.setdefault('maxsteps')
-    d.setdefault('division')
-    degree = d.pop('degree')
-    prec = d.pop('prec')
-    info = 'degree=%s prec=%s ' % (degree, prec)
-    info += ' '.join('%s=%s' % (i, d[i]) for i in sorted(d))
-    return info
-
-
-def log_function_args(func):
-    """
-    Decorator to log the arguments to func, and other info
-    """
-    @wraps(func)
-    def _func(*args, **kwargs):
-        func_name = func.__name__
-        logger.info("%s with arguments %s", func_name, args)
-        logger.info("%s with keyword arguments %s", func_name, kwargs)
-
-        os.makedirs('logs', exist_ok=True)
-        binding = inspect.signature(func).bind(*args, **kwargs)
-        binding.apply_defaults()
-        logname = _get_log_file_name(binding.arguments)
-        logger.addHandler(logging.FileHandler('logs/%s.log' % logname))
-        logger.info("Logging to file 'logs/%s.log'", logname)
-
-        kwargs['logname'] = logname
-
-        starttime = datetime.datetime.now()
-        logger.info("Start time: %s", starttime)
-        try:
-            return func(*args, **kwargs)
-        except BaseException as e:
-            logger.error("Exception raised", exc_info=True)
-            raise
-        finally:
-            endtime = datetime.datetime.now()
-            logger.info("End time: %s", endtime)
-            logger.info("Total time: %s", endtime - starttime)
-
-    return _func
 
 @conserve_mpmath_dps
 @log_function_args
@@ -319,39 +242,5 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
 
     return ret
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-
-    parser.add_argument('degree', type=int)
-    parser.add_argument('prec', type=int)
-    parser.add_argument('--division', type=int)
-    parser.add_argument('--c', type=float)
-    parser.add_argument('--maxsteps', type=int)
-    parser.add_argument('--max-loops', type=int)
-    parser.add_argument('--tol', type=mpmath.mpf)
-    parser.add_argument('--nsolve-type', default=None, choices=['points',
-        'intervals'])
-    parser.add_argument('--solver', default=None)
-    parser.add_argument('--D-scale', default=None, type=float)
-    parser.add_argument('--scale', default=None, type=bool)
-    parser.add_argument('--log-level', default=None, choices=['debug', 'info',
-        'warning', 'error', 'critical'])
-    try:
-        import argcomplete
-        argcomplete.autocomplete(parser)
-    except ImportError:
-        pass
-    args = parser.parse_args()
-
-    arguments = args.__dict__.copy()
-    for i in arguments.copy():
-        if not arguments[i]:
-           del arguments[i]
-    if args.log_level:
-        logger.setLevel(getattr(logging, args.log_level.upper()))
-        del arguments['log_level']
-
-    CRAM_exp(**arguments)
-
 if __name__ == '__main__':
-    main()
+    exit("Error: 'python -m transmutagen.transmutagen' has been removed, use 'python -m transmutagen'")
