@@ -11,7 +11,7 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
 
-  - conda create -q -n test-environment python=3.5 pip mpmath matplotlib pytest pyflakes numpy
+  - conda create -q -n test-environment python=3.5 pip mpmath matplotlib pytest pyflakes numpy scipy
   - source activate test-environment
   - pip install git+git://github.com/sympy/sympy.git
 
