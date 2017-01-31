@@ -25,7 +25,7 @@ class MatrixNumPyPrinter(NumPyPrinter):
 
         rest = Mul(*[i for i in expr.args if i != pow])
 
-        return 'solve(%s, %s)' % (self._print(1/pow), self._print(rest))
+        return 'solve_with_autoeye(%s, %s)' % (self._print(1/pow), self._print(rest))
 
     def _print_Float(self, expr):
         return 'autoeye(%s)' % super()._print_Float(expr)
