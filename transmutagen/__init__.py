@@ -8,9 +8,11 @@ from .partialfrac import (t, thetas_alphas, thetas_alphas_to_expr,
 __all__ += ['t', 'thetas_alphas', 'thetas_alphas_to_expr',
     'thetas_alphas_to_expr_complex', 'allroots']
 
-from .codegen import MatrixNumPyPrinter, autoeye, solve_with_autoeye
+from .codegen import (MatrixNumPyPrinter, autoeye, numpy_solve_with_autoeye,
+    scipy_sparse_solve_with_autoeye)
 
-__all__ += ['MatrixNumPyPrinter', 'autoeye', 'solve_with_autoeye']
+__all__ += ['MatrixNumPyPrinter', 'autoeye', 'numpy_solve_with_autoeye',
+    'scipy_sparse_solve_with_autoeye']
 
 from .util import (diff_strs, relative_error, mean_log10_relative_error,
     log_function_args, plot_in_terminal)

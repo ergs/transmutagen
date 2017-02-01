@@ -44,9 +44,8 @@ class autoeye:
     def __init__(self, coeff=1):
         self.coeff = coeff
 
-    def eval(self, shape, dtype=None):
-        import numpy
-        return self.coeff*numpy.eye(shape, dtype=dtype)
+    def eval(self, shape, eye_type, dtype=None):
+        return self.coeff*eye_type(shape, dtype=dtype)
 
     def __eq__(self, other):
         if isinstance(other, autoeye):
@@ -61,8 +60,13 @@ class autoeye:
             return autoeye(self.coeff + other)
 
         import numpy
-        if not isinstance(other, numpy.ndarray):
-            raise TypeError("autoeye can only be added to numpy.array, not %s" % type(other))
+        import scipy.sparse
+        if isinstance(other, numpy.ndarray):
+            eye_type = numpy.eye
+        elif isinstance(other, scipy.sparse.csr_matrix):
+            eye_type = scipy.sparse.eye
+        else:
+            return NotImplemented
 
         if len(other.shape) != 2:
             raise ValueError("autoeye can only be added to 2-dim numpy arrays")
@@ -70,7 +74,7 @@ class autoeye:
         if other.shape[0] != other.shape[1]:
             raise ValueError("autoeye can only be added to square numpy arrays")
 
-        return self.eval(other.shape[0], dtype=other.dtype) + other
+        return self.eval(other.shape[0], eye_type, dtype=other.dtype) + other
 
     __radd__ = __add__
 
@@ -90,8 +94,13 @@ class autoeye:
             return autoeye(self.coeff * other.coeff)
 
         import numpy
-        if not isinstance(other, numpy.ndarray):
-            raise TypeError("autoeye can only be matmuled by numpy.array, not %s" % type(other))
+        import scipy.sparse
+        if isinstance(other, numpy.ndarray):
+            eye_type = numpy.eye
+        elif isinstance(other, scipy.sparse.csr_matrix):
+            eye_type = scipy.sparse.eye
+        else:
+            return NotImplemented
 
         if len(other.shape) != 2:
             raise ValueError("autoeye can only be matmuled by 2-dim numpy arrays")
@@ -99,7 +108,7 @@ class autoeye:
         if other.shape[0] != other.shape[1]:
             raise ValueError("autoeye can only be matmuled by square numpy arrays")
 
-        return self.eval(other.shape[0], dtype=other.dtype) @ other
+        return self.eval(other.shape[0], eye_type=eye_type, dtype=other.dtype) @ other
 
     __rmatmul__ = __matmul__
 
@@ -108,12 +117,23 @@ class autoeye:
 
     __repr__ = __str__
 
-def solve_with_autoeye(a, b, **kwargs):
-    import numpy.linalg
+def numpy_solve_with_autoeye(a, b, **kwargs):
+    import numpy
 
     if isinstance(a, autoeye):
-        a = a.eval(b.shape[0])
+        a = a.eval(b.shape[0], numpy.eye)
     if isinstance(b, autoeye):
-        b = b.eval(a.shape[0])
+        b = b.eval(a.shape[0], numpy.eye)
 
     return numpy.linalg.solve(a, b, **kwargs)
+
+
+def scipy_sparse_solve_with_autoeye(a, b, **kwargs):
+    import scipy.sparse.linalg
+
+    if isinstance(a, autoeye):
+        a = a.eval(b.shape[0], scipy.sparse.eye)
+    if isinstance(b, autoeye):
+        b = b.eval(a.shape[0], scipy.sparse.eye)
+
+    return scipy.sparse.linalg.spsolve(a, b, **kwargs)
