@@ -83,7 +83,7 @@ def thetas_alphas_to_expr_complex(thetas, alphas, alpha0):
 def allroots(expr, degree, prec):
     roots = set()
     start = random.random() + random.random()*I
-    MAX_ITERATIONS = 2*degree
+    MAX_ITERATIONS = 5*degree
     i = 0
     while len(roots) < degree:
         i += 1
