@@ -13,7 +13,7 @@ from scipy.sparse.linalg import expm
 
 from ..transmutagen import CRAM_exp, logger
 from ..partialfrac import (thetas_alphas, thetas_alphas_to_expr,
-    thetas_alphas_to_expr_complex, t)
+    thetas_alphas_to_expr_complex, thetas_alphas_to_expr_complex2, t)
 from ..codegen import MatrixNumPyPrinter, scipy_translations
 
 def load_sparse_csr(filename):
@@ -51,17 +51,18 @@ def run_transmute_test(data, degree, prec, expr, time, plot=True, _print=False):
     thetas, alphas, alpha0 = thetas_alphas(expr, prec)
     part_frac = thetas_alphas_to_expr(thetas, alphas, alpha0)
     part_frac_complex = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
+    part_frac_complex2 = thetas_alphas_to_expr_complex2(thetas, alphas, alpha0)
 
     e = {}
     e['rat_func'] = lambdify_expr(expr)
     e['rat_func_horner'] = lambdify_expr(horner(num)/horner(den))
     e['part_frac'] = lambdify_expr(part_frac)
     e['part_frac_complex'] = lambdify_expr(part_frac_complex)
+    e['part_frac_complex2'] = lambdify_expr(part_frac_complex2)
     e['expm'] = lambda m: expm(-m)
 
     res = {}
-    for func in ['rat_func', 'rat_func_horner', 'part_frac',
-    'part_frac_complex', 'expm']:
+    for func in sorted(e):
         print(func)
         arg = -matrix*time
         res[func] = time_and_run(e[func], arg, _print=_print)
