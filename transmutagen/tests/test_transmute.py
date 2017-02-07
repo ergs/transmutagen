@@ -31,10 +31,10 @@ def nan_on_RuntimeError(f):
         except RuntimeError:
             return np.nan
 
-def run_transmute_test(data, degree, prec, expr, time):
+def run_transmute_test(data, degree, prec, expr, time, plot=True):
     matrix = load_sparse_csr(data)
 
-    expr = expr or CRAM_exp(degree, prec)
+    expr = expr or CRAM_exp(degree, prec, plot=plot)
     num, den = fraction(expr)
 
     thetas, alphas, alpha0 = thetas_alphas(expr, prec)
@@ -59,7 +59,7 @@ def run_transmute_test(data, degree, prec, expr, time):
 def test_transmute():
     data = os.path.join(os.path.dirname(__file__), 'data', 'transmute.npz')
     month = 2.6e6
-    run_transmute_test(data, 6, 30, None, month)
+    run_transmute_test(data, 6, 30, None, month, plot=False)
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)

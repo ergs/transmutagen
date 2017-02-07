@@ -123,7 +123,7 @@ def nsolve_points(expr, bounds, division=300, scale=True, **kwargs):
 @conserve_mpmath_dps
 @log_function_args
 def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
-    tol=None, nsolve_type='intervals', D_scale=1, **kwargs):
+    tol=None, nsolve_type='intervals', D_scale=1, plot=True **kwargs):
     """
     Compute the CRAM approximation of exp(-t) from t in [0, oo) of the given degree
 
@@ -155,6 +155,9 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
 
     Additional keyword arguments are passed to nsolve_intervals, such as
     division and scale.
+
+    If plot=True, plots are shown of the iterations. If iterm2_tools is
+    installed, plots are shown inline in the terminal.
 
     The SymPy master branch is required for this to work.
 
@@ -196,8 +199,9 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
         logger.info('sol: %s', sol)
         logger.info('system.subs(sol): %s', [i.evalf() for i in system.subs(sol)])
         D = diff(E.subs(sol), t)
-        plot_in_terminal(E.subs(sol), (-1, 0.999), prec=prec, points=1000,
-            logname=logname + ' iteration=%s' % iteration)
+        if plot:
+            plot_in_terminal(E.subs(sol), (-1, 0.999), prec=prec, points=1000,
+                logname=logname + ' iteration=%s' % iteration)
         logger.info('E.subs(sol): %s', E.subs(sol))
 
         D *= D_scale
@@ -237,8 +241,9 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     ret = rat_func.evalf(prec)
 
     logger.info('rat_func: %s', rat_func)
-    plot_in_terminal(rat_func - exp(-t), (0, 100), prec=prec, points=1000,
-        logname=logname + ' final')
+    if plot:
+        plot_in_terminal(rat_func - exp(-t), (0, 100), prec=prec, points=1000,
+            logname=logname + ' final')
 
     return ret
 
