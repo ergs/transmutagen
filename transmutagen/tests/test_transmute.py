@@ -3,6 +3,7 @@ import os
 import argparse
 import logging
 from functools import wraps
+import datetime
 
 from sympy import sympify, lambdify, horner, fraction
 
@@ -33,7 +34,15 @@ def None_on_RuntimeError(f):
 
     return func
 
-def run_transmute_test(data, degree, prec, expr, time, plot=True):
+def time_and_run(f, *args, _print=False):
+    start = datetime.datetime.now()
+    res = f(*args)
+    end = datetime.datetime.now()
+    if _print:
+        print("Total time", end - start)
+    return res
+
+def run_transmute_test(data, degree, prec, expr, time, plot=True, _print=False):
     matrix = load_sparse_csr(data)
 
     expr = expr or CRAM_exp(degree, prec, plot=plot)
@@ -43,18 +52,19 @@ def run_transmute_test(data, degree, prec, expr, time, plot=True):
     part_frac = thetas_alphas_to_expr(thetas, alphas, alpha0)
     part_frac_complex = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
 
-    e_rat_func = lambdify_expr(expr)
-    e_rat_func_horner = lambdify_expr(horner(num)/horner(den))
-    e_part_frac = lambdify_expr(part_frac)
-    e_part_frac_complex = lambdify_expr(part_frac_complex)
+    e = {}
+    e['rat_func'] = lambdify_expr(expr)
+    e['rat_func_horner'] = lambdify_expr(horner(num)/horner(den))
+    e['part_frac'] = lambdify_expr(part_frac)
+    e['part_frac_complex'] = lambdify_expr(part_frac_complex)
+    e['expm'] = lambda m: expm(-m)
 
     res = {}
-
-    res['rat_func'] = e_rat_func(-matrix*time)
-    res['rat_func_horner'] = e_rat_func_horner(-matrix*time)
-    res['part_frac'] = e_part_frac(-matrix*time)
-    res['part_frac_complex'] = e_part_frac_complex(-matrix*time)
-    res['expm'] = expm(matrix*time)
+    for func in ['rat_func', 'rat_func_horner', 'part_frac',
+    'part_frac_complex', 'expm']:
+        print(func)
+        arg = -matrix*time
+        res[func] = time_and_run(e[func], arg, _print=_print)
 
     return res
 
@@ -87,7 +97,8 @@ def main():
     if args.log_level:
         logger.setLevel(getattr(logging, args.log_level.upper()))
 
-    res = run_transmute_test(args.data, args.degree, args.prec, args.expr, args.time)
+    res = run_transmute_test(args.data, args.degree, args.prec, args.expr,
+        args.time, _print=True)
 
     print("Column sums (min, max):")
     errors = {}
