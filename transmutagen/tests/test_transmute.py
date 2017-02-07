@@ -31,6 +31,8 @@ def nan_on_RuntimeError(f):
         except RuntimeError:
             return np.nan
 
+    return func
+
 def run_transmute_test(data, degree, prec, expr, time, plot=True):
     matrix = load_sparse_csr(data)
 
