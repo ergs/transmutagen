@@ -1,4 +1,5 @@
 import sys
+import os
 import argparse
 import logging
 
@@ -21,6 +22,33 @@ def load_sparse_csr(filename):
 def lambdify_expr(expr):
     return lambdify(t, expr, scipy_translations, printer=MatrixNumPyPrinter)
 
+def run_transmute_test(data, degree, prec, CRAM_expr, time):
+    matrix = load_sparse_csr(data)
+
+    CRAM_expr = CRAM_exp or CRAM_exp(degree, prec)
+    num, den = fraction(CRAM_expr)
+
+    thetas, alphas, alpha0 = thetas_alphas(CRAM_expr, prec)
+    part_frac = thetas_alphas_to_expr(thetas, alphas, alpha0)
+    part_frac_complex = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
+
+    e_rat_func = lambdify_expr(CRAM_expr)
+    e_rat_func_horner = lambdify_expr(horner(num)/horner(den))
+    e_part_frac = lambdify_expr(part_frac)
+    e_part_frac_complex = lambdify_expr(part_frac_complex)
+
+    rat_func_res = e_rat_func(-matrix*time)
+    rat_func_horner_res = e_rat_func_horner(-matrix*time)
+    part_frac_res = e_part_frac(-matrix*time)
+    part_frac_complex_res = e_part_frac_complex(-matrix*time)
+    expm_res = expm(matrix*time)
+
+def test_transmute():
+    data = os.path.join(os.path.dirname(__file__), os.path.pardir, 'data',
+        'transmute.npz')
+    month = 2.6e6
+    run_transmute_test(data, 6, 30, None, month)
+
 def main():
     parser = argparse.ArgumentError(description=__doc__)
 
@@ -28,6 +56,7 @@ def main():
     parser.add_argument('prec', type=int, default=50)
     parser.add_argument('data', help="""Data of matrix to compute exp of. Should
     be in scipy sparse csr format.""")
+    parser.add_argument('time', type=float)
     parser.add_argument('--CRAM-expr', type=sympify, help="""Precomputed CRAM
     expression. Should have the same prec as 'prec'. If not provided, will be
     computed from scratch.""")
@@ -41,26 +70,10 @@ def main():
         pass
     args = parser.parse_args()
 
-    degree, prec = args.degree, args.prec
-
     if args.log_level:
         logger.setLevel(getattr(logging, args.log_level.upper()))
 
-    matrix = load_sparse_csr(args.data)
-
-    CRAM_expr = args.CRAM_exp or CRAM_exp(degree, prec)
-    num, den = fraction(CRAM_expr)
-
-    thetas, alphas, alpha0 = thetas_alphas(CRAM_expr, prec)
-    part_frac = thetas_alphas_to_expr(thetas, alphas, alpha0)
-    part_frac_complex = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
-
-    e_rat_func = lambdify_expr(CRAM_expr)
-    e_rat_func_horner = lambdify_expr(horner(num)/horner(den))
-    e_part_frac = lambdify_expr(part_frac)
-    e_part_frac_complex = lambdify_expr(part_frac_complex)
-
-
+    run_transmute_test(args.data, args.degree, args.prec, args.CRAM_expr, args.time)
 
 if __name__ == '__main__':
     sys.exit(main())
