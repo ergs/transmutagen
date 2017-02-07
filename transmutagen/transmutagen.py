@@ -123,7 +123,7 @@ def nsolve_points(expr, bounds, division=300, scale=True, **kwargs):
 @conserve_mpmath_dps
 @log_function_args
 def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
-    tol=None, nsolve_type='intervals', D_scale=1, plot=True **kwargs):
+    tol=None, nsolve_type='intervals', D_scale=1, plot=True, **kwargs):
     """
     Compute the CRAM approximation of exp(-t) from t in [0, oo) of the given degree
 
