@@ -1,7 +1,9 @@
 import random
 
 from sympy import (together, expand_complex, re, im, symbols, sympify,
-    fraction, random_poly, sqf_part, gcd)
+    fraction, random_poly, sqf_part, gcd, lambdify)
+
+import numpy as np
 
 from ..partialfrac import (t, allroots, thetas_alphas, thetas_alphas_to_expr,
     thetas_alphas_to_expr_complex)
@@ -44,7 +46,11 @@ def test_exprs():
     part_frac = thetas_alphas_to_expr(thetas, alphas, alpha0)
     part_frac_complex = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
 
+    lrat_func = lambdify(t, rat_func, 'numpy')
+    lpart_frac = lambdify(t, part_frac, 'numpy')
+    lpart_frac_complex = lambdify(t, part_frac_complex, ['numpy', {'customre': np.real}])
+
     for i in range(10):
         val = random.random()
-        assert abs(rat_func.evalf(subs={t: val}) - part_frac.evalf(subs={t: val})) < 1e-14
-        assert abs(rat_func.evalf(subs={t: val}) - part_frac_complex.evalf(subs={t: val})) < 1e-14
+        assert abs(lrat_func(val) - lpart_frac(val)) < 1e-14
+        assert abs(lrat_func(val) - lpart_frac_complex(val)) < 1e-14

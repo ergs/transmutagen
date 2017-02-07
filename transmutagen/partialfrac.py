@@ -77,8 +77,11 @@ def thetas_alphas_to_expr(thetas, alphas, alpha0):
         al in zip(thetas, alphas)])
 
 # sympy.re evaluates by default, which we don't want
-class customre(Function):
-    pass
+class customre(re):
+    nargs = 1
+
+    def _eval_evalf(self, prec):
+        return re(self.args[0]._eval_evalf(prec))
 
 def thetas_alphas_to_expr_complex(thetas, alphas, alpha0):
     return alpha0 + 2*customre(Add(*[alpha/(t - theta) for theta,
