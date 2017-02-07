@@ -37,11 +37,14 @@ def run_transmute_test(data, degree, prec, expr, time):
     e_part_frac = lambdify_expr(part_frac)
     e_part_frac_complex = lambdify_expr(part_frac_complex)
 
-    rat_func_res = e_rat_func(-matrix*time)
-    rat_func_horner_res = e_rat_func_horner(-matrix*time)
-    part_frac_res = e_part_frac(-matrix*time)
-    part_frac_complex_res = e_part_frac_complex(-matrix*time)
-    expm_res = expm(matrix*time)
+    res = {}
+    res['rat_func'] = e_rat_func(-matrix*time)
+    res['rat_func_horner'] = e_rat_func_horner(-matrix*time)
+    res['part_frac'] = e_part_frac(-matrix*time)
+    res['part_frac_complex'] = e_part_frac_complex(-matrix*time)
+    res['expm'] = expm(matrix*time)
+
+    return res
 
 def test_transmute():
     data = os.path.join(os.path.dirname(__file__), 'data', 'transmute.npz')
