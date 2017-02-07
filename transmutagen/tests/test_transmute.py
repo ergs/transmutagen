@@ -52,7 +52,7 @@ def test_transmute():
     run_transmute_test(data, 6, 30, None, month)
 
 def main():
-    parser = argparse.ArgumentError(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__)
 
     parser.add_argument('degree', type=int)
     parser.add_argument('prec', type=int, default=50)
