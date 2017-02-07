@@ -85,7 +85,12 @@ def main():
     if args.log_level:
         logger.setLevel(getattr(logging, args.log_level.upper()))
 
-    run_transmute_test(args.data, args.degree, args.prec, args.expr, args.time)
+    res = run_transmute_test(args.data, args.degree, args.prec, args.expr, args.time)
+
+    print("Column sums (min, max)")
+    for r in sorted(res):
+        col_sum = np.sum(res[r], axis=1)
+        print(r, np.min(col_sum), np.max(col_sum))
 
 if __name__ == '__main__':
     sys.exit(main())
