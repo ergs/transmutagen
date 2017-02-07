@@ -21,15 +21,15 @@ def load_sparse_csr(filename):
                         shape=loader['shape'])
 
 def lambdify_expr(expr):
-    return nan_on_RuntimeError(lambdify(t, expr, scipy_translations, printer=MatrixNumPyPrinter))
+    return None_on_RuntimeError(lambdify(t, expr, scipy_translations, printer=MatrixNumPyPrinter))
 
-def nan_on_RuntimeError(f):
+def None_on_RuntimeError(f):
     @wraps(f)
     def func(*args, **kwargs):
         try:
             return f(*args, **kwargs)
         except RuntimeError:
-            return np.nan
+            return None
 
     return func
 
@@ -91,8 +91,8 @@ def main():
 
     print("Column sums (min, max)")
     for r in sorted(res):
-        if np.isnan(res[r]):
-            print(r, res[r])
+        if res[r] is None:
+            print('Could not compute', r)
             continue
         col_sum = np.sum(res[r], axis=1)
         print(r, np.min(col_sum), np.max(col_sum))
