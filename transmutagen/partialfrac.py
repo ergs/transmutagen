@@ -1,7 +1,7 @@
 import random
 
 from sympy import (symbols, fraction, nsimplify, intervals, div, LC, Add,
-    degree, re, together, expand_complex, Mul, I, nsolve)
+    degree, re, im, together, expand_complex, Mul, I, nsolve, Function)
 
 from sympy.utilities.decorator import conserve_mpmath_dps
 
@@ -76,9 +76,13 @@ def thetas_alphas_to_expr(thetas, alphas, alpha0):
     return alpha0 + Add(*[re_form.subs({alpha: al, theta: th}) for th,
         al in zip(thetas, alphas)])
 
+# sympy.re evaluates by default, which we don't want
+class customre(Function):
+    pass
+
 def thetas_alphas_to_expr_complex(thetas, alphas, alpha0):
-    return alpha0 + Add(*[alpha/(t - theta) for theta,
-        alpha in zip(thetas, alphas)])
+    return alpha0 + 2*customre(Add(*[alpha/(t - theta) for theta,
+        alpha in zip(thetas, alphas) if im(theta) >= 0]))
 
 def allroots(expr, degree, prec):
     roots = set()

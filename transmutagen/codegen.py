@@ -3,6 +3,9 @@ from sympy import Mul
 from sympy.printing.lambdarepr import NumPyPrinter
 from sympy.printing.precedence import precedence
 
+import numpy as np
+import scipy.sparse
+
 class MatrixNumPyPrinter(NumPyPrinter):
     """
     Print an expression for numpy assuming the variables are matrices
@@ -27,6 +30,9 @@ class MatrixNumPyPrinter(NumPyPrinter):
 
         return 'solve_with_autoeye(%s, %s)' % (self._print(1/pow), self._print(rest))
 
+    def _print_Integer(self, expr):
+        return 'autoeye(%s)' % super()._print_Integer(expr)
+
     def _print_Float(self, expr):
         return 'autoeye(%s)' % super()._print_Float(expr)
 
@@ -37,6 +43,9 @@ class MatrixNumPyPrinter(NumPyPrinter):
 
     def _print_ImaginaryUnit(self, expr):
         return 'autoeye(1j)'
+
+    def _print_customre(self, expr):
+        return 'real(%s)' % self._print(expr.args[0])
 
 class autoeye:
     __array_priority__ = 11
@@ -72,7 +81,7 @@ class autoeye:
             raise ValueError("autoeye can only be added to 2-dim numpy arrays")
 
         if other.shape[0] != other.shape[1]:
-            raise ValueError("autoeye can only be added to square numpy arrays")
+            raise ValueError("autoeye can only be added to square numpy arrays, other.shape is %s" % (other.shape,))
 
         return self.eval(other.shape[0], eye_type, dtype=other.dtype) + other
 
@@ -141,5 +150,7 @@ def scipy_sparse_solve_with_autoeye(a, b, **kwargs):
 scipy_translations = {
     'solve_with_autoeye': scipy_sparse_solve_with_autoeye,
     'autoeye': autoeye,
-    'matrix_power': lambda a, b: a**b
+    'matrix_power': lambda a, b: a**b,
+    'real': lambda m: scipy.sparse.csr_matrix((np.real(m.data), m.indices,
+        m.indptr), shape=m.shape),
     }
