@@ -1,6 +1,10 @@
-from sympy import together, expand_complex, re, im, symbols, sympify, fraction
+import random
 
-from ..partialfrac import t, allroots
+from sympy import (together, expand_complex, re, im, symbols, sympify,
+    fraction, random_poly, sqf_part, gcd)
+
+from ..partialfrac import (t, allroots, thetas_alphas, thetas_alphas_to_expr,
+    thetas_alphas_to_expr_complex)
 
 def test_re_form():
     theta, alpha = symbols('theta, alpha')
@@ -22,3 +26,25 @@ def test_allroots():
 
     roots2 = allroots(den, 14, 200)
     assert roots == roots2
+
+def test_exprs():
+    num = random_poly(t, 10, -10, 10)
+    while True:
+        # Make sure den doesn't have repeated roots
+        den = random_poly(t, 10, -10, 10)
+        if sqf_part(den) != den:
+            continue
+        # Make sure den doesn't share any roots with num
+        if gcd(num, den) != 1:
+            continue
+        break
+
+    rat_func = num/den
+    thetas, alphas, alpha0 = thetas_alphas(rat_func, 15)
+    part_frac = thetas_alphas_to_expr(thetas, alphas, alpha0)
+    part_frac_complex = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
+
+    for i in range(10):
+        val = random.random()
+        assert abs(rat_func.evalf(subs={t: val}) - part_frac.evalf(subs={t: val})) < 1e-14
+        assert abs(rat_func.evalf(subs={t: val}) - part_frac_complex.evalf(subs={t: val})) < 1e-14
