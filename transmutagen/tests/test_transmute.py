@@ -44,8 +44,7 @@ def run_transmute_test(data, degree, prec, CRAM_expr, time):
     expm_res = expm(matrix*time)
 
 def test_transmute():
-    data = os.path.join(os.path.dirname(__file__), os.path.pardir, 'data',
-        'transmute.npz')
+    data = os.path.join(os.path.dirname(__file__), 'data', 'transmute.npz')
     month = 2.6e6
     run_transmute_test(data, 6, 30, None, month)
 
