@@ -22,17 +22,17 @@ def load_sparse_csr(filename):
 def lambdify_expr(expr):
     return lambdify(t, expr, scipy_translations, printer=MatrixNumPyPrinter)
 
-def run_transmute_test(data, degree, prec, CRAM_expr, time):
+def run_transmute_test(data, degree, prec, expr, time):
     matrix = load_sparse_csr(data)
 
-    CRAM_expr = CRAM_exp or CRAM_exp(degree, prec)
-    num, den = fraction(CRAM_expr)
+    expr = expr or CRAM_exp(degree, prec)
+    num, den = fraction(expr)
 
-    thetas, alphas, alpha0 = thetas_alphas(CRAM_expr, prec)
+    thetas, alphas, alpha0 = thetas_alphas(expr, prec)
     part_frac = thetas_alphas_to_expr(thetas, alphas, alpha0)
     part_frac_complex = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
 
-    e_rat_func = lambdify_expr(CRAM_expr)
+    e_rat_func = lambdify_expr(expr)
     e_rat_func_horner = lambdify_expr(horner(num)/horner(den))
     e_part_frac = lambdify_expr(part_frac)
     e_part_frac_complex = lambdify_expr(part_frac_complex)
@@ -56,7 +56,7 @@ def main():
     parser.add_argument('data', help="""Data of matrix to compute exp of. Should
     be in scipy sparse csr format.""")
     parser.add_argument('time', type=float)
-    parser.add_argument('--CRAM-expr', type=sympify, help="""Precomputed CRAM
+    parser.add_argument('--expr', type=sympify, help="""Precomputed CRAM
     expression. Should have the same prec as 'prec'. If not provided, will be
     computed from scratch.""")
     parser.add_argument('--log-level', default=None, choices=['debug', 'info',
@@ -72,7 +72,7 @@ def main():
     if args.log_level:
         logger.setLevel(getattr(logging, args.log_level.upper()))
 
-    run_transmute_test(args.data, args.degree, args.prec, args.CRAM_expr, args.time)
+    run_transmute_test(args.data, args.degree, args.prec, args.expr, args.time)
 
 if __name__ == '__main__':
     sys.exit(main())
