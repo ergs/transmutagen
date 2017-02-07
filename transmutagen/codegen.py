@@ -137,3 +137,9 @@ def scipy_sparse_solve_with_autoeye(a, b, **kwargs):
         b = b.eval(a.shape[0], scipy.sparse.eye)
 
     return scipy.sparse.linalg.spsolve(a, b, **kwargs)
+
+scipy_translations = {
+    'solve_with_autoeye': scipy_sparse_solve_with_autoeye,
+    'autoeye': autoeye,
+    'matrix_power': lambda a, b: a**b
+    }
