@@ -91,6 +91,9 @@ def main():
 
     print("Column sums (min, max)")
     for r in sorted(res):
+        if np.isnan(res[r]):
+            print(r, res[r])
+            continue
         col_sum = np.sum(res[r], axis=1)
         print(r, np.min(col_sum), np.max(col_sum))
 
