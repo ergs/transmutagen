@@ -71,7 +71,7 @@ def main():
     parser.add_argument('data', help="""Data of matrix to compute exp of. Should
     be in scipy sparse csr format.""")
     parser.add_argument('time', type=float)
-    parser.add_argument('--expr', type=sympify, help="""Precomputed CRAM
+    parser.add_argument('--expr', type=lambda e: sympify(e, locals=globals()), help="""Precomputed CRAM
     expression. Should have the same prec as 'prec'. If not provided, will be
     computed from scratch.""")
     parser.add_argument('--log-level', default=None, choices=['debug', 'info',
