@@ -102,14 +102,15 @@ def main():
 
     print("Column sums (min, max):")
     errors = {}
+    colsums = {}
     for r in sorted(res):
         if res[r] is None:
             print('Could not compute', r)
             continue
-        col_sum = np.sum(res[r], axis=1)
-        errors[r] = np.max(col_sum) - np.min(col_sum)
+        colsums[r] = np.sum(res[r], axis=1)
+        errors[r] = np.max(colsums[r]) - np.min(colsums[r])
     for r in sorted(errors, key=lambda i:errors[i], reverse=True):
-        print(r, np.min(col_sum), np.max(col_sum))
+        print(r, np.min(colsums[r]), np.max(colsums[r]))
 
 if __name__ == '__main__':
     sys.exit(main())
