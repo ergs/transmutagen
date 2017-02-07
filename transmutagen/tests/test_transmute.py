@@ -2,6 +2,7 @@ import sys
 import os
 import argparse
 import logging
+from functools import wraps
 
 from sympy import sympify, lambdify, horner, fraction
 
@@ -20,7 +21,15 @@ def load_sparse_csr(filename):
                         shape=loader['shape'])
 
 def lambdify_expr(expr):
-    return lambdify(t, expr, scipy_translations, printer=MatrixNumPyPrinter)
+    return nan_on_RuntimeError(lambdify(t, expr, scipy_translations, printer=MatrixNumPyPrinter))
+
+def nan_on_RuntimeError(f):
+    @wraps(f)
+    def func(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except RuntimeError:
+            return np.nan
 
 def run_transmute_test(data, degree, prec, expr, time):
     matrix = load_sparse_csr(data)
@@ -38,6 +47,7 @@ def run_transmute_test(data, degree, prec, expr, time):
     e_part_frac_complex = lambdify_expr(part_frac_complex)
 
     res = {}
+
     res['rat_func'] = e_rat_func(-matrix*time)
     res['rat_func_horner'] = e_rat_func_horner(-matrix*time)
     res['part_frac'] = e_part_frac(-matrix*time)
