@@ -89,12 +89,15 @@ def main():
 
     res = run_transmute_test(args.data, args.degree, args.prec, args.expr, args.time)
 
-    print("Column sums (min, max)")
+    print("Column sums (min, max):")
+    errors = {}
     for r in sorted(res):
         if res[r] is None:
             print('Could not compute', r)
             continue
         col_sum = np.sum(res[r], axis=1)
+        errors[r] = np.max(col_sum) - np.min(col_sum)
+    for r in sorted(errors, key=lambda i:errors[i], reverse=True):
         print(r, np.min(col_sum), np.max(col_sum))
 
 if __name__ == '__main__':
