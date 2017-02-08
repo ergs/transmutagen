@@ -72,7 +72,7 @@ class autoeye:
         import scipy.sparse
         if isinstance(other, numpy.ndarray):
             eye_type = numpy.eye
-        elif isinstance(other, scipy.sparse.csr_matrix):
+        elif isinstance(other, scipy.sparse.spmatrix):
             eye_type = scipy.sparse.eye
         else:
             return NotImplemented
@@ -106,7 +106,7 @@ class autoeye:
         import scipy.sparse
         if isinstance(other, numpy.ndarray):
             eye_type = numpy.eye
-        elif isinstance(other, scipy.sparse.csr_matrix):
+        elif isinstance(other, scipy.sparse.spmatrix):
             eye_type = scipy.sparse.eye
         else:
             return NotImplemented
