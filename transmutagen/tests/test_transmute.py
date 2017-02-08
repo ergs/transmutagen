@@ -45,7 +45,17 @@ def time_and_run(f, *args, _print=False):
 def run_transmute_test(data, degree, prec, expr, time, plot=True, _print=False):
     matrix = load_sparse_csr(data)
 
-    expr = expr or CRAM_exp(degree, prec, plot=plot)
+    os.makedirs('CRAM_cache', exist_ok=True)
+    cache_file = os.path.join('CRAM_cache', '%s_%s' % (degree, prec))
+
+    if not expr and os.path.exists(cache_file):
+        with open(cache_file) as f:
+            expr = sympify(f.read(), globals())
+    else:
+        expr = expr or CRAM_exp(degree, prec, plot=plot)
+        with open(cache_file, 'w') as f:
+            f.write(str(expr))
+
     num, den = fraction(expr)
 
     thetas, alphas, alpha0 = thetas_alphas(expr, prec)

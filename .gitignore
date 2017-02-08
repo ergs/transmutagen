@@ -1,6 +1,7 @@
 # transmutagen stuff
 plots/
 logs/
+CRAM_cache/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
