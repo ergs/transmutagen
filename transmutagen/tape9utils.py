@@ -2,6 +2,8 @@
 import os
 import json
 import warnings
+from collections import defaultdict
+
 import numpy as np
 
 from pyne import utils
@@ -206,3 +208,94 @@ def cross_section_data(t9, nlb=nlb, threshold=THRESHOLD, nucs=None):
                 nucs.add(fromnuc)
                 nucs.add(tonuc)
     return nucs, sigma_ij, sigma_fission, fission_product_yields
+
+
+def sort_nucs(nucs):
+    """Returns the canonical ordering of a collection of nulcides."""
+    return sorted(nucs, key=nucname.id)
+
+
+def create_dok(phi, nucs, decays_consts, gammas, sigma_ij, sigma_fission,
+               fission_product_yields):
+    """Creates a dictionary-of-keys representation of the transumation data.
+
+    Parameters
+    ----------
+    phi : float
+        The neutron flux in [n / cm^2 / sec]
+    nucs : list
+        The list of nuclide names in canonical order.
+    decay_consts : dict
+        Mapping from nuclide names to decay constants [1/sec]
+    gammas : dict
+        Mapping from (i, j) nuclide name tuples to the branch ratio
+        fraction. This is [unitless] and the sum over all j for a given
+        i is guarenteed to sum to 1.
+    sigma_ij : dict
+        Mapping from (i, j) nuclide name tuples to the cross section for this
+        reaction. Note that this does not include the fission cross section [barns].
+    sigma_fission : dict
+        Mapping from fissionable nuclide names to the fission cross section [barns].
+    fission_product_yields : dict
+        Mapping from (i, j) nuclide name tuples to the fission product yields for
+        that nuclide.
+
+    Returns
+    -------
+    dok : defaultdict
+        Mapping from (i, j) nuclide name tuples to the transmutation rate.
+    """
+    phi = phi * 1e-24  # flux, n / barn /s
+    dok = defaultdict(float) # indexed b y nuclide name
+    # let's first add the cross section channels
+    for i, j in sigma_ij:
+        v = sigma_ij.get((i, j), 0.0) * phi
+        dok[i, j] += v
+        dok[i, i] -= v
+    # now let's add the fission products
+    for (i, j), fpy in fission_products_yields.items():
+        dok[i, j] += fpy * sigma_fission.get(i, 0.0) * phi
+    for i, sigf in sigma_fission.items():
+        dok[i, i] -= sigf * phi
+    # now let's add the decay consts
+    for (i, j), g in gammas.items():
+        dok[i, j] += g * decay_consts[i]
+    for i, v in decay_consts.items():
+        dok[i, i] -= v
+    return dok
+
+
+def dok_to_sparse_info(nucs, dok):
+    """Converts the dict of keys to a sparse info
+
+    Parameters
+    ----------
+    nucs : list
+        The list of nuclide names in canonical order.
+    dok : dict
+        Dictionary of keys representing a sparse transmutation matrix.
+
+    Returns
+    -------
+    rows : list
+        Row indexs
+    cols : list
+        Column indexes
+    vals : list
+        Values at cooresponding row/col index
+    shape : 2-tuple of ints
+        Represents the size of the matirx
+    """
+    shape = (len(nucs), len(nucs))
+    nuc_idx = {n: i for i, n in enumerate(nucs)}
+    rows = []
+    cols = []
+    vals = []
+    for (i, j), v in dok.items():
+        if (v == 0.0) or (i not in nuc_idx) or (j not in nuc_idx):
+            continue
+        rows.append(nuc_idx[i])
+        cols.append(nuc_idx[j])
+        vals.append(v)
+    return rows, cols, vals, shape
+
