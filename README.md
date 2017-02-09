@@ -2,6 +2,8 @@
 
 Transmutation SymPy Code Generator
 
+[![Build Status](https://travis-ci.org/ergs/transmutagen.svg?branch=master)](https://travis-ci.org/ergs/transmutagen)
+
 # Usage
 
 First, get the git master version of SymPy and set `PYTHONPATH` to point to

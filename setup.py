@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-import sys
 try:
     from setuptools import setup
     HAVE_SETUPTOOLS = True
@@ -8,7 +7,7 @@ except ImportError:
     HAVE_SETUPTOOLS = False
 
 
-VERSION = '0.0.1'
+VERSION = '1.0'
 
 setup_kwargs = {
     "version": VERSION,
@@ -20,9 +19,7 @@ setup_kwargs = {
     "download_url": "https://github.com/ergs/transmutagen/zipball/" + VERSION,
     "classifiers": [
         "License :: OSI Approved",
-        "Intended Audience :: Developers",
         "Programming Language :: Python",
-        "Topic :: Utilities",
         ],
     "zip_safe": False,
     "data_files": [("", ['LICENSE', 'README.md']),],
