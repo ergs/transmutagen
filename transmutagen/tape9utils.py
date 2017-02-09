@@ -1,6 +1,4 @@
 """Some utilities for dealing with Origen 2.2 TAPE9 files."""
-import os
-import json
 import warnings
 from collections import defaultdict
 
@@ -11,7 +9,6 @@ utils.toggle_warnings()
 warnings.simplefilter('ignore')
 from pyne import rxname
 from pyne import nucname
-from pyne.origen22 import parse_tape9
 
 
 LN2 = np.log(2.0)
@@ -114,7 +111,7 @@ def decay_data(t9, nlb=(1, 2, 3), threshold=THRESHOLD, nucs=None):
             biggest_gamma = max([(i, j) for i, j in gammas if i == nuc],
                                 key=lambda t: gammas[t])
             gammas[biggest_gamma] = gammas[biggest_gamma] + 1 - gamma_total
-    return nucs, decays_consts, gammas
+    return nucs, decay_consts, gammas
 
 
 XS_RXS = ['gamma', 'z_2n', 'z_3n', 'alpha', 'fission', 'proton', 'gamma_1', 'z_2n_1']
@@ -133,7 +130,7 @@ def find_nlb(t9, nlb=None):
     return tuple(sorted(nlb))
 
 
-def cross_section_data(t9, nlb=nlb, threshold=THRESHOLD, nucs=None):
+def cross_section_data(t9, nlb=None, threshold=THRESHOLD, nucs=None):
     """Gets decay data from a TAPE9.
 
     Parameters
@@ -180,7 +177,7 @@ def cross_section_data(t9, nlb=nlb, threshold=THRESHOLD, nucs=None):
                 if val < threshold:
                     continue
                 nname = nucname.name(int(nuc))
-                child = nucname.name(rxname.child(n, xs_rx))
+                child = nucname.name(rxname.child(n, xs_rs))
                 sigma_ij[nname, child] = val
                 nucs.add(nname)
                 nucs.add(child)
@@ -215,7 +212,7 @@ def sort_nucs(nucs):
     return sorted(nucs, key=nucname.id)
 
 
-def create_dok(phi, nucs, decays_consts, gammas, sigma_ij, sigma_fission,
+def create_dok(phi, nucs, decay_consts, gammas, sigma_ij, sigma_fission,
                fission_product_yields):
     """Creates a dictionary-of-keys representation of the transumation data.
 
@@ -253,7 +250,7 @@ def create_dok(phi, nucs, decays_consts, gammas, sigma_ij, sigma_fission,
         dok[i, j] += v
         dok[i, i] -= v
     # now let's add the fission products
-    for (i, j), fpy in fission_products_yields.items():
+    for (i, j), fpy in fission_product_yields.items():
         dok[i, j] += fpy * sigma_fission.get(i, 0.0) * phi
     for i, sigf in sigma_fission.items():
         dok[i, i] -= sigf * phi
@@ -298,4 +295,3 @@ def dok_to_sparse_info(nucs, dok):
         cols.append(nuc_idx[j])
         vals.append(v)
     return rows, cols, vals, shape
-
