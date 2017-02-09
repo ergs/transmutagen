@@ -26,3 +26,12 @@ If you use iTerm2, install `iterm2-tools` (from conda-forge) to get plots in
 the terminal.
 
 Note: all output and plots are logged to the `logs` and `plots` directories.
+
+## Converting ORIGEN libraries to a sparse matrix representation
+
+If you'd like to convert an origen file to a matrix representation, please
+use something like:
+
+    python -m transmutagen.tape9sparse ~/origen22/libs/pwru50.lib 4e14
+
+See `--help` and the `transmutagen.tape9utils` docs for more details.
