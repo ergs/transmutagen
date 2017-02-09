@@ -7,8 +7,9 @@ import numpy as np
 from pyne import utils
 utils.toggle_warnings()
 warnings.simplefilter('ignore')
-from pyne.origen22 import parse_tape9
+from pyne import rxname
 from pyne import nucname
+from pyne.origen22 import parse_tape9
 
 
 LN2 = np.log(2.0)
@@ -43,8 +44,8 @@ def origen_to_name(nuc):
     return nucname.name(nucname.zzaaam_to_id(int(nuc)))
 
 
-def decay_data(t9, nlb=(1, 2, 3), threshold=THRESHOLD):
-    """Loads decay data.
+def decay_data(t9, nlb=(1, 2, 3), threshold=THRESHOLD, nucs=None):
+    """Gets decay data from a TAPE9.
 
     Parameters
     ----------
@@ -52,10 +53,12 @@ def decay_data(t9, nlb=(1, 2, 3), threshold=THRESHOLD):
         A TAPE9 dict that contains the decay data.
     nlb : tuple of ints, optional
         The decay library numbers. Usually this is just (1, 2, 3).
-    threshold : float
+    threshold : float, optional
         A cutoff for when we consider nuclides stable or a decay mode
         forbidden. This is given as a decay constant and the default is
         for a half-life that is 10x the age of the universe.
+    nucs : set or None, optional
+        The known set of nuclides.
 
     Returns
     -------
@@ -68,7 +71,7 @@ def decay_data(t9, nlb=(1, 2, 3), threshold=THRESHOLD):
         fraction. This is [unitless] and the sum over all j for a given
         i is guarenteed to sum to 1.
     """
-    nucs = set()
+    nucs = set() if nucs is None else nucs
     decay_consts = {}
     gammas = {}
     for n in nlb:
@@ -110,3 +113,96 @@ def decay_data(t9, nlb=(1, 2, 3), threshold=THRESHOLD):
                                 key=lambda t: gammas[t])
             gammas[biggest_gamma] = gammas[biggest_gamma] + 1 - gamma_total
     return nucs, decays_consts, gammas
+
+
+XS_RXS = ['gamma', 'z_2n', 'z_3n', 'alpha', 'fission', 'proton', 'gamma_1', 'z_2n_1']
+XS_TO_ORIGEN = {'gamma': 'gamma', 'z_2n': '2n', 'z_3n': '3n', 'alpha': 'alpha',
+                'fission': 'f', 'proton': 'p', 'gamma_1': 'gamma_x', 'z_2n_1': '2n_x'}
+ORIGEN_TO_XS = {v: k for k, v in XS_TO_ORIGEN.items()}
+
+
+def find_nlb(t9, nlb=None):
+    """Finds the library numbers in the TAPE9 file."""
+    if nlb is not None:
+        return nlb
+    nlb = set(t9.keys()) - {1, 2, 3}
+    if len(nlb) > 3:
+        raise ValueError("Too many libraries found in TAPE9 file.")
+    return tuple(sorted(nlb))
+
+
+def cross_section_data(t9, nlb=nlb, threshold=THRESHOLD, nucs=None):
+    """Gets decay data from a TAPE9.
+
+    Parameters
+    ----------
+    t9 : dict
+        A TAPE9 dict that contains the decay data.
+    nlb : tuple of ints or None, optional
+        The cross section library numbers. If None, this will attempt to discover
+        the numbers in the library.
+    threshold : float, optional
+        A cutoff for when we consider nuclides stable or a decay mode
+        forbidden. This is given as a decay constant and the default is
+        for a half-life that is 10x the age of the universe.
+    nucs : set or None, optional
+        The known set of nuclides.
+
+    Returns
+    -------
+    nucs : set
+        The set of nuclide names.
+    sigma_ij : dict
+        Mapping from (i, j) nuclide name tuples to the cross section for this
+        reaction. Note that this does not include the fission cross section [barns].
+    sigma_fission : dict
+        Mapping from fissionable nuclide names to the fission cross section [barns].
+    fission_product_yields : dict
+        Mapping from (i, j) nuclide name tuples to the fission product yields for
+        that nuclide.
+    """
+    nlb = find_nlb(t9, nlb=nlb)
+    nucs = set() if nucs is None else nucs
+    sigma_ij = {}
+    sigma_fission = {}
+    fission_product_yields = {}
+    for n in nlb:
+        # grab sigma_ij cross sections
+        for rx in t9[n]:
+            if not rx.startswith('sigma_') or rx == 'sigma_f':
+                continue
+            _, _, orx = rx.partition('_')
+            xs_rs = ORIGEN_TO_XS[orx]
+            for nuc in t9[n][rx]:
+                val = t9[n][rx][nuc]
+                if val < threshold:
+                    continue
+                nname = nucname.name(int(nuc))
+                child = nucname.name(rxname.child(n, xs_rx))
+                sigma_ij[nname, child] = val
+                nucs.add(nname)
+                nucs.add(child)
+        # grab the fission cross section
+        if 'sigma_f' in t9[n]:
+            for nuc in t9[n][rx]:
+                val = t9[n][rx][nuc]
+                if val < threshold:
+                    continue
+                nname = nucname.name(int(nuc))
+                sigma_fission[nname] = val
+                nucs.add(nname)
+        # grab the fission product yields
+        for rx in t9[n]:
+            if not rx.endswith('_fiss_yield'):
+                continue
+            fromnuc, *_ = rx.partition('_')
+            fromnuc = nucname.name(fromnuc)
+            for k, v in t9[n][rx].items():
+                if v < threshold:
+                    continue
+                tonuc = nucname.name(nucname.zzaaam_to_id(int(k)))
+                # origen yields are in percent
+                fission_product_yields[fromnuc, tonuc] = v / 100
+                nucs.add(fromnuc)
+                nucs.add(tonuc)
+    return nucs, sigma_ij, sigma_fission, fission_product_yields
