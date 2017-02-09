@@ -2,8 +2,8 @@
 import os
 from argparse import ArgumentParser
 
-from transmutagen.utils import save_sparse_csr
-from transmutagen.tape9utils import tape9_to_sparse, THRESHOLD
+from .util import save_sparse_csr
+from .tape9utils import tape9_to_sparse, THRESHOLD
 
 
 def make_parser():
@@ -33,7 +33,7 @@ def main(args=None):
     ns = p.parse_args(args=args)
     if ns.output is None:
         base = os.path.basename(ns.tape9)
-        base = os.path.splitext(base)
+        base, _ = os.path.splitext(base)
         ns.output = base + '.npz'
     if ns.format != 'csr':
         raise ValueError('Only the CSR format is currently available from the '

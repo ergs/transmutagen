@@ -1,4 +1,5 @@
 """Some utilities for dealing with Origen 2.2 TAPE9 files."""
+import os
 import warnings
 from collections import defaultdict
 
@@ -11,6 +12,7 @@ utils.toggle_warnings()
 warnings.simplefilter('ignore')
 from pyne import rxname
 from pyne import nucname
+from pyne.origen22 import parse_tape9
 
 
 LN2 = np.log(2.0)
@@ -110,7 +112,7 @@ def decay_data(t9, nlb=(1, 2, 3), threshold=THRESHOLD, nucs=None):
             nucs.add(nname)
             nucs.add(cname)
         if gamma_total > 1.0:
-            biggest_gamma = max([(i, j) for i, j in gammas if i == nuc],
+            biggest_gamma = max([(i, j) for i, j in gammas if i == nname],
                                 key=lambda t: gammas[t])
             gammas[biggest_gamma] = gammas[biggest_gamma] + 1 - gamma_total
     return nucs, decay_consts, gammas
@@ -179,12 +181,13 @@ def cross_section_data(t9, nlb=None, threshold=THRESHOLD, nucs=None):
                 if val < threshold:
                     continue
                 nname = nucname.name(int(nuc))
-                child = nucname.name(rxname.child(n, xs_rs))
+                child = nucname.name(rxname.child(nname, xs_rs))
                 sigma_ij[nname, child] = val
                 nucs.add(nname)
                 nucs.add(child)
         # grab the fission cross section
         if 'sigma_f' in t9[n]:
+            rx = 'sigma_f'
             for nuc in t9[n][rx]:
                 val = t9[n][rx][nuc]
                 if val < threshold:
