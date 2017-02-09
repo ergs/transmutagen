@@ -17,5 +17,5 @@ install:
   - pip install git+git://github.com/sympy/sympy.git
 
 script:
-  - pyflakes transmutagen
+  - pyflakes transmutagen setup.py
   - py.test transmutagen
