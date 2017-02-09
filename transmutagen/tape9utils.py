@@ -6,6 +6,8 @@ from collections import defaultdict
 
 import numpy as np
 
+import scipy.sparse
+
 from pyne import utils
 utils.toggle_warnings()
 warnings.simplefilter('ignore')
@@ -133,7 +135,7 @@ def find_nlb(t9, nlb=None):
     return tuple(sorted(nlb))
 
 
-def cross_section_data(t9, nlb=nlb, threshold=THRESHOLD, nucs=None):
+def cross_section_data(t9, nlb=None, threshold=THRESHOLD, nucs=None):
     """Gets decay data from a TAPE9.
 
     Parameters
@@ -299,3 +301,69 @@ def dok_to_sparse_info(nucs, dok):
         vals.append(v)
     return rows, cols, vals, shape
 
+
+def find_decaylib(t9, tape9, decaylib):
+    """Finds and loads a decay lib."""
+    if len({1, 2, 3} & set(t9.keys())) == 3:
+        return t9
+    if not os.path.isabs(decaylib):
+        d = os.path.dirname(tape9)
+        decaylib = os.path.join(d, decaylib)
+    decay = parse_tape9(decaylib)
+    return decay
+
+
+# not all sparse matrices accept row, col, val, shape data
+SPMAT_FORMATS = {
+    'bsr': scipy.sparse.bsr_matrix,
+    'coo': scipy.sparse.coo_matrix,
+    'csc': scipy.sparse.csc_matrix,
+    'csr': scipy.sparse.csr_matrix,
+    }
+
+
+def tape9_to_sparse(tape9, phi, format='csr', decaylib='decay.lib',
+                    include_fission=True, threshold=THRESHOLD):
+    """Converts a TAPE9 file to a sparse matrix.
+
+    Parameters
+    ----------
+    tape9 : str
+        The filename of the tape file.
+    phi : float
+        The neutron flux in [n / cm^2 / sec]
+    format : str, optional
+        Format of the sparse matrix created.
+    decaylib : str, optional
+        A path to TAPE9 containg the decay data libraries if the decay libraries
+        are not present in tape9. If this is a relative path, it is taken
+        relative to the given tape9 location.
+    include_fission : bool
+        Flag for whether or not the fission data should be included in the
+        resultant matrix.
+    threshold : float, optional
+        A cutoff for when we consider nuclides stable or a decay mode
+        forbidden. This is given as a decay constant and the default is
+        for a half-life that is 10x the age of the universe.
+
+    Returns
+    -------
+    mat : scipy.sparse matrix
+        A sparse matrix in the specified layout.
+    """
+    t9 = parse_tape9(tape9)
+    decay = find_decaylib(t9, tape9, decaylib)
+    nucs = set()
+    nucs, decays_consts, gammas = decay_data(decay, threshold=threshold, nucs=nucs)
+    nucs, sigma_ij, sigma_fission, fission_product_yields = cross_section_data(t9,
+                                                                threshold=threshold,
+                                                                nucs=nucs)
+    nucs = sort_nucs(nucs)
+    if not include_fission:
+        sigma_fission = {}
+        fission_product_yields = {}
+    dok = create_dok(phi, nucs, decays_consts, gammas, sigma_ij, sigma_fission,
+                     fission_product_yields)
+    rows, cols, vals, shape = dok_to_sparse_info(nucs, dok)
+    mat = SPMAT_FORMATS[format]((vals, (rows, cols)), shape=shape)
+    return mat
