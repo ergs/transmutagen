@@ -10,6 +10,7 @@ import scipy.sparse
 from pyne import utils
 utils.toggle_warnings()
 warnings.simplefilter('ignore')
+from pyne import data
 from pyne import rxname
 from pyne import nucname
 from pyne.origen22 import parse_tape9
@@ -94,9 +95,9 @@ def decay_data(t9, nlb=(1, 2, 3), threshold=THRESHOLD, nucs=None):
                 poff = PAROFF if int(nuc)%10 == 0 else PAROFFM
                 child = nucname.zzaaam_to_id(int(nuc)) + poff[key]
                 cname = nucname.name(child)
-                gammas[nname, cname] = val
                 nucs.add(nname)
                 nucs.add(cname)
+                gammas[nname, cname] = val
     # add β- decays
     for nname, val in decay_consts.items():
         if val < threshold:
@@ -181,10 +182,13 @@ def cross_section_data(t9, nlb=None, threshold=THRESHOLD, nucs=None):
                 if val < threshold:
                     continue
                 nname = nucname.name(int(nuc))
-                child = nucname.name(rxname.child(nname, xs_rs))
-                sigma_ij[nname, child] = val
+                try:
+                    child = nucname.name(rxname.child(nname, xs_rs))
+                except RuntimeError:
+                    continue
                 nucs.add(nname)
                 nucs.add(child)
+                sigma_ij[nname, child] = val
         # grab the fission cross section
         if 'sigma_f' in t9[n]:
             rx = 'sigma_f'
@@ -193,8 +197,8 @@ def cross_section_data(t9, nlb=None, threshold=THRESHOLD, nucs=None):
                 if val < threshold:
                     continue
                 nname = nucname.name(int(nuc))
-                sigma_fission[nname] = val
                 nucs.add(nname)
+                sigma_fission[nname] = val
         # grab the fission product yields
         for rx in t9[n]:
             if not rx.endswith('_fiss_yield'):
@@ -206,9 +210,9 @@ def cross_section_data(t9, nlb=None, threshold=THRESHOLD, nucs=None):
                     continue
                 tonuc = nucname.name(nucname.zzaaam_to_id(int(k)))
                 # origen yields are in percent
-                fission_product_yields[fromnuc, tonuc] = v / 100
                 nucs.add(fromnuc)
                 nucs.add(tonuc)
+                fission_product_yields[fromnuc, tonuc] = v / 100
     return nucs, sigma_ij, sigma_fission, fission_product_yields
 
 
@@ -350,10 +354,22 @@ def tape9_to_sparse(tape9, phi, format='csr', decaylib='decay.lib',
     -------
     mat : scipy.sparse matrix
         A sparse matrix in the specified layout.
+    nucs : list
+        The list of nuclide names in canonical order.
     """
     t9 = parse_tape9(tape9)
     decay = find_decaylib(t9, tape9, decaylib)
+    # seed initial nucs with known atomic masses
+    data.atomic_mass('u235')
     nucs = set()
+    for i in data.atomic_mass_map.keys():
+        if nucname.iselement(i):
+            continue
+        try:
+            nucs.add(nucname.name(i))
+        except RuntimeError:
+            pass
+    # get the tape 9 data
     nucs, decays_consts, gammas = decay_data(decay, threshold=threshold, nucs=nucs)
     nucs, sigma_ij, sigma_fission, fission_product_yields = cross_section_data(t9,
                                                                 threshold=threshold,
@@ -366,4 +382,4 @@ def tape9_to_sparse(tape9, phi, format='csr', decaylib='decay.lib',
                      fission_product_yields)
     rows, cols, vals, shape = dok_to_sparse_info(nucs, dok)
     mat = SPMAT_FORMATS[format]((vals, (rows, cols)), shape=shape)
-    return mat
+    return mat, nucs

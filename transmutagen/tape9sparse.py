@@ -38,9 +38,11 @@ def main(args=None):
     if ns.format != 'csr':
         raise ValueError('Only the CSR format is currently available from the '
                          'command line interface.')
-    mat = tape9_to_sparse(ns.tape9, ns.phi, format=ns.format, decaylib=ns.decaylib,
-                          include_fission=ns.include_fission, threshold=ns.threshold)
-    save_sparse_csr(ns.output, mat)
+    mat, nucs = tape9_to_sparse(ns.tape9, ns.phi, format=ns.format,
+                                decaylib=ns.decaylib,
+                                include_fission=ns.include_fission,
+                                threshold=ns.threshold)
+    save_sparse_csr(ns.output, mat, nucs)
 
 
 if __name__ == '__main__':
