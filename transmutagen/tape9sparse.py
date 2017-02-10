@@ -17,10 +17,10 @@ def make_parser():
                    default='decay.lib', dest='decaylib')
     p.add_argument('--include-fission', action='store_true', default=True,
                    dest='include_fission',
-                   help='Do include fission reactions in the matrix.')
+                   help='Include fission reactions in the matrix.')
     p.add_argument('--dont-include-fission', action='store_false',
                    dest='include_fission',
-                   help='Do include fission reactions in the matrix.')
+                   help="Don't include fission reactions in the matrix.")
     p.add_argument('-t', '--threshold', default=THRESHOLD, dest='threshold',
                    help='cutoff for ignoring reactions', type=float)
     p.add_argument('-o', '--output', dest='output', default=None,
