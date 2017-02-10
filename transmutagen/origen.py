@@ -19,14 +19,14 @@ if __name__ == '__main__':
     # TAPE9.INP.
     write_tape9(merged_tape9)
 
-    xsfpy_nlb = nlbs(parsed_xs_tape9)
+    decay_nlb, xsfpy_nlb = nlbs(parsed_xs_tape9)
 
     time = 2.6e6
 
     # Can set outfile, but the file name should be called TAPE5.INP.
     write_tape5_irradiation("IRF", time/(60*60*24), 4e14,  xsfpy_nlb=xsfpy_nlb, cut_off=0)
 
-    M = from_atom_frac({"": 1}, mass=1, atoms_per_molecule=1)
+    M = from_atom_frac({"U235": 1}, mass=1, atoms_per_molecule=1)
 
     write_tape4(M)
 
