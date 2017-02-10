@@ -1,7 +1,7 @@
 from subprocess import run
 
 from pyne.origen22 import (nlbs, write_tape5_irradiation, write_tape4,
-    parse_tape9, merge_tape9, write_tape9)
+    parse_tape9, merge_tape9, write_tape9, parse_tape6)
 from pyne.material import from_atom_frac
 
 if __name__ == '__main__':
@@ -19,7 +19,7 @@ if __name__ == '__main__':
     # TAPE9.INP.
     write_tape9(merged_tape9)
 
-    xsfpy_nlb = nlibs(parsed_xs_tape9)
+    xsfpy_nlb = nlbs(parsed_xs_tape9)
 
     time = 2.6e6
 
