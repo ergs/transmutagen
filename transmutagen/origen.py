@@ -34,4 +34,5 @@ if __name__ == '__main__':
 
     data = parse_tape6()
 
-    print(data)
+    with open("TAPE6.OUT") as f:
+        print(f.read())
