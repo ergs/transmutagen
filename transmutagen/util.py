@@ -5,6 +5,8 @@ import os
 import logging
 from functools import wraps
 
+import numpy as np
+
 import mpmath
 from sympy import lambdify, symbols
 
@@ -130,3 +132,9 @@ def log_function_args(func):
             logger.info("Total time: %s", endtime - starttime)
 
     return _func
+
+
+def save_sparse_csr(filename, array, nucs):
+    """Saves a sparse CSR matrix to disk"""
+    np.savez(filename, data=array.data, indices=array.indices,
+             indptr=array.indptr, shape=array.shape, nucs=nucs)

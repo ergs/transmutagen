@@ -13,7 +13,7 @@ from scipy.sparse.linalg import expm
 
 from ..transmutagen import CRAM_exp, logger
 from ..partialfrac import (thetas_alphas, thetas_alphas_to_expr,
-    thetas_alphas_to_expr_complex, thetas_alphas_to_expr_complex2, t)
+    thetas_alphas_to_expr_complex, t)
 from ..codegen import MatrixNumPyPrinter, scipy_translations
 
 def load_sparse_csr(filename):
