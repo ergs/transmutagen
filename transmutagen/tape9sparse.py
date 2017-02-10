@@ -1,13 +1,13 @@
 """Converts a TAPE9 file to a sparse matrix on disk."""
 import os
-from argparse import ArgumentParser
+import argparse
 
 from .util import save_sparse_csr
 from .tape9utils import tape9_to_sparse, THRESHOLD
 
 
 def make_parser():
-    p = ArgumentParser('tape9sparse')
+    p = argparse.ArgumentParser('tape9sparse', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     p.add_argument('tape9', help="path to the TAPE9 file.")
     p.add_argument('phi', help='the neutron flux in [n/cm^2/sec]',
                    type=float)
