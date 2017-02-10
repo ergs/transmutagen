@@ -1,6 +1,6 @@
 from subprocess import run
 
-from pyne.origen22 import (nlibs, write_tape5_irradiation, write_tape4,
+from pyne.origen22 import (nlbs, write_tape5_irradiation, write_tape4,
     parse_tape9, merge_tape9, write_tape9)
 from pyne.material import from_atom_frac
 
