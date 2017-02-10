@@ -7,8 +7,8 @@ from pyne.material import from_atom_frac
 if __name__ == '__main__':
     ORIGEN = '/home/origen22/code/o2_therm_linux.exe'
 
-    xs_TAPE9 = "/Users/aaronmeurer/Documents/origen/C371ALLCP.03/CCC371.03/origen22/libs/pwru50.lib"
-    decay_TAPE9 = "/Users/aaronmeurer/Documents/origen/C371ALLCP.03/CCC371.03/origen22/libs/decay.lib"
+    xs_TAPE9 = "/home/origen22/libs/pwru50.lib"
+    decay_TAPE9 = "/home/origen22/libs/decay.lib"
 
     parsed_xs_tape9 = parse_tape9(xs_TAPE9)
     parsed_decay_tape9 = parse_tape9(decay_TAPE9)
