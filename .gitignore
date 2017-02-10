@@ -2,6 +2,7 @@
 plots/
 logs/
 CRAM_cache/
+docker/ORIGEN.zip
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
