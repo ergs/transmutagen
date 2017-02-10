@@ -24,7 +24,8 @@ if __name__ == '__main__':
     time = 2.6e6
 
     # Can set outfile, but the file name should be called TAPE5.INP.
-    write_tape5_irradiation("IRF", time/(60*60*24), 4e14,  xsfpy_nlb=xsfpy_nlb, cut_off=0)
+    write_tape5_irradiation("IRF", time/(60*60*24), 4e14,
+        xsfpy_nlb=xsfpy_nlb, cut_off=0, out_table_num=[3, 4])
 
     M = from_atom_frac({"U235": 1}, mass=1, atoms_per_molecule=1)
 
@@ -34,5 +35,4 @@ if __name__ == '__main__':
 
     data = parse_tape6()
 
-    print(data['table_4'])
-    print(data['table_5'])
+    print(data)
