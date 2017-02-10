@@ -1,7 +1,5 @@
-import random
-
 from sympy import (together, expand_complex, re, im, symbols, sympify,
-    fraction, random_poly, sqf_part, gcd, lambdify)
+    fraction, random_poly, sqf_part, gcd, lambdify, count_roots)
 
 import numpy as np
 
@@ -39,6 +37,9 @@ def test_exprs():
         # Make sure den doesn't share any roots with num
         if gcd(num, den) != 1:
             continue
+        # The complex formula assumes no real roots
+        if count_roots(den) != 0:
+            continue
         break
 
     rat_func = num/den
@@ -50,7 +51,7 @@ def test_exprs():
     lpart_frac = lambdify(t, part_frac, 'numpy')
     lpart_frac_complex = lambdify(t, part_frac_complex, ['numpy', {'customre': np.real}])
 
-    for i in range(10):
-        val = random.random()
-        assert abs(lrat_func(val) - lpart_frac(val)) < 1e-14
-        assert abs(lrat_func(val) - lpart_frac_complex(val)) < 1e-14
+    vals = np.random.random(10)
+
+    np.testing.assert_allclose(lpart_frac(vals), lrat_func(vals))
+    np.testing.assert_allclose(lpart_frac_complex(vals), lrat_func(vals))
