@@ -1,10 +1,10 @@
 from sympy import (together, expand_complex, re, im, symbols, sympify,
-    fraction, random_poly, sqf_part, gcd, lambdify, count_roots)
+    fraction, random_poly, sqf_part, gcd, lambdify, count_roots, I)
 
 import numpy as np
 
 from ..partialfrac import (t, allroots, thetas_alphas, thetas_alphas_to_expr,
-    thetas_alphas_to_expr_complex)
+    thetas_alphas_to_expr_complex, customre)
 
 def test_re_form():
     theta, alpha = symbols('theta, alpha')
@@ -48,6 +48,53 @@ def test_exprs():
     part_frac_complex = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
 
     lrat_func = lambdify(t, rat_func, 'numpy')
+    lpart_frac = lambdify(t, part_frac, 'numpy')
+    lpart_frac_complex = lambdify(t, part_frac_complex, ['numpy', {'customre': np.real}])
+
+    vals = np.random.random(10)
+
+    np.testing.assert_allclose(lpart_frac(vals), lrat_func(vals))
+    np.testing.assert_allclose(lpart_frac_complex(vals), lrat_func(vals))
+
+
+# Used by test_multiply_vector. Different forms tested as correct by test_forms
+rat_func4 = sympify("""(0.0000016765299308108737248115802898*t**4 -
+    0.000449815029070811764481317961325*t**3 +
+    0.0184005623076780392150344724797*t**2 -
+    0.240254024325459538837623100106*t +
+    0.999913477593047111476517762205)/(0.0193768295387776807297603967312*t**4
+    + 0.045750548404322635676959079107*t**3 +
+    0.291753976337465123448099119431*t**2 + 0.756683068883297082135320717398*t
+    + 1.0)""", locals=globals())
+
+part_frac4 = sympify("Add(Mul(Integer(2), Add(Mul(Integer(-1), Float('0.073395957163942207458442844011801', prec=30), Symbol('t', real=True)), Float('-1.6191559365989838437574840737357', prec=30)), Pow(Add(Pow(Add(Symbol('t', real=True), Float('-0.3678453861815398380437964998596', prec=30)), Integer(2)), Float('13.3818514358464994390440914505336', prec=30)), Integer(-1))), Mul(Integer(2), Add(Mul(Float('0.061686779567832924167854223579848', prec=30), Symbol('t', real=True)), Float('2.36598694484885076112187804632686', prec=30)), Pow(Add(Pow(Add(Symbol('t', real=True), Float('1.54839322329712217439052993875215', prec=30)), Integer(2)), Float('1.42044193610767940377598420545949', prec=30)), Integer(-1))), Float('0.0000865224069528885234822377947049701', prec=30))")
+
+part_frac_complex4 = sympify("""Add(Mul(Integer(2),
+customre(Add(Mul(Add(Float('0.061686779567832924167854223579848', prec=30),
+Mul(Integer(-1), Float('1.90504097930308129535280142244488', prec=30), I)),
+Pow(Add(Symbol('t', real=True), Float('1.54839322329712217439052993875215',
+prec=30), Mul(Integer(-1), Float('1.19182294662742561401495340245672',
+prec=30), I)), Integer(-1))),
+Mul(Add(Float('-0.073395957163942207458442844011801', prec=30),
+Mul(Float('0.449999922474062719432845030483482', prec=30), I)),
+Pow(Add(Symbol('t', real=True), Float('-0.3678453861815398380437964998596',
+prec=30), Mul(Integer(-1), Float('3.65812129867866730352792994532021',
+prec=30), I)), Integer(-1)))))),
+Float('0.0000865224069528885234822377947049701', prec=30))""", locals=globals())
+
+def test_forms():
+    """
+    Test the expressions used by test_multiply_vector
+    """
+    thetas, alphas, alpha0 = thetas_alphas(rat_func4, 30)
+
+    part_frac = thetas_alphas_to_expr(thetas, alphas, alpha0)
+    assert part_frac == part_frac4
+
+    part_frac_complex = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
+    assert part_frac_complex == part_frac_complex4
+
+    lrat_func = lambdify(t, rat_func4, 'numpy')
     lpart_frac = lambdify(t, part_frac, 'numpy')
     lpart_frac_complex = lambdify(t, part_frac_complex, ['numpy', {'customre': np.real}])
 
