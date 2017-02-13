@@ -1,10 +1,10 @@
 from sympy import (together, expand_complex, re, im, symbols, sympify,
-    fraction, random_poly, sqf_part, gcd, lambdify, count_roots, I)
+    fraction, random_poly, sqf_part, gcd, lambdify, count_roots)
 
 import numpy as np
 
 from ..partialfrac import (t, allroots, thetas_alphas, thetas_alphas_to_expr,
-    thetas_alphas_to_expr_complex, customre)
+    thetas_alphas_to_expr_complex)
 
 def test_re_form():
     theta, alpha = symbols('theta, alpha')
