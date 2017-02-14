@@ -4,7 +4,7 @@ from sympy.printing.lambdarepr import NumPyPrinter
 from sympy.printing.precedence import precedence
 
 import numpy as np
-import scipy.sparse
+import scipy.sparse.linalg
 
 class MatrixNumPyPrinter(NumPyPrinter):
     """
@@ -91,10 +91,8 @@ class autoeye:
         if isinstance(other, (int, float, complex)):
             return autoeye(self.coeff + other)
 
-        import numpy
-        import scipy.sparse
-        if isinstance(other, numpy.ndarray):
-            eye_type = numpy.eye
+        if isinstance(other, np.ndarray):
+            eye_type = np.eye
         elif isinstance(other, scipy.sparse.spmatrix):
             eye_type = scipy.sparse.eye
         else:
@@ -125,10 +123,8 @@ class autoeye:
         if isinstance(other, autoeye):
             return autoeye(self.coeff * other.coeff)
 
-        import numpy
-        import scipy.sparse
-        if isinstance(other, numpy.ndarray):
-            eye_type = numpy.eye
+        if isinstance(other, np.ndarray):
+            eye_type = np.eye
         elif isinstance(other, scipy.sparse.spmatrix):
             eye_type = scipy.sparse.eye
         else:
@@ -150,19 +146,15 @@ class autoeye:
     __repr__ = __str__
 
 def numpy_solve_with_autoeye(a, b, **kwargs):
-    import numpy
-
     if isinstance(a, autoeye):
-        a = a.eval(b.shape[0], numpy.eye)
+        a = a.eval(b.shape[0], np.eye)
     if isinstance(b, autoeye):
-        b = b.eval(a.shape[0], numpy.eye)
+        b = b.eval(a.shape[0], np.eye)
 
-    return numpy.linalg.solve(a, b, **kwargs)
+    return np.linalg.solve(a, b, **kwargs)
 
 
 def scipy_sparse_solve_with_autoeye(a, b, **kwargs):
-    import scipy.sparse.linalg
-
     if isinstance(a, autoeye):
         a = a.eval(b.shape[0], scipy.sparse.eye)
     if isinstance(b, autoeye):
