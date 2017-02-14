@@ -4,7 +4,7 @@ from pyne.origen22 import (nlbs, write_tape5_irradiation, write_tape4,
     parse_tape9, merge_tape9, write_tape9, parse_tape6)
 from pyne.material import from_atom_frac
 
-if __name__ == '__main__':
+def main():
     ORIGEN = '/home/origen22/code/o2_therm_linux.exe'
 
     xs_TAPE9 = "/home/origen22/libs/pwru50.lib"
@@ -37,3 +37,6 @@ if __name__ == '__main__':
     data = parse_tape6()
 
     print(data)
+
+if __name__ == '__main__':
+    main()
