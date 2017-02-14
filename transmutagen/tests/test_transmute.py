@@ -18,8 +18,8 @@ from ..codegen import MatrixNumPyPrinter, scipy_translations
 
 def load_sparse_csr(filename):
     loader = np.load(filename)
-    return csr_matrix((loader['data'], loader['indices'], loader['indptr']),
-                        shape=loader['shape'])
+    return (loader['nucs'], csr_matrix((loader['data'], loader['indices'], loader['indptr']),
+                        shape=loader['shape']))
 
 def lambdify_expr(expr):
     return None_on_RuntimeError(lambdify(t, expr, scipy_translations, printer=MatrixNumPyPrinter))
@@ -43,7 +43,7 @@ def time_and_run(f, *args, _print=False):
     return res
 
 def run_transmute_test(data, degree, prec, expr, time, plot=True, _print=False):
-    matrix = load_sparse_csr(data)
+    nucs, matrix = load_sparse_csr(data)
 
     os.makedirs('CRAM_cache', exist_ok=True)
     cache_file = os.path.join('CRAM_cache', '%s_%s' % (degree, prec))
