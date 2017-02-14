@@ -13,6 +13,12 @@ class MatrixNumPyPrinter(NumPyPrinter):
     Prints inversions as solve() and multiplication of nonconstants as @.
 
     """
+    _default_settings = {
+        **NumPyPrinter._default_settings,
+        # TODO: Make this automatic
+        'use_autoeye': True,
+        }
+
     def _print_Mul(self, expr):
         prec = precedence(expr)
 
@@ -21,20 +27,35 @@ class MatrixNumPyPrinter(NumPyPrinter):
             raise NotImplementedError("Need exactly one inverted Pow, not %s" % len(pows))
 
         if not pows:
-            terms = [self._print(self.parenthesize(i, prec)) for i in expr.args]
-            return '@'.join(terms)
+            if self._settings['use_autoeye']:
+                terms = [self._print(self.parenthesize(i, prec)) for i in expr.args]
+                return '@'.join(terms)
+            else:
+                num_terms = [self._print(self.parenthesize(i, prec)) for i in
+                    expr.args if i.is_Number]
+                mat_terms = [self._print(self.parenthesize(i, prec)) for i in
+                    expr.args if not i.is_Number]
+                if num_terms:
+                    return '*'.join(num_terms) + '*' + '@'.join(mat_terms)
+                return '@'.join(mat_terms)
 
         [pow] = pows
 
         rest = Mul(*[i for i in expr.args if i != pow])
 
-        return 'solve_with_autoeye(%s, %s)' % (self._print(1/pow), self._print(rest))
+        if self._settings['use_autoeye']:
+            return 'solve_with_autoeye(%s, %s)' % (self._print(1/pow), self._print(rest))
+        return 'solve(%s, %s)' % (self._print(1/pow), self._print(rest))
 
     def _print_Integer(self, expr):
-        return 'autoeye(%s)' % super()._print_Integer(expr)
+        if self._settings['use_autoeye']:
+            return 'autoeye(%s)' % super()._print_Integer(expr)
+        return super()._print_Integer(expr)
 
     def _print_Float(self, expr):
-        return 'autoeye(%s)' % super()._print_Float(expr)
+        if self._settings['use_autoeye']:
+            return 'autoeye(%s)' % super()._print_Float(expr)
+        return super()._print_Float(expr)
 
     def _print_Pow(self, expr):
         if expr.exp.is_Integer and expr.exp > 1:
@@ -42,7 +63,9 @@ class MatrixNumPyPrinter(NumPyPrinter):
         return super()._print_Pow(expr)
 
     def _print_ImaginaryUnit(self, expr):
-        return 'autoeye(1j)'
+        if self._settings['use_autoeye']:
+            return 'autoeye(1j)'
+        return '1j'
 
     def _print_customre(self, expr):
         return 'real(%s)' % self._print(expr.args[0])
