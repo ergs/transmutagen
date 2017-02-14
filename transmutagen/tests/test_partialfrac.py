@@ -136,3 +136,21 @@ def test_multiply_vector():
     # TODO: Form where the complex numbers aren't distributed
     assert part_frac_complex_vec == sympify("""Add(Mul(Float('0.0000865224069528885234822377947049701', prec=30), Symbol('n0', commutative=False)), Mul(Integer(2), customre(Add(Mul(Pow(Add(Symbol('t', real=True), Float('1.54839322329712217439052993875215', prec=30), Mul(Integer(-1), Float('1.19182294662742561401495340245672', prec=30), I)), Integer(-1)), Add(Mul(Float('0.061686779567832924167854223579848', prec=30), Symbol('n0', commutative=False)), Mul(Integer(-1), Float('1.90504097930308129535280142244488', prec=30), I, Symbol('n0', commutative=False)))), Mul(Pow(Add(Symbol('t', real=True), Float('-0.3678453861815398380437964998596', prec=30), Mul(Integer(-1), Float('3.65812129867866730352792994532021', prec=30), I)), Integer(-1)), Add(Mul(Integer(-1), Float('0.073395957163942207458442844011801', prec=30), Symbol('n0', commutative=False)), Mul(Float('0.449999922474062719432845030483482', prec=30), I, Symbol('n0', commutative=False))))))))""",
     locals=globals())
+    customre # silence pyflakes
+
+    lrat_func = lambdify((t, n0), rat_func4*n0, 'numpy')
+    lpart_frac = lambdify((t, n0), part_frac4*n0, 'numpy')
+    lpart_frac_complex = lambdify((t, n0), part_frac_complex4*n0, ['numpy', {'customre': np.real}])
+
+    lrat_func_vec = lambdify((t, n0), rat_func_vec, 'numpy')
+    lrat_func_horner_vec = lambdify((t, n0), rat_func_horner_vec, 'numpy')
+    lpart_frac_vec = lambdify((t, n0), part_frac_vec, 'numpy')
+    lpart_frac_complex_vec = lambdify((t, n0), part_frac_complex_vec, ['numpy', {'customre': np.real}])
+
+    tvals = np.random.random(10)
+    n0vals = np.random.random(10)
+
+    np.testing.assert_allclose(lrat_func(tvals, n0vals), lrat_func_vec(tvals, n0vals))
+    np.testing.assert_allclose(lrat_func(tvals, n0vals), lrat_func_horner_vec(tvals, n0vals))
+    np.testing.assert_allclose(lpart_frac(tvals, n0vals), lpart_frac_vec(tvals, n0vals))
+    np.testing.assert_allclose(lpart_frac_complex(tvals, n0vals), lpart_frac_complex_vec(tvals, n0vals))
