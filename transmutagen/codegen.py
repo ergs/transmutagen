@@ -128,15 +128,31 @@ class autoeye:
         else:
             return NotImplemented
 
-        if len(other.shape) != 2:
-            raise ValueError("autoeye can only be matmuled by 2-dim numpy arrays")
-
-        if other.shape[0] != other.shape[1]:
-            raise ValueError("autoeye can only be matmuled by square numpy arrays")
+        if len(other.shape) > 2:
+            raise ValueError("autoeye can only be matmuled by 1- or 2-dim numpy arrays")
 
         return self.eval(other.shape[0], eye_type=eye_type, dtype=other.dtype) @ other
 
-    __rmatmul__ = __matmul__
+    def __rmatmul__(self, other):
+        if isinstance(other, autoeye):
+            return autoeye(self.coeff * other.coeff)
+
+        if isinstance(other, np.ndarray):
+            eye_type = np.eye
+        elif isinstance(other, scipy.sparse.spmatrix):
+            eye_type = scipy.sparse.eye
+        else:
+            return NotImplemented
+
+        if len(other.shape) > 2:
+            raise ValueError("autoeye can only be matmuled by 1- or 2-dim numpy arrays")
+
+        if len(other.shape) == 1:
+            ret_shape = 1
+        else:
+            ret_shape = other.shape[1]
+
+        return self.eval(ret_shape, eye_type=eye_type, dtype=other.dtype) @ other
 
     def __str__(self):
         return 'autoeye(%s)' % self.coeff
