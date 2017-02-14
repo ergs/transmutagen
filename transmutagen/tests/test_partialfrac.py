@@ -4,7 +4,9 @@ from sympy import (together, expand_complex, re, im, symbols, sympify,
 import numpy as np
 
 from ..partialfrac import (t, allroots, thetas_alphas, thetas_alphas_to_expr,
-    thetas_alphas_to_expr_complex)
+    thetas_alphas_to_expr_complex, multiply_vector, customre)
+
+n0 = symbols("n0", commutative=False)
 
 def test_re_form():
     theta, alpha = symbols('theta, alpha')
@@ -102,3 +104,35 @@ def test_forms():
 
     np.testing.assert_allclose(lpart_frac(vals), lrat_func(vals))
     np.testing.assert_allclose(lpart_frac_complex(vals), lrat_func(vals))
+
+def test_multiply_vector():
+    rat_func_vec = multiply_vector(rat_func4, n0)
+
+    assert rat_func_vec == sympify("""(0.0000016765299308108737248115802898*t**4*n0 -
+    0.000449815029070811764481317961325*t**3*n0 +
+    0.0184005623076780392150344724797*t**2*n0 -
+    0.240254024325459538837623100106*t*n0 +
+    0.999913477593047111476517762205*n0)/(0.0193768295387776807297603967312*t**4
+    + 0.045750548404322635676959079107*t**3 +
+    0.291753976337465123448099119431*t**2 + 0.756683068883297082135320717398*t
+    + 1.0)""", locals=globals())
+
+    rat_func_horner_vec = multiply_vector(rat_func4, n0, horner=True)
+
+    assert rat_func_horner_vec == sympify("""(t*(t*(t*(0.0000016765299308108737248115802898*t*n0 -
+    0.000449815029070811764481317961325*n0) +
+    0.0184005623076780392150344724797*n0) -
+    0.240254024325459538837623100106*n0) +
+    0.999913477593047111476517762205*n0)/(t*(t*(t*(0.0193768295387776807297603967312*t
+    + 0.045750548404322635676959079107) + 0.291753976337465123448099119431) +
+    0.756683068883297082135320717398) + 1.0)""", locals=globals())
+
+    part_frac_vec = multiply_vector(part_frac4, n0)
+
+    assert part_frac_vec == sympify("""Add(Mul(Float('0.0000865224069528885234822377947049701', prec=30), Symbol('n0', commutative=False)), Mul(Pow(Add(Pow(Add(Symbol('t', real=True), Float('1.54839322329712217439052993875215', prec=30)), Integer(2)), Float('1.42044193610767940377598420545949', prec=30)), Integer(-1)), Add(Mul(Float('0.123373559135665848335708447159696', prec=30), Symbol('t', real=True), Symbol('n0', commutative=False)), Mul(Float('4.73197388969770152224375609265371', prec=30), Symbol('n0', commutative=False)))), Mul(Pow(Add(Pow(Add(Symbol('t', real=True), Float('-0.3678453861815398380437964998596', prec=30)), Integer(2)), Float('13.3818514358464994390440914505336', prec=30)), Integer(-1)), Add(Mul(Integer(-1), Float('0.146791914327884414916885688023602', prec=30), Symbol('t', real=True), Symbol('n0', commutative=False)), Mul(Integer(-1), Float('3.2383118731979676875149681474714', prec=30), Symbol('n0', commutative=False)))))""", locals=globals())
+
+    part_frac_complex_vec = multiply_vector(part_frac_complex4, n0)
+
+    # TODO: Form where the complex numbers aren't distributed
+    assert part_frac_complex_vec == sympify("""Add(Mul(Float('0.0000865224069528885234822377947049701', prec=30), Symbol('n0', commutative=False)), Mul(Integer(2), customre(Add(Mul(Pow(Add(Symbol('t', real=True), Float('1.54839322329712217439052993875215', prec=30), Mul(Integer(-1), Float('1.19182294662742561401495340245672', prec=30), I)), Integer(-1)), Add(Mul(Float('0.061686779567832924167854223579848', prec=30), Symbol('n0', commutative=False)), Mul(Integer(-1), Float('1.90504097930308129535280142244488', prec=30), I, Symbol('n0', commutative=False)))), Mul(Pow(Add(Symbol('t', real=True), Float('-0.3678453861815398380437964998596', prec=30), Mul(Integer(-1), Float('3.65812129867866730352792994532021', prec=30), I)), Integer(-1)), Add(Mul(Integer(-1), Float('0.073395957163942207458442844011801', prec=30), Symbol('n0', commutative=False)), Mul(Float('0.449999922474062719432845030483482', prec=30), I, Symbol('n0', commutative=False))))))))""",
+    locals=globals())
