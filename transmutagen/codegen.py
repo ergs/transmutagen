@@ -174,20 +174,21 @@ def scipy_sparse_solve_with_autoeye(a, b, **kwargs):
     if isinstance(b, autoeye):
         b = b.eval(a.shape[0], scipy.sparse.eye)
 
-    return scipy.sparse.linalg.spsolve(a, b, **kwargs)
+    ret = scipy.sparse.linalg.spsolve(a, b, **kwargs)
+    if isinstance(ret, np.ndarray):
+        ret = ret[:,np.newaxis]
 
-scipy_translations_autoeye = {
-    'solve': scipy_sparse_solve_with_autoeye,
-    'autoeye': autoeye,
-    'matrix_power': lambda a, b: a**b,
-    'real': lambda m: scipy.sparse.csr_matrix((np.real(m.data), m.indices,
-        m.indptr), shape=m.shape),
-    }
+    return ret
 
 scipy_translations = {
     'solve': scipy.sparse.linalg.spsolve,
     'autoeye': autoeye,
     'matrix_power': lambda a, b: a**b,
-    'real': lambda m: scipy.sparse.csr_matrix((np.real(m.data), m.indices,
+    'real': lambda m: np.real(m) if isinstance(m, np.ndarray) else scipy.sparse.csr_matrix((np.real(m.data), m.indices,
         m.indptr), shape=m.shape),
+    }
+
+scipy_translations_autoeye = {
+    **scipy_translations,
+    'solve': scipy_sparse_solve_with_autoeye,
     }
