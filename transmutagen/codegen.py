@@ -43,8 +43,6 @@ class MatrixNumPyPrinter(NumPyPrinter):
 
         rest = Mul(*[i for i in expr.args if i != pow])
 
-        if self._settings['use_autoeye']:
-            return 'solve_with_autoeye(%s, %s)' % (self._print(1/pow), self._print(rest))
         return 'solve(%s, %s)' % (self._print(1/pow), self._print(rest))
 
     def _print_Integer(self, expr):
@@ -162,8 +160,16 @@ def scipy_sparse_solve_with_autoeye(a, b, **kwargs):
 
     return scipy.sparse.linalg.spsolve(a, b, **kwargs)
 
+scipy_translations_autoeye = {
+    'solve': scipy_sparse_solve_with_autoeye,
+    'autoeye': autoeye,
+    'matrix_power': lambda a, b: a**b,
+    'real': lambda m: scipy.sparse.csr_matrix((np.real(m.data), m.indices,
+        m.indptr), shape=m.shape),
+    }
+
 scipy_translations = {
-    'solve_with_autoeye': scipy_sparse_solve_with_autoeye,
+    'solve': scipy.sparse.linalg.spsolve,
     'autoeye': autoeye,
     'matrix_power': lambda a, b: a**b,
     'real': lambda m: scipy.sparse.csr_matrix((np.real(m.data), m.indices,
