@@ -9,8 +9,8 @@ from .tape9utils import tape9_to_sparse, THRESHOLD
 def make_parser():
     p = argparse.ArgumentParser('tape9sparse', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     p.add_argument('tape9', help="path to the TAPE9 file.")
-    p.add_argument('phi', help='the neutron flux in [n/cm^2/sec]',
-                   type=float)
+    p.add_argument('--phi', help='the neutron flux in [n/cm^2/sec]',
+                   type=float, default=4e14)
     p.add_argument('-f', '--format', help='The sparse matrix format',
                    default='csr', dest='format')
     p.add_argument('-d', '--decay', help='path to the decay file, if needed',
