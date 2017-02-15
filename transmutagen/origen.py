@@ -17,7 +17,7 @@ LIBS_DIR = "/home/origen22/libs"
 
 def make_parser():
     p = argparse.ArgumentParser('origen', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    p.add_argument('xs-tape9', help="""path to the cross section TAPE9 file. If
+    p.add_argument('xs-tape9', dest='xs_tape9', help="""path to the cross section TAPE9 file. If
     the path is not absolute, defaults to looking in {LIBS_DIR}""".format(LIBS_DIR=LIBS_DIR))
     p.add_argument('time', help='the time in sec',
                    type=float)
