@@ -19,7 +19,7 @@ def make_parser():
     p.add_argument('xs-tape9', help="path to the cross section TAPE9 file.")
     p.add_argument('time', help='the time in sec',
                    type=float)
-    p.add_argument('phi', help='the neutron flux in [n/cm^2/sec]',
+    p.add_argument('--phi', help='the neutron flux in [n/cm^2/sec]',
                    type=float, default=4e14)
     p.add_argument('--decay-tape9', help="path to the decay TAPE9 file.",
         default=decay_TAPE9)
