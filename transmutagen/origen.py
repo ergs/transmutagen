@@ -25,7 +25,7 @@ def make_parser():
                    type=float, default=4e14)
     p.add_argument('--decay-tape9', help="path to the decay TAPE9 file.",
         default=decay_TAPE9)
-    p.add_argument('--origen', help="Pa;th to the origen executable",
+    p.add_argument('--origen', help="Path to the origen executable",
         default=ORIGEN)
     return p
 
