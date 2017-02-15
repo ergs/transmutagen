@@ -1,5 +1,10 @@
 from subprocess import run
 
+from pyne.utils import toggle_warnings
+import warnings
+toggle_warnings()
+warnings.simplefilter('ignore')
+
 from pyne.origen22 import (nlbs, write_tape5_irradiation, write_tape4,
     parse_tape9, merge_tape9, write_tape9, parse_tape6)
 from pyne.material import from_atom_frac
