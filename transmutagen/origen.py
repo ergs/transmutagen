@@ -13,17 +13,19 @@ from pyne.material import from_atom_frac
 
 ORIGEN = '/home/origen22/code/o2_therm_linux.exe'
 decay_TAPE9 = "/home/origen22/libs/decay.lib"
+LIBS_DIR = "/home/origen22/libs"
 
 def make_parser():
     p = argparse.ArgumentParser('origen', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    p.add_argument('xs-tape9', help="path to the cross section TAPE9 file.")
+    p.add_argument('xs-tape9', help="""path to the cross section TAPE9 file. If
+    the path is not absolute, defaults to looking in {LIBS_DIR}""".format(LIBS_DIR=LIBS_DIR))
     p.add_argument('time', help='the time in sec',
                    type=float)
     p.add_argument('--phi', help='the neutron flux in [n/cm^2/sec]',
                    type=float, default=4e14)
     p.add_argument('--decay-tape9', help="path to the decay TAPE9 file.",
         default=decay_TAPE9)
-    p.add_argument('--origen', help="Path to the origen executable",
+    p.add_argument('--origen', help="Pa;th to the origen executable",
         default=ORIGEN)
     return p
 
@@ -37,6 +39,8 @@ def main():
     args = p.parse_args()
 
     xs_tape9 = args.xs_tape9
+    if not os.path.isabs(xs_tape9):
+        xs_tape9 = os.path.join(LIBS_DIR, xs_tape9)
     time = args.time
     phi = args.phi
     decay_tape9 = args.decay_tape9
