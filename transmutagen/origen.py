@@ -1,3 +1,4 @@
+import os
 from subprocess import run
 
 from pyne.utils import toggle_warnings
@@ -28,8 +29,9 @@ def main():
 
     time = 2e6
 
+    flux = 4e14
     # Can set outfile, but the file name should be called TAPE5.INP.
-    write_tape5_irradiation("IRF", time/(60*60*24), 4e14,
+    write_tape5_irradiation("IRF", time/(60*60*24), flux,
         xsfpy_nlb=xsfpy_nlb, cut_off=0, out_table_num=[4],
         out_table_nes=[True, False, False])
 
@@ -42,6 +44,14 @@ def main():
     data = parse_tape6()
 
     print(data)
+
+    filename = "{library} {time} {flux}.py".format(
+        library=os.path.basename(xs_TAPE9),
+        time=time,
+        flux=flux,
+        )
+    with open('/data/' + filename, 'w') as f:
+        f.write(repr(data))
 
 if __name__ == '__main__':
     main()
