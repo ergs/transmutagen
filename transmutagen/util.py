@@ -6,7 +6,7 @@ import logging
 from functools import wraps
 
 import numpy as np
-
+from scipy.sparse import csr_matrix
 import mpmath
 from sympy import lambdify, symbols
 
@@ -139,3 +139,8 @@ def save_sparse_csr(filename, array, nucs, phi):
     np.savez(filename, data=array.data, indices=array.indices,
              indptr=array.indptr, shape=array.shape, nucs=nucs,
              phi=phi)
+
+def load_sparse_csr(filename):
+    loader = np.load(filename)
+    return (loader['nucs'], csr_matrix((loader['data'], loader['indices'], loader['indptr']),
+                        shape=loader['shape']))

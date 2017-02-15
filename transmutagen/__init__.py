@@ -16,7 +16,8 @@ __all__ += ['MatrixNumPyPrinter', 'autoeye', 'numpy_solve_with_autoeye',
     'scipy_sparse_solve_with_autoeye', 'scipy_translations']
 
 from .util import (diff_strs, relative_error, mean_log10_relative_error,
-    log_function_args, plot_in_terminal)
+    log_function_args, plot_in_terminal, save_sparse_csr, load_sparse_csr)
 
 __all__ += ['diff_strs', 'relative_error', 'mean_log10_relative_error',
-    'log_function_args', 'plot_in_terminal']
+    'log_function_args', 'plot_in_terminal', 'save_sparse_csr',
+    'load_sparse_csr']

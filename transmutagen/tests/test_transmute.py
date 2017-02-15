@@ -8,18 +8,13 @@ import datetime
 from sympy import sympify, lambdify, horner, fraction
 
 import numpy as np
-from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import expm
 
 from ..transmutagen import CRAM_exp, logger
 from ..partialfrac import (thetas_alphas, thetas_alphas_to_expr,
     thetas_alphas_to_expr_complex, t)
 from ..codegen import MatrixNumPyPrinter, scipy_translations
-
-def load_sparse_csr(filename):
-    loader = np.load(filename)
-    return (loader['nucs'], csr_matrix((loader['data'], loader['indices'], loader['indptr']),
-                        shape=loader['shape']))
+from ..util import load_sparse_csr
 
 def lambdify_expr(expr):
     return None_on_RuntimeError(lambdify(t, expr, scipy_translations, printer=MatrixNumPyPrinter))
