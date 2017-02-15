@@ -79,6 +79,7 @@ def main():
         )
     with open('/data/' + filename, 'w') as f:
         f.write(repr(data))
+        print("Writing data to data/" + filename)
 
 if __name__ == '__main__':
     main()
