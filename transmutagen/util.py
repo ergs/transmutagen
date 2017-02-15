@@ -134,7 +134,8 @@ def log_function_args(func):
     return _func
 
 
-def save_sparse_csr(filename, array, nucs):
+def save_sparse_csr(filename, array, nucs, phi):
     """Saves a sparse CSR matrix to disk"""
     np.savez(filename, data=array.data, indices=array.indices,
-             indptr=array.indptr, shape=array.shape, nucs=nucs)
+             indptr=array.indptr, shape=array.shape, nucs=nucs,
+             phi=phi)

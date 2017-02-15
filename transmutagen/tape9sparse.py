@@ -34,7 +34,8 @@ def main(args=None):
     if ns.output is None:
         base = os.path.basename(ns.tape9)
         base, _ = os.path.splitext(base)
-        ns.output = base + '.npz'
+        os.makedirs('data', exist_ok=True)
+        ns.output = os.path.join('data', base + '_' + str(ns.phi) + '.npz')
     if ns.format != 'csr':
         raise ValueError('Only the CSR format is currently available from the '
                          'command line interface.')
@@ -42,7 +43,7 @@ def main(args=None):
                                 decaylib=ns.decaylib,
                                 include_fission=ns.include_fission,
                                 threshold=ns.threshold)
-    save_sparse_csr(ns.output, mat, nucs)
+    save_sparse_csr(ns.output, mat, nucs, ns.phi)
 
 
 if __name__ == '__main__':
