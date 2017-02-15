@@ -32,12 +32,13 @@ class MatrixNumPyPrinter(NumPyPrinter):
                 return '@'.join(terms)
             else:
                 num_terms = [self._print(self.parenthesize(i, prec)) for i in
-                    expr.args if i.is_Number]
+                    expr.args if i.is_number]
                 mat_terms = [self._print(self.parenthesize(i, prec)) for i in
-                    expr.args if not i.is_Number]
-                if num_terms:
+                    expr.args if not i.is_number]
+                if num_terms and mat_terms:
                     return '*'.join(num_terms) + '*' + '@'.join(mat_terms)
-                return '@'.join(mat_terms)
+                else:
+                    return '*'.join(num_terms) + '@'.join(mat_terms)
 
         [pow] = pows
 
