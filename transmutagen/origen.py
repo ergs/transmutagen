@@ -23,6 +23,8 @@ def make_parser():
                    type=float)
     p.add_argument('--phi', help='the neutron flux in [n/cm^2/sec]',
                    type=float, default=4e14)
+    p.add_argument('--nuclide', help="The initial starting nuclide.",
+        default="U235")
     p.add_argument('--decay-tape9', help="path to the decay TAPE9 file.",
         default=decay_TAPE9)
     p.add_argument('--origen', help="Path to the origen executable",
@@ -43,6 +45,7 @@ def main():
         xs_tape9 = os.path.join(LIBS_DIR, xs_tape9)
     time = args.time
     phi = args.phi
+    nuclide = args.nuclide
     decay_tape9 = args.decay_tape9
     origen = args.origen
 
@@ -62,7 +65,7 @@ def main():
         xsfpy_nlb=xsfpy_nlb, cut_off=0, out_table_num=[4],
         out_table_nes=[True, False, False])
 
-    M = from_atom_frac({"U235": 1}, mass=1, atoms_per_molecule=1)
+    M = from_atom_frac({nuclide: 1}, mass=1, atoms_per_molecule=1)
 
     write_tape4(M)
 
@@ -72,9 +75,10 @@ def main():
 
     print(data)
 
-    filename = "{library} {time} {phi}.py".format(
+    filename = "{library} {time} {nuclide} {phi}.py".format(
         library=os.path.basename(xs_tape9),
         time=time,
+        nuclide=nuclide,
         phi=phi,
         )
     with open('/data/' + filename, 'w') as f:
