@@ -12,7 +12,7 @@ def load_data(datafile):
     with open(datafile) as f:
         return eval(f.read(), {'array': np.array})
 
-def test_data():
+def test_data_sanity():
     for datafile in os.listdir(DATA_DIR):
         data = load_data(os.path.join(DATA_DIR, datafile))
 
