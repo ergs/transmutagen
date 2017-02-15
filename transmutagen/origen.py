@@ -21,7 +21,7 @@ def main():
 
     decay_nlb, xsfpy_nlb = nlbs(parsed_xs_tape9)
 
-    time = 3e13
+    time = 2e6
 
     # Can set outfile, but the file name should be called TAPE5.INP.
     write_tape5_irradiation("IRF", time/(60*60*24), 4e14,
