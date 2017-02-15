@@ -37,9 +37,7 @@ def time_and_run(f, *args, _print=False):
         print("Total time", end - start)
     return res
 
-def run_transmute_test(data, degree, prec, expr, time, plot=True, _print=False):
-    nucs, matrix = load_sparse_csr(data)
-
+def get_CRAM_from_cache(degree, prec, expr=None):
     os.makedirs('CRAM_cache', exist_ok=True)
     cache_file = os.path.join('CRAM_cache', '%s_%s' % (degree, prec))
 
@@ -50,6 +48,13 @@ def run_transmute_test(data, degree, prec, expr, time, plot=True, _print=False):
         expr = expr or CRAM_exp(degree, prec, plot=plot)
         with open(cache_file, 'w') as f:
             f.write(str(expr))
+
+    return expr
+
+def run_transmute_test(data, degree, prec, expr, time, plot=True, _print=False):
+    nucs, matrix = load_sparse_csr(data)
+
+    expr = get_CRAM_from_cache(degree, prec, expr=expr)
 
     num, den = fraction(expr)
 
