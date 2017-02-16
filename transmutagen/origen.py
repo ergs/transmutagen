@@ -73,8 +73,6 @@ def main():
 
     data = parse_tape6()
 
-    print(data)
-
     filename = "{library} {time} {nuclide} {phi}.py".format(
         library=os.path.basename(xs_tape9),
         time=time,
