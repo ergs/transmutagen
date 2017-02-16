@@ -53,6 +53,15 @@ def test_data_sanity():
                     # or np.allclose(array_a, array_b)
 
 def test_origen_against_CRAM():
+    rat_func = get_CRAM_from_cache(14, 30)
+    thetas, alphas, alpha0 = thetas_alphas(rat_func, 30)
+    part_frac_complex = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
+    n0 = symbols("n0", commutative=False)
+
+    e_complex = lambdify((t, n0), multiply_vector(part_frac_complex, n0),
+        scipy_translations_autoeye, printer=MatrixNumPyPrinter({'use_autoeye': True
+            }))
+
     for datafile in os.listdir(DATA_DIR):
         origen_data = load_data(os.path.join(DATA_DIR, datafile))
         tape9, time, nuc, phi = os.path.splitext(datafile)[0].split()
@@ -65,16 +74,7 @@ def test_origen_against_CRAM():
         b = csr_matrix(([1], [[nuc_to_idx[nuc]], [0]]), shape=[mat.shape[1],
         1])
 
-        rat_func = get_CRAM_from_cache(14, 30)
-        thetas, alphas, alpha0 = thetas_alphas(rat_func, 30)
-        part_frac_complex = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
-        n0 = symbols("n0", commutative=False)
-
-        e_complex = lambdify((t, n0), multiply_vector(part_frac_complex, n0),
-            scipy_translations_autoeye, printer=MatrixNumPyPrinter({'use_autoeye': True
-                }))
-
-        CRAM_res = np.asarray(e_complex(-mat*float(time), b))
+        CRAM_res = np.asarray(e_complex(-mat.T*float(time), b))
 
         ORIGEN_res = origen_data_to_array(origen_data, nucs)
 
