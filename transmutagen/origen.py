@@ -71,6 +71,9 @@ def main():
 
     run(origen)
 
+    with open('TAPE6.OUT') as f:
+        print(f.read())
+
     data = parse_tape6()
 
     filename = "{library} {time} {nuclide} {phi}.py".format(
