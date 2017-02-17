@@ -72,9 +72,6 @@ def main():
 
     run(origen)
 
-    with open('TAPE6.OUT') as f:
-        print(f.read())
-
     # Make pyne use naive atomic mass numbers to match ORIGEN
     for i in pyne.data.atomic_mass_map:
         pyne.data.atomic_mass_map[i] = float(pyne.nucname.anum(i))
