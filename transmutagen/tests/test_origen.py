@@ -38,19 +38,20 @@ def test_data_sanity():
         data = load_data(os.path.join(DATA_DIR, datafile))
         tape9, time, nuc, phi = os.path.splitext(datafile)[0].split()
 
-        assert 'table_4' in data
-        assert 'nuclide' in data['table_4']
+        for table in ['table_4', 'table_5']:
+            assert table in data
+            assert 'nuclide' in data[table]
 
-        nuclide = data['table_4']['nuclide']
+            nuclide = data['table_4']['nuclide']
 
-        # Sanity check
-        for comb in combinations(NUCLIDE_KEYS, 2):
-            a, b = comb
-            for common in set.intersection(set(nuclide[a]), set(nuclide[b])):
-                array_a, array_b = nuclide[a][common], nuclide[b][common]
-                assert np.allclose(array_a, 0) \
-                    or np.allclose(array_b, 0)
-                    # or np.allclose(array_a, array_b)
+            # Sanity check
+            for comb in combinations(NUCLIDE_KEYS, 2):
+                a, b = comb
+                for common in set.intersection(set(nuclide[a]), set(nuclide[b])):
+                    array_a, array_b = nuclide[a][common], nuclide[b][common]
+                    assert np.allclose(array_a, 0) \
+                        or np.allclose(array_b, 0)
+                        # or np.allclose(array_a, array_b)
 
 def test_origen_against_CRAM():
     rat_func = get_CRAM_from_cache(14, 30)
