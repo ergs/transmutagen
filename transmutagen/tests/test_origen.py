@@ -79,5 +79,4 @@ def test_origen_against_CRAM():
 
         ORIGEN_res = origen_data_to_array(origen_data, nucs)
 
-        import pudb;pudb.set_trace()
         np.testing.assert_allclose(CRAM_res, ORIGEN_res)
