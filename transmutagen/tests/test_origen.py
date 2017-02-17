@@ -5,8 +5,8 @@ import numpy as np
 from scipy.sparse import csr_matrix
 from sympy import symbols, lambdify
 import pyne.material
-import pyne.nucname
 
+from ..tape9utils import origen_to_name
 from ..partialfrac import (thetas_alphas, thetas_alphas_to_expr_complex, t,
     multiply_vector)
 from ..codegen import MatrixNumPyPrinter, scipy_translations_autoeye
@@ -17,19 +17,33 @@ DATA_DIR = os.path.abspath(os.path.join(__file__, os.path.pardir,
     os.path.pardir, os.path.pardir, 'docker', 'data'))
 
 NUCLIDE_KEYS = ['activation_products', 'actinides', 'fission_products']
-# NUCLIDE_KEYS = ['fission_products']
 
 def load_data(datafile):
     with open(datafile) as f:
         return eval(f.read(), {'array': np.array, 'pyne': pyne})
 
-def origen_data_to_array(data, nucs):
-    material = data['materials'][1]
+def origen_to_array(origen_dict, nucs):
     new_data = np.zeros((len(nucs), 1))
     nuc_to_idx = {v: i for i, v in enumerate(nucs)}
+    for i in origen_dict:
+        new_data[nuc_to_idx[origen_to_name(i)]] += origen_dict[i][1]
 
-    for nuc, atom_frac in material.to_atom_frac().items():
-        new_data[nuc_to_idx[pyne.nucname.name(nuc)]] = atom_frac
+    return new_data
+
+def origen_data_to_array(data, nucs):
+    # Table 5 is grams
+    table_5_weights = {}
+    table_5_nuclide = data['table_5']['nuclide']
+    for key in NUCLIDE_KEYS:
+        table_5_weights[key] = np.sum(origen_to_array(table_5_nuclide[key], nucs), axis=0)
+    table_5_weights['fission_products'] *= 2
+    total_weight = sum(table_5_weights.values())
+
+    # Table 4 is atom fraction
+    table_4_nuclide = data['table_4']['nuclide']
+    new_data = np.zeros((len(nucs), 1))
+    for key in NUCLIDE_KEYS:
+        new_data += table_5_weights[key]*origen_to_array(table_4_nuclide[key], nucs)
 
     return new_data
 
