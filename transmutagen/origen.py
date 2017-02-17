@@ -7,6 +7,7 @@ import warnings
 toggle_warnings()
 warnings.simplefilter('ignore')
 
+import pyne.data
 from pyne.origen22 import (nlbs, write_tape5_irradiation, write_tape4,
     parse_tape9, merge_tape9, write_tape9, parse_tape6)
 from pyne.material import from_atom_frac
@@ -73,6 +74,10 @@ def main():
 
     with open('TAPE6.OUT') as f:
         print(f.read())
+
+    # Make pyne use naive atomic mass numbers to match ORIGEN
+    for i in pyne.data.atomic_mass_map:
+        pyne.data.atomic_mass_map[i] = float(pyne.nucname.anum(i))
 
     data = parse_tape6()
 
