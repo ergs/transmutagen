@@ -19,6 +19,11 @@ DATA_DIR = os.path.abspath(os.path.join(__file__, os.path.pardir,
 NUCLIDE_KEYS = ['activation_products', 'actinides', 'fission_products']
 
 def load_data(datafile):
+    import pyne.data
+    # Make pyne use naive atomic mass numbers to match ORIGEN
+    for i in pyne.data.atomic_mass_map:
+        pyne.data.atomic_mass_map[i] = float(pyne.nucname.anum(i))
+
     with open(datafile) as f:
         return eval(f.read(), {'array': np.array, 'pyne': pyne})
 
