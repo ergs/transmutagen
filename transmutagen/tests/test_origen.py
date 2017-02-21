@@ -119,4 +119,6 @@ def test_origen_against_CRAM():
         ORIGEN_res_materials = origen_data_to_array_materials(origen_data, nucs)
         ORIGEN_res_atom_fraction = origen_data_to_array_atom_fraction(origen_data, nucs)
 
-        np.testing.assert_allclose(CRAM_res, ORIGEN_res)
+        np.testing.assert_allclose(CRAM_res, ORIGEN_res_weighted)
+        np.testing.assert_allclose(CRAM_res_normalized, ORIGEN_res_materials)
+        np.testing.assert_allclose(CRAM_res_normalized, ORIGEN_res_atom_fraction)
