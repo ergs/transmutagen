@@ -119,17 +119,21 @@ def test_origen_against_CRAM():
         ORIGEN_res_materials = origen_data_to_array_materials(origen_data, nucs)
         ORIGEN_res_atom_fraction = origen_data_to_array_atom_fraction(origen_data, nucs)
 
-        for C, O in [
-            (CRAM_res, ORIGEN_res_weighted),
-            (CRAM_res_normalized, ORIGEN_res_materials),
-            (CRAM_res_normalized, ORIGEN_res_atom_fraction),
+        for C, O, norm_type in [
+            (CRAM_res, ORIGEN_res_weighted, 'weighted'),
+            (CRAM_res_normalized, ORIGEN_res_materials, 'materials'),
+            (CRAM_res_normalized, ORIGEN_res_atom_fraction, 'atom fraction'),
             ]:
 
+            print("ORIGEN normalization:", norm_type)
             try:
                 np.testing.assert_allclose(C, O, rtol=1e-3, atol=1e-5)
             except AssertionError as e:
                 print(e)
-                for i in np.argsort(np.isclose(C, O, rtol=1e-3, atol=1e-6), axis=0)[:3]:
+                print("Top mismatching elements (CRAM, ORIGEN)")
+                A = np.isclose(C, O, rtol=1e-3, atol=1e-6)
+                for i in np.argsort(A, axis=0)[np.sort(A, axis=0)==False]:
                     print(nucs[i], C[i], O[i])
+                print()
 
         assert False
