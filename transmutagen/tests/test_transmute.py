@@ -73,6 +73,8 @@ def run_transmute_test(data, degree, prec, expr, time, plot=True, _print=False):
 
     res = {}
     for func in sorted(e):
+        if _print:
+            print(func)
         arg = -matrix*time
         res[func] = time_and_run(e[func], arg, _print=_print)
 
