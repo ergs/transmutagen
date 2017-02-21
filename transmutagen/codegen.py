@@ -149,7 +149,11 @@ class autoeye:
             raise ValueError("autoeye can only be matmuled by 1- or 2-dim numpy arrays")
 
         if len(other.shape) == 1:
-            ret_shape = 1
+            # Matmul works weird on 1d arrays. It treats them as column
+            # vectors from the left and row vectors from the right. For
+            # consistency, only allow the left variant. We should perhaps
+            # disallow both.
+            raise ValueError("Right matmul of autoeue requires shape=2")
         else:
             ret_shape = other.shape[1]
 
