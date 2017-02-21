@@ -41,8 +41,15 @@ def test_autoeye():
     assert e + e == autoeye(4)
     assert e*e == autoeye(4)
 
-    raises(ValueError, lambda: e @ np.array([1]))
-    raises(ValueError, lambda: e @ np.array([[1, 2]]))
+    assert_array_equal(e @ np.array([1, 2]), np.array([2, 4]))
+    assert_array_equal(e @ np.array([[1, 2]]), np.array([[2, 4]]))
+    assert_array_equal(e @ np.array([[1], [2]]), np.array([[2], [4]]))
+
+    assert_array_equal(np.array([[1, 2]]) @ e, np.array([[2, 4]]))
+    assert_array_equal(np.array([[1], [2]]) @ e, np.array([[2], [4]]))
+
+    raises(ValueError, lambda: np.array([1, 2]) @ e)
+    raises(ValueError, lambda: e @ np.array([[[1, 2]]]))
 
     res = e @ np.array([[1, 2], [3, 4]])
     assert_array_equal(res, np.array([[2, 4], [6, 8]]))
