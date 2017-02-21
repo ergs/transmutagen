@@ -13,11 +13,11 @@ from scipy.sparse.linalg import expm
 from ..transmutagen import CRAM_exp, logger
 from ..partialfrac import (thetas_alphas, thetas_alphas_to_expr,
     thetas_alphas_to_expr_complex, t)
-from ..codegen import MatrixNumPyPrinter, scipy_translations
+from ..codegen import MatrixNumPyPrinter, scipy_translations_autoeye
 from ..util import load_sparse_csr
 
 def lambdify_expr(expr):
-    return None_on_RuntimeError(lambdify(t, expr, scipy_translations, printer=MatrixNumPyPrinter))
+    return None_on_RuntimeError(lambdify(t, expr, scipy_translations_autoeye, printer=MatrixNumPyPrinter))
 
 def None_on_RuntimeError(f):
     @wraps(f)
