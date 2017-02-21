@@ -157,7 +157,7 @@ class autoeye:
         else:
             ret_shape = other.shape[1]
 
-        return self.eval(ret_shape, eye_type=eye_type, dtype=other.dtype) @ other
+        return other @ self.eval(ret_shape, eye_type=eye_type, dtype=other.dtype)
 
     def __str__(self):
         return 'autoeye(%s)' % self.coeff
