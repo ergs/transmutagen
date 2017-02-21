@@ -136,4 +136,5 @@ def test_origen_against_CRAM():
                     print(nucs[i], C[i], O[i])
                 print()
 
-        assert False
+if __name__ == '__main__':
+    test_origen_against_CRAM()
