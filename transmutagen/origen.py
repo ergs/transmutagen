@@ -1,3 +1,5 @@
+# PYTHON_ARGCOMPLETE_OK
+
 import argparse
 import os
 from subprocess import run
