@@ -3,6 +3,7 @@ plots/
 logs/
 CRAM_cache/
 docker/ORIGEN.zip
+docker/o2prec
 TAPE*
 
 # Byte-compiled / optimized / DLL files
