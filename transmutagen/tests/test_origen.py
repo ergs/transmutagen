@@ -103,9 +103,10 @@ def test_origen_against_CRAM():
     # ORIGEN returns 3 digits
     rtol=1e-3
     # ORIGEN stops the taylor expansion with the error term
-    # exp(ASUM)*ASUM**n/n!, where n = 3.5*ASUM + 6 and ASUM is the max of the
-    # column sums. The max of the column sums is ~2 because of fission, giving
-    # ~1e-5 (see ORIGEN lines 5075-5100)
+    # exp(ASUM)*ASUM**n/n! (using Sterling's approximation), where n =
+    # 3.5*ASUM + 6 and ASUM is the max of the column sums. The max of the
+    # column sums is ~2 because of fission, giving ~1e-5 (see ORIGEN lines
+    # 5075-5100)
     atol=1e-5
 
     for datafile in os.listdir(DATA_DIR):
