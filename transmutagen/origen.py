@@ -86,7 +86,7 @@ def main():
         nuclide=nuclide,
         phi=phi,
         )
-    with open('/data/' + filename, 'w') as f:
+    with open('data/' + filename, 'w') as f:
         f.write(repr(data))
         print("Writing data to data/" + filename)
 
