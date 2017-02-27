@@ -131,7 +131,7 @@ def test_origen_against_CRAM():
 
         for C, O, units in [
             (CRAM_res, ORIGEN_res_weighted, 'atom fractions'),
-            (CRAM_res_normalized, ORIGEN_res_materials, 'mass frations'),
+            (CRAM_res_normalized, ORIGEN_res_materials, 'mass fractions'),
             # (CRAM_res_normalized, ORIGEN_res_atom_fraction, 'atom fraction'),
             ]:
 
