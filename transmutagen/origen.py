@@ -65,7 +65,7 @@ def main():
 
     # Can set outfile, but the file name should be called TAPE5.INP.
     write_tape5_irradiation("IRF", time/(60*60*24), phi,
-        xsfpy_nlb=xsfpy_nlb, cut_off=0, out_table_num=None,
+        xsfpy_nlb=xsfpy_nlb, cut_off=0, out_table_num=[4, 5],
         out_table_nes=[True, False, False])
 
     M = from_atom_frac({nuclide: 1}, mass=1, atoms_per_molecule=1)
