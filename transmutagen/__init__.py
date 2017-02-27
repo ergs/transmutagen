@@ -1,4 +1,4 @@
-from .transmutagen import (general_rat_func, nsolve_intervals, nsolve_points, CRAM_exp)
+from .cram import (general_rat_func, nsolve_intervals, nsolve_points, CRAM_exp)
 
 __all__ = ['general_rat_func', 'nsolve_intervals', 'nsolve_points', 'CRAM_exp']
 

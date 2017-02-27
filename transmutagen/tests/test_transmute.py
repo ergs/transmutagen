@@ -10,7 +10,7 @@ from sympy import sympify, lambdify, horner, fraction
 import numpy as np
 from scipy.sparse.linalg import expm
 
-from ..transmutagen import CRAM_exp, logger
+from ..cram import CRAM_exp, logger
 from ..partialfrac import (thetas_alphas, thetas_alphas_to_expr,
     thetas_alphas_to_expr_complex, t)
 from ..codegen import MatrixNumPyPrinter, scipy_translations_autoeye

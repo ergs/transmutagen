@@ -9,14 +9,16 @@ Transmutation SymPy Code Generator
 First, get the git master version of SymPy and set `PYTHONPATH` to point to
 it.
 
-Then run
+## Generating the CRAM approximation to exp(-x) on [0, oo)
 
-    python -m transmutagen D N
+Run
+
+    python -m transmutagen.cram D N
 
 where `D` is the degree of the approximation and `N` is the number of digits.
 A typical run would be something like
 
-    python -m transmutagen 18 30
+    python -m transmutagen.cram 18 30
 
 There are many options, but it is not recommending changing them unless you
 know what you are doing. See `python -m transmutagen --help`. To
