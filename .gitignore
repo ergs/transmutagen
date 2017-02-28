@@ -5,6 +5,9 @@ CRAM_cache/
 docker/ORIGEN.zip
 docker/o2prec
 TAPE*
+log
+data/
+docker/data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
