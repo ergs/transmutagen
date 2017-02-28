@@ -4,19 +4,79 @@ import argparse
 import os
 from subprocess import run
 
+import numpy as np
+
 from pyne.utils import toggle_warnings
 import warnings
 toggle_warnings()
 warnings.simplefilter('ignore')
 
 import pyne.data
+import pyne.material
 from pyne.origen22 import (nlbs, write_tape5_irradiation, write_tape4,
     parse_tape9, merge_tape9, write_tape9, parse_tape6)
 from pyne.material import from_atom_frac
 
+from .tape9utils import origen_to_name
+
 ORIGEN = '/home/origen22/code/o2_therm_linux.exe'
 decay_TAPE9 = "/home/origen22/libs/decay.lib"
 LIBS_DIR = "/home/origen22/libs"
+
+
+NUCLIDE_KEYS = ['activation_products', 'actinides', 'fission_products']
+
+def load_data(datafile):
+    import pyne.data
+    # Make pyne use naive atomic mass numbers to match ORIGEN
+    for i in pyne.data.atomic_mass_map:
+        pyne.data.atomic_mass_map[i] = float(pyne.nucname.anum(i))
+
+    with open(datafile) as f:
+        return eval(f.read(), {'array': np.array, 'pyne': pyne})
+
+def origen_to_array(origen_dict, nucs):
+    new_data = np.zeros((len(nucs), 1))
+    nuc_to_idx = {v: i for i, v in enumerate(nucs)}
+    for i in origen_dict:
+        new_data[nuc_to_idx[origen_to_name(i)]] += origen_dict[i][1]
+
+    return new_data
+
+def origen_data_to_array_weighted(data, nucs, n_fission_fragments=2.004):
+    # Table 5 is grams
+    table_5_weights = {}
+    table_5_nuclide = data['table_5']['nuclide']
+    for key in NUCLIDE_KEYS:
+        table_5_weights[key] = np.sum(origen_to_array(table_5_nuclide[key], nucs), axis=0)
+    table_5_weights['fission_products'] *= n_fission_fragments
+
+    # Table 4 is atom fraction
+    table_4_nuclide = data['table_4']['nuclide']
+    new_data = np.zeros((len(nucs), 1))
+    for key in NUCLIDE_KEYS:
+        new_data += table_5_weights[key]*origen_to_array(table_4_nuclide[key], nucs)
+
+    return new_data
+
+def origen_data_to_array_atom_fraction(data, nucs, n_fission_fragments=2):
+    # Table 4 is atom fraction
+    table_4_nuclide = data['table_4']['nuclide']
+    new_data = np.zeros((len(nucs), 1))
+    for key in NUCLIDE_KEYS:
+        new_data += origen_to_array(table_4_nuclide[key], nucs)
+
+    return new_data
+
+def origen_data_to_array_materials(data, nucs):
+    material = data['materials'][1]
+    new_data = np.zeros((len(nucs), 1))
+    nuc_to_idx = {v: i for i, v in enumerate(nucs)}
+
+    for nuc, atom_frac in material.to_atom_frac().items():
+        new_data[nuc_to_idx[pyne.nucname.name(nuc)]] = atom_frac
+
+    return new_data
 
 def make_parser():
     p = argparse.ArgumentParser('origen', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
