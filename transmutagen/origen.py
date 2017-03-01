@@ -5,6 +5,7 @@ import os
 from subprocess import run
 
 import numpy as np
+import tables
 
 from pyne.utils import toggle_warnings
 import warnings
@@ -22,7 +23,6 @@ from .tape9utils import origen_to_name
 ORIGEN = '/home/origen22/code/o2_therm_linux.exe'
 decay_TAPE9 = "/home/origen22/libs/decay.lib"
 LIBS_DIR = "/home/origen22/libs"
-
 
 NUCLIDE_KEYS = ['activation_products', 'actinides', 'fission_products']
 
@@ -77,6 +77,28 @@ def origen_data_to_array_materials(data, nucs):
         new_data[nuc_to_idx[pyne.nucname.name(nuc)]] = atom_frac
 
     return new_data
+
+def create_hdf5_table(file, lib, nucs_size):
+    transmutation_desc = np.dtype([
+        ('initial vector', np.float64, (1, nucs_size)),
+        ('time', np.float64),
+        ('phi', np.float64),
+        ('execution time ORIGEN', np.float64),
+        ('execution time CRAM', np.float64),
+        ('ORIGEN atom fraction', (1, nucs_size)),
+        ('ORIGEN mass fraction', (1, nucs_size)),
+        ('CRAM atom fraction', (1, nucs_size)),
+        ('CRAM mass fraction', (1, nucs_size)),
+        ])
+
+    h5file = tables.open_file(file, mode="a", title="ORIGEN data", filters=tables.Filters(complevel=1))
+    h5file.create_table('/', lib, transmutation_desc)
+
+def save_file(file, data, lib, nucs_size, start_nuclide, time, phi):
+    h5file = tables.open_file(file, mode="a", title="ORIGEN data", filters=tables.Filters(complevel=1))
+    if lib not in h5file.root:
+        create_hdf5_table(file, lib, nucs_size)
+
 
 def make_parser():
     p = argparse.ArgumentParser('origen', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
