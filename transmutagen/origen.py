@@ -59,7 +59,7 @@ def origen_data_to_array_weighted(data, nucs, n_fission_fragments=2.004):
 
     return new_data
 
-def origen_data_to_array_atom_fraction(data, nucs, n_fission_fragments=2):
+def origen_data_to_array_atom_fraction(data, nucs):
     # Table 4 is atom fraction
     table_4_nuclide = data['table_4']['nuclide']
     new_data = np.zeros((len(nucs), 1))
