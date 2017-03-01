@@ -83,6 +83,7 @@ def create_hdf5_table(file, lib, nucs_size):
         ('initial vector', np.float64, (1, nucs_size)),
         ('time', np.float64),
         ('phi', np.float64),
+        ('n_fission_fragments', np.float64),
         ('execution time ORIGEN', np.float64),
         ('execution time CRAM', np.float64),
         ('ORIGEN atom fraction', (1, nucs_size)),
@@ -94,11 +95,19 @@ def create_hdf5_table(file, lib, nucs_size):
     h5file = tables.open_file(file, mode="a", title="ORIGEN data", filters=tables.Filters(complevel=1))
     h5file.create_table('/', lib, transmutation_desc)
 
-def save_file(file, data, lib, nucs_size, start_nuclide, time, phi):
+def save_file(file, data, lib, nucs, start_nuclide, time, phi, n_fission_fragments=2.004):
     h5file = tables.open_file(file, mode="a", title="ORIGEN data", filters=tables.Filters(complevel=1))
     if lib not in h5file.root:
-        create_hdf5_table(file, lib, nucs_size)
-
+        create_hdf5_table(file, lib, len(nucs))
+    table = h5file.get_node(h5file.root, lib)
+    # table.row['initial vector'] = initial_vector(start_nuclide)
+    table.row['time'] = time
+    table.row['phi'] = phi
+    table.row['n_fission_fragments'] = n_fission_fragments
+    # table.row['execution time ORIGEN']
+    # table.row['execution time CRAM']
+    table.row['ORIGEN atom fraction'] = origen_data_to_array_weighted(data, nucs, n_fission_fragments=n_fission_fragments)
+    table.row['ORIGEN mass fraction'] = origen_data_to_array_materials(data, nucs)
 
 def make_parser():
     p = argparse.ArgumentParser('origen', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
