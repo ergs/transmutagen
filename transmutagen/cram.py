@@ -1,10 +1,11 @@
 # PYTHON_ARGCOMPLETE_OK
 import argparse
+import os
 import logging
 
 import mpmath
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
-    chebyshevt_root, Tuple, diff, N, solve, Poly, lambdify, sign, fraction)
+    chebyshevt_root, Tuple, diff, N, solve, Poly, lambdify, sign, fraction, sympify)
 
 from sympy.utilities.decorator import conserve_mpmath_dps
 
@@ -250,6 +251,19 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
 
     return ret
 
+def get_CRAM_from_cache(degree, prec, expr=None, plot=False):
+    os.makedirs('CRAM_cache', exist_ok=True)
+    cache_file = os.path.join('CRAM_cache', '%s_%s' % (degree, prec))
+
+    if not expr and os.path.exists(cache_file):
+        with open(cache_file) as f:
+            expr = sympify(f.read(), globals())
+    else:
+        expr = expr or CRAM_exp(degree, prec, plot=plot)
+        with open(cache_file, 'w') as f:
+            f.write(str(expr))
+
+    return expr
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
