@@ -3,6 +3,7 @@ import difflib
 import inspect
 import os
 import logging
+import time
 from functools import wraps
 
 import numpy as np
@@ -146,3 +147,15 @@ def load_sparse_csr(filename):
     loader = np.load(filename)
     return (loader['nucs'], csr_matrix((loader['data'], loader['indices'], loader['indptr']),
                         shape=loader['shape']))
+
+
+def time_func(f, *args, **kwargs):
+    """
+    Times f(*args, **kwargs)
+
+    Returns (time_elapsed, f(*args, **kwargs)).
+
+    """
+    t = time.perf_counter()
+    res = f(*args, **kwargs)
+    return time.perf_counter() - t, res

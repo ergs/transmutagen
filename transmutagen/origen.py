@@ -3,7 +3,7 @@
 import argparse
 import os
 from subprocess import run
-import time
+import logging
 
 import numpy as np
 from scipy.sparse import csr_matrix
@@ -20,9 +20,14 @@ from pyne.origen22 import (nlbs, write_tape5_irradiation, write_tape4,
     parse_tape9, merge_tape9, write_tape9, parse_tape6)
 from pyne.material import from_atom_frac
 
-from .util import load_sparse_csr
+from .util import load_sparse_csr, time_func
 from .tape9utils import origen_to_name
 from .codegen import CRAM_matrix_exp_lambdify
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler())
+# Change to WARN for less output
+logger.setLevel(logging.INFO)
 
 ORIGEN = '/home/origen22/code/o2_therm_linux.exe'
 decay_TAPE9 = "/home/origen22/libs/decay.lib"
@@ -84,51 +89,55 @@ def origen_data_to_array_materials(data, nucs):
 
     return new_data
 
+def initial_vector(start_nuclide, nucs):
+    nuc_to_idx = {v: i for i, v in enumerate(nucs)}
+    return csr_matrix(([1], [[nuc_to_idx[start_nuclide]], [0]]),
+        shape=(len(nucs), 1))
+
 def create_hdf5_table(file, lib, nucs_size):
     transmutation_desc = np.dtype([
-        ('initial vector', np.float64, (1, nucs_size)),
+        ('initial vector', np.float64, (nucs_size, 1)),
         ('time', np.float64),
         ('phi', np.float64),
         ('n_fission_fragments', np.float64),
         ('execution time ORIGEN', np.float64),
         ('execution time CRAM', np.float64),
-        ('ORIGEN atom fraction', (1, nucs_size)),
-        ('ORIGEN mass fraction', (1, nucs_size)),
-        ('CRAM atom fraction', (1, nucs_size)),
-        ('CRAM mass fraction', (1, nucs_size)),
+        ('ORIGEN atom fraction', np.float64, (nucs_size, 1)),
+        ('ORIGEN mass fraction', np.float64, (nucs_size, 1)),
+        ('CRAM atom fraction', np.float64, (nucs_size, 1)),
+        ('CRAM mass fraction', np.float64, (nucs_size, 1)),
         ])
 
     h5file = tables.open_file(file, mode="a", title="ORIGEN data", filters=tables.Filters(complevel=1))
     h5file.create_table('/', lib, transmutation_desc)
 
-def time_func(f, *args, **kwargs):
-    """
-    Times f(*args, **kwargs)
+def save_file(file, *, ORIGEN_data, lib, nucs, start_nuclide, time, phi, CRAM_time,
+    ORIGEN_time, CRAM_res, n_fission_fragments=2.004):
+    assert len(CRAM_res) == len(nucs)
+    with tables.open_file(file, mode="a", title="ORIGEN data",
+        filters=tables.Filters(complevel=1)) as h5file:
 
-    Returns (time_elapsed, f(*args, **kwargs)).
+        if lib not in h5file.root:
+            create_hdf5_table(file, lib, len(nucs))
+        if 'nucs' not in h5file.root:
+            h5file.create_array(h5file.root, 'nucs', np.array(nucs, 'S6'))
 
-    """
-    t = time.perf_counter()
-    res = f(*args, **kwargs)
-    return time.perf_counter() - t, res
+        table = h5file.get_node(h5file.root, lib)
+        table.row['initial vector'] = initial_vector(start_nuclide, nucs).toarray()
+        table.row['time'] = time
+        table.row['phi'] = phi
+        table.row['n_fission_fragments'] = n_fission_fragments
+        table.row['execution time CRAM'] = CRAM_time
+        table.row['execution time ORIGEN'] = ORIGEN_time
+        table.row['ORIGEN atom fraction'] = origen_data_to_array_weighted(ORIGEN_data, nucs, n_fission_fragments=n_fission_fragments)
+        table.row['ORIGEN mass fraction'] = origen_data_to_array_materials(ORIGEN_data, nucs)
+        table.row['CRAM atom fraction'] = CRAM_res
+        CRAM_res_normalized = CRAM_res/np.sum(CRAM_res)
+        table.row['CRAM mass fraction'] = CRAM_res_normalized
+        table.row.append()
+        table.flush()
 
-def save_file(file, data, lib, nucs, start_nuclide, time, phi, n_fission_fragments=2.004):
-    h5file = tables.open_file(file, mode="a", title="ORIGEN data", filters=tables.Filters(complevel=1))
-    if lib not in h5file.root:
-        create_hdf5_table(file, lib, len(nucs))
-    table = h5file.get_node(h5file.root, lib)
-    # table.row['initial vector'] = initial_vector(start_nuclide)
-    table.row['time'] = time
-    table.row['phi'] = phi
-    table.row['n_fission_fragments'] = n_fission_fragments
-    # table.row['execution time ORIGEN']
-    # table.row['execution time CRAM']
-    table.row['ORIGEN atom fraction'] = origen_data_to_array_weighted(data, nucs, n_fission_fragments=n_fission_fragments)
-    table.row['ORIGEN mass fraction'] = origen_data_to_array_materials(data, nucs)
-
-
-
-def test_origen_against_CRAM():
+def test_origen_against_CRAM(origen_data, xs_tape9, time, nuclide, phi):
     e_complex = CRAM_matrix_exp_lambdify()
 
     # ORIGEN returns 3 digits
@@ -140,48 +149,48 @@ def test_origen_against_CRAM():
     # 5075-5100)
     atol=1e-5
 
-    for datafile in os.listdir(DATA_DIR):
-        origen_data = load_data(os.path.join(DATA_DIR, datafile))
-        tape9, time, nuc, phi = os.path.splitext(datafile)[0].split()
-        print("Analyzing", tape9, "at time=", time, "nuc=", nuc, "phi=", phi)
-        print('-'*80)
+    logger.info("Analyzing %s at time=%s, nuclide=%s, phi=%s", xs_tape9, time, nuclide, phi)
+    logger.info('-'*80)
 
-        npzfilename = os.path.join('data', os.path.splitext(tape9)[0] + '_' + phi + '.npz')
-        nucs, mat = load_sparse_csr(npzfilename)
+    npzfilename = os.path.join('data', os.path.splitext(os.path.basename(xs_tape9))[0] + '_' +
+    str(phi) + '.npz')
 
-        nuc_to_idx = {v: i for i, v in enumerate(nucs)}
-        b = csr_matrix(([1], [[nuc_to_idx[nuc]], [0]]), shape=[mat.shape[1],
-        1])
+    nucs, mat = load_sparse_csr(npzfilename)
+    assert mat.shape[1] == len(nucs)
+    b = initial_vector(nuclide, nucs)
 
-        CRAM_res = np.asarray(e_complex(-mat.T*float(time), b))
-        CRAM_res_normalized = CRAM_res/np.sum(CRAM_res)
+    CRAM_time, CRAM_res = time_func(e_complex, -mat.T*float(time), b)
+    CRAM_res = np.asarray(CRAM_res)
+    CRAM_res_normalized = CRAM_res/np.sum(CRAM_res)
 
-        ORIGEN_res_weighted = origen_data_to_array_weighted(origen_data, nucs,)
-        ORIGEN_res_materials = origen_data_to_array_materials(origen_data, nucs)
-        # ORIGEN_res_atom_fraction = origen_data_to_array_atom_fraction(origen_data, nucs)
+    ORIGEN_res_weighted = origen_data_to_array_weighted(origen_data, nucs,)
+    ORIGEN_res_materials = origen_data_to_array_materials(origen_data, nucs)
+    # ORIGEN_res_atom_fraction = origen_data_to_array_atom_fraction(origen_data, nucs)
 
-        for C, O, units in [
-            (CRAM_res, ORIGEN_res_weighted, 'atom fractions'),
-            (CRAM_res_normalized, ORIGEN_res_materials, 'mass fractions'),
-            # (CRAM_res_normalized, ORIGEN_res_atom_fraction, 'atom fraction'),
-            ]:
+    for C, O, units in [
+        (CRAM_res, ORIGEN_res_weighted, 'atom fractions'),
+        (CRAM_res_normalized, ORIGEN_res_materials, 'mass fractions'),
+        # (CRAM_res_normalized, ORIGEN_res_atom_fraction, 'atom fraction'),
+        ]:
 
-            print("Units:", units)
-            try:
-                np.testing.assert_allclose(C, O, rtol=rtol, atol=atol)
-            except AssertionError as e:
-                print(e)
-                print("Mismatching elements sorted by error (CRAM, ORIGEN, symmetric relative error)")
-                A = np.isclose(C, O, rtol=rtol, atol=atol)
-                rel_error = abs(C - O)/(C + O)
-                for i, in np.argsort(rel_error, axis=0)[::-1]:
-                    if A[i]:
-                        continue
-                    print(nucs[i], C[i], O[i], rel_error[i])
-            else:
-                print("Arrays match with rtol=", rtol, "atol=", atol)
+        logger.info("Units: %s", units)
+        try:
+            np.testing.assert_allclose(C, O, rtol=rtol, atol=atol)
+        except AssertionError as e:
+            logger.info(e)
+            logger.info("Mismatching elements sorted by error (CRAM, ORIGEN, symmetric relative error)")
+            A = np.isclose(C, O, rtol=rtol, atol=atol)
+            rel_error = abs(C - O)/(C + O)
+            for i, in np.argsort(rel_error, axis=0)[::-1]:
+                if A[i]:
+                    continue
+                logger.info("%s %s %s %s", nucs[i], C[i], O[i], rel_error[i])
+        else:
+            logger.info("Arrays match with rtol=", rtol, "atol=", atol)
 
-            print()
+        logger.info('')
+
+    return CRAM_time, CRAM_res
 
 def make_parser():
     p = argparse.ArgumentParser('origen', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -207,15 +216,36 @@ def main():
     except ImportError:
         pass
     args = p.parse_args()
-
     xs_tape9 = args.xs_tape9
+    time = args.time
+    nuclide = args.nuclide
+    phi = args.phi
+    origen = args.origen
+    decay_tape9 = args.decay_tape9
+
+    ORIGEN_time, ORIGEN_data = run_origen(xs_tape9, time, nuclide, phi,
+        origen, decay_tape9)
+    CRAM_time, CRAM_res = test_origen_against_CRAM(ORIGEN_data, xs_tape9, time, nuclide, phi)
+
+    npzfilename = os.path.join('data', os.path.splitext(os.path.basename(xs_tape9))[0] + '_' + str(phi) + '.npz')
+    nucs, mat = load_sparse_csr(npzfilename)
+
+    save_file('results.hdf5',
+        ORIGEN_data=ORIGEN_data,
+        lib=os.path.basename(xs_tape9),
+        nucs=nucs,
+        start_nuclide=nuclide,
+        time=time,
+        phi=phi,
+        CRAM_time=CRAM_time,
+        ORIGEN_time=ORIGEN_time,
+        CRAM_res=CRAM_res,
+    )
+
+def run_origen(xs_tape9, time, nuclide, phi, origen, decay_tape9):
+    xs_tape9 = xs_tape9
     if not os.path.isabs(xs_tape9):
         xs_tape9 = os.path.join(LIBS_DIR, xs_tape9)
-    time = args.time
-    phi = args.phi
-    nuclide = args.nuclide
-    decay_tape9 = args.decay_tape9
-    origen = args.origen
 
     parsed_xs_tape9 = parse_tape9(xs_tape9)
     parsed_decay_tape9 = parse_tape9(decay_tape9)
@@ -237,7 +267,7 @@ def main():
 
     write_tape4(M)
 
-    run(origen)
+    origen_time, data = time_func(run, origen)
 
     # Make pyne use naive atomic mass numbers to match ORIGEN
     for i in pyne.data.atomic_mass_map:
@@ -245,15 +275,18 @@ def main():
 
     data = parse_tape6()
 
-    filename = "{library} {time} {nuclide} {phi}.py".format(
-        library=os.path.basename(xs_tape9),
-        time=time,
-        nuclide=nuclide,
-        phi=phi,
-        )
-    with open('data/' + filename, 'w') as f:
-        f.write(repr(data))
-        print("Writing data to data/" + filename)
+    return origen_time, data
+    # filename = "{library} {time} {nuclide} {phi}.py".format(
+    #     library=os.path.basename(xs_tape9),
+    #     time=time,
+    #     nuclide=nuclide,
+    #     phi=phi,
+    #     )
+    # with open('data/' + filename, 'w') as f:
+    #     f.write(repr(data))
+    #     print("Writing data to data/" + filename)
+
+
 
 if __name__ == '__main__':
     main()
