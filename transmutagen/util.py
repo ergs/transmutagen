@@ -114,7 +114,7 @@ def log_function_args(func):
         binding = inspect.signature(func).bind(*args, **kwargs)
         binding.apply_defaults()
         logname = _get_log_file_name(binding.arguments)
-        logger.addHandler(logging.FileHandler('logs/%s.log' % logname))
+        logger.addHandler(logging.FileHandler('logs/%s.log' % logname, delay=True))
         logger.info("Logging to file 'logs/%s.log'", logname)
 
         kwargs['logname'] = logname

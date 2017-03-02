@@ -18,8 +18,8 @@ except AttributeError:
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
-# Change INFO to DEBUG for more output
-logger.setLevel(logging.INFO)
+# Change to INFO or DEBUG for more output
+logger.setLevel(logging.WARN)
 
 t = symbols('t', real=True)
 
@@ -123,7 +123,7 @@ def nsolve_points(expr, bounds, division=300, scale=True, **kwargs):
 @conserve_mpmath_dps
 @log_function_args
 def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
-    tol=None, nsolve_type='intervals', D_scale=1, plot=True, **kwargs):
+    tol=None, nsolve_type='intervals', D_scale=1, plot=False, **kwargs):
     """
     Compute the CRAM approximation of exp(-t) from t in [0, oo) of the given degree
 
@@ -263,7 +263,8 @@ def main():
     parser.add_argument('--solver', default=None)
     parser.add_argument('--D-scale', default=None, type=float)
     parser.add_argument('--scale', default=None, type=bool)
-    parser.add_argument('--log-level', default=None, choices=['debug', 'info',
+    parser.add_argument('--plot', default=True, type=bool)
+    parser.add_argument('--log-level', default='info', choices=['debug', 'info',
         'warning', 'error', 'critical'])
     try:
         import argcomplete
