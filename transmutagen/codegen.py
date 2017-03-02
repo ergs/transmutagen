@@ -1,10 +1,15 @@
-from sympy import Mul
+import os
+
+from sympy import Mul, sympify, symbols, lambdify
 
 from sympy.printing.lambdarepr import NumPyPrinter
 from sympy.printing.precedence import precedence
 
 import numpy as np
 import scipy.sparse.linalg
+
+from .cram import CRAM_exp
+from .partialfrac import thetas_alphas, thetas_alphas_to_expr_complex, t, multiply_vector
 
 class MatrixNumPyPrinter(NumPyPrinter):
     """
@@ -191,3 +196,27 @@ scipy_translations_autoeye = {
     **scipy_translations,
     'solve': scipy_sparse_solve_with_autoeye,
     }
+
+def get_CRAM_from_cache(degree, prec, expr=None, plot=False):
+    os.makedirs('CRAM_cache', exist_ok=True)
+    cache_file = os.path.join('CRAM_cache', '%s_%s' % (degree, prec))
+
+    if not expr and os.path.exists(cache_file):
+        with open(cache_file) as f:
+            expr = sympify(f.read(), globals())
+    else:
+        expr = expr or CRAM_exp(degree, prec, plot=plot)
+        with open(cache_file, 'w') as f:
+            f.write(str(expr))
+
+    return expr
+
+def CRAM_matrix_exp_lambdify(degree=14, prec=30):
+    rat_func = get_CRAM_from_cache(degree, prec)
+    thetas, alphas, alpha0 = thetas_alphas(rat_func, prec)
+    part_frac_complex = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
+    n0 = symbols("n0", commutative=False)
+
+    return lambdify((t, n0), multiply_vector(part_frac_complex, n0),
+        scipy_translations_autoeye, printer=MatrixNumPyPrinter({'use_autoeye': True
+            }))

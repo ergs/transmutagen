@@ -10,10 +10,10 @@ from sympy import sympify, lambdify, horner, fraction
 import numpy as np
 from scipy.sparse.linalg import expm
 
-from ..cram import CRAM_exp, logger
+from ..cram import logger
 from ..partialfrac import (thetas_alphas, thetas_alphas_to_expr,
     thetas_alphas_to_expr_complex, t)
-from ..codegen import MatrixNumPyPrinter, scipy_translations_autoeye
+from ..codegen import MatrixNumPyPrinter, scipy_translations_autoeye, get_CRAM_from_cache
 from ..util import load_sparse_csr
 
 def lambdify_expr(expr):
@@ -36,20 +36,6 @@ def time_and_run(f, *args, _print=False):
     if _print:
         print("Total time", end - start)
     return res
-
-def get_CRAM_from_cache(degree, prec, expr=None, plot=False):
-    os.makedirs('CRAM_cache', exist_ok=True)
-    cache_file = os.path.join('CRAM_cache', '%s_%s' % (degree, prec))
-
-    if not expr and os.path.exists(cache_file):
-        with open(cache_file) as f:
-            expr = sympify(f.read(), globals())
-    else:
-        expr = expr or CRAM_exp(degree, prec, plot=plot)
-        with open(cache_file, 'w') as f:
-            f.write(str(expr))
-
-    return expr
 
 def run_transmute_test(data, degree, prec, expr, time, plot=True, _print=False):
     nucs, matrix = load_sparse_csr(data)

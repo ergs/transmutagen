@@ -7,9 +7,8 @@ from sympy import symbols, lambdify
 
 from ..partialfrac import (thetas_alphas, thetas_alphas_to_expr_complex, t,
     multiply_vector)
-from ..codegen import MatrixNumPyPrinter, scipy_translations_autoeye
+from ..codegen import MatrixNumPyPrinter, scipy_translations_autoeye, get_CRAM_from_cache
 from ..util import load_sparse_csr
-from .test_transmute import get_CRAM_from_cache
 from ..origen import (load_data, NUCLIDE_KEYS, origen_data_to_array_weighted, origen_data_to_array_materials)
 
 DATA_DIR = os.path.abspath(os.path.join(__file__, os.path.pardir,
