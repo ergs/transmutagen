@@ -97,6 +97,7 @@ def initial_vector(start_nuclide, nucs):
     return csr_matrix(([1], [[nuc_to_idx[start_nuclide]], [0]]),
         shape=(len(nucs), 1))
 
+# TODO: Split out ORIGEN and CRAM to separate groups
 def create_hdf5_table(file, lib, nucs_size):
     transmutation_desc = np.dtype([
         ('hash', np.int64),
