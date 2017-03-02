@@ -3,6 +3,7 @@
 import argparse
 import os
 from subprocess import run
+import time
 
 import numpy as np
 from scipy.sparse import csr_matrix
@@ -99,6 +100,17 @@ def create_hdf5_table(file, lib, nucs_size):
 
     h5file = tables.open_file(file, mode="a", title="ORIGEN data", filters=tables.Filters(complevel=1))
     h5file.create_table('/', lib, transmutation_desc)
+
+def time_func(f, *args, **kwargs):
+    """
+    Times f(*args, **kwargs)
+
+    Returns (time_elapsed, f(*args, **kwargs)).
+
+    """
+    t = time.perf_counter()
+    res = f(*args, **kwargs)
+    return time.perf_counter() - t, res
 
 def save_file(file, data, lib, nucs, start_nuclide, time, phi, n_fission_fragments=2.004):
     h5file = tables.open_file(file, mode="a", title="ORIGEN data", filters=tables.Filters(complevel=1))
