@@ -91,6 +91,7 @@ def _get_log_file_name(locals_dict):
     d.update(kwargs)
     d.setdefault('maxsteps')
     d.setdefault('division')
+    d.pop('log_to_file', None)
     degree = d.pop('degree')
     prec = d.pop('prec')
     info = 'degree=%s prec=%s ' % (degree, prec)
@@ -114,7 +115,8 @@ def log_function_args(func):
         binding = inspect.signature(func).bind(*args, **kwargs)
         binding.apply_defaults()
         logname = _get_log_file_name(binding.arguments)
-        logger.addHandler(logging.FileHandler('logs/%s.log' % logname, delay=True))
+        if kwargs.get('log_to_file', False):
+            logger.addHandler(logging.FileHandler('logs/%s.log' % logname, delay=True))
         logger.info("Logging to file 'logs/%s.log'", logname)
 
         kwargs['logname'] = logname

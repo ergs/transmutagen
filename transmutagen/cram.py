@@ -123,7 +123,7 @@ def nsolve_points(expr, bounds, division=300, scale=True, **kwargs):
 @conserve_mpmath_dps
 @log_function_args
 def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
-    tol=None, nsolve_type='intervals', D_scale=1, plot=False, **kwargs):
+    tol=None, nsolve_type='intervals', D_scale=1, plot=False, log_to_file=False, **kwargs):
     """
     Compute the CRAM approximation of exp(-t) from t in [0, oo) of the given degree
 
@@ -158,6 +158,9 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
 
     If plot=True, plots are shown of the iterations. If iterm2_tools is
     installed, plots are shown inline in the terminal.
+
+    If log_to_file=True, logging output is also logged to a file (in logs/), and
+    plots are also saved in plots/.
 
     The SymPy master branch is required for this to work.
 
@@ -201,7 +204,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
         D = diff(E.subs(sol), t)
         if plot:
             plot_in_terminal(E.subs(sol), (-1, 0.999), prec=prec, points=1000,
-                logname=logname + ' iteration=%s' % iteration)
+                logname=log_to_file and logname + ' iteration=%s' % iteration)
         logger.info('E.subs(sol): %s', E.subs(sol))
 
         D *= D_scale
@@ -243,7 +246,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     logger.info('rat_func: %s', rat_func)
     if plot:
         plot_in_terminal(rat_func - exp(-t), (0, 100), prec=prec, points=1000,
-            logname=logname + ' final')
+            logname=log_to_file and logname + ' final')
 
     return ret
 
@@ -264,6 +267,7 @@ def main():
     parser.add_argument('--D-scale', default=None, type=float)
     parser.add_argument('--scale', default=None, type=bool)
     parser.add_argument('--plot', default=True, type=bool)
+    parser.add_argument('--log-to-file', default=True, type=bool, help="Log output to a file (in the logs/ directory)")
     parser.add_argument('--log-level', default='info', choices=['debug', 'info',
         'warning', 'error', 'critical'])
     try:
