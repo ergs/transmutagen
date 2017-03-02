@@ -211,8 +211,11 @@ def get_CRAM_from_cache(degree, prec, expr=None, plot=False):
 
     return expr
 
-def CRAM_matrix_exp_lambdify(degree=14, prec=30):
-    rat_func = get_CRAM_from_cache(degree, prec)
+def CRAM_matrix_exp_lambdify(degree=14, prec=30, use_cache=True):
+    if use_cache:
+        rat_func = get_CRAM_from_cache(degree, prec)
+    else:
+        rat_func = CRAM_exp(degree, prec, plot=False)
     thetas, alphas, alpha0 = thetas_alphas(rat_func, prec)
     part_frac_complex = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
     n0 = symbols("n0", commutative=False)
