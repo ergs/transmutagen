@@ -89,6 +89,9 @@ def origen_data_to_array_materials(data, nucs):
 
     return new_data
 
+def hash_data(vec, library, time, phi, n_fission_fragments):
+    return hash((vec.data.tobytes(), library, time, phi, n_fission_fragments))
+
 def initial_vector(start_nuclide, nucs):
     nuc_to_idx = {v: i for i, v in enumerate(nucs)}
     return csr_matrix(([1], [[nuc_to_idx[start_nuclide]], [0]]),
@@ -96,6 +99,8 @@ def initial_vector(start_nuclide, nucs):
 
 def create_hdf5_table(file, lib, nucs_size):
     transmutation_desc = np.dtype([
+        ('hash', np.int64),
+        ('library', 'S8'),
         ('initial vector', np.float64, (nucs_size, 1)),
         ('time', np.float64),
         ('phi', np.float64),
@@ -123,7 +128,9 @@ def save_file(file, *, ORIGEN_data, lib, nucs, start_nuclide, time, phi, CRAM_ti
             h5file.create_array(h5file.root, 'nucs', np.array(nucs, 'S6'))
 
         table = h5file.get_node(h5file.root, lib)
-        table.row['initial vector'] = initial_vector(start_nuclide, nucs).toarray()
+        table.row['initial vector'] = vec = initial_vector(start_nuclide, nucs).toarray()
+        table.row['library'] = lib
+        table.row['hash'] = hash_data(vec, lib, time, phi, n_fission_fragments)
         table.row['time'] = time
         table.row['phi'] = phi
         table.row['n_fission_fragments'] = n_fission_fragments
@@ -186,7 +193,7 @@ def test_origen_against_CRAM(origen_data, xs_tape9, time, nuclide, phi):
                     continue
                 logger.info("%s %s %s %s", nucs[i], C[i], O[i], rel_error[i])
         else:
-            logger.info("Arrays match with rtol=", rtol, "atol=", atol)
+            logger.info("Arrays match with rtol=%s atol=%s", rtol, atol)
 
         logger.info('')
 
@@ -222,17 +229,18 @@ def main():
     phi = args.phi
     origen = args.origen
     decay_tape9 = args.decay_tape9
+    lib = os.path.splitext(os.path.basename(xs_tape9))[0]
 
     ORIGEN_time, ORIGEN_data = run_origen(xs_tape9, time, nuclide, phi,
         origen, decay_tape9)
     CRAM_time, CRAM_res = test_origen_against_CRAM(ORIGEN_data, xs_tape9, time, nuclide, phi)
 
-    npzfilename = os.path.join('data', os.path.splitext(os.path.basename(xs_tape9))[0] + '_' + str(phi) + '.npz')
+    npzfilename = os.path.join('data', lib + '_' + str(phi) + '.npz')
     nucs, mat = load_sparse_csr(npzfilename)
 
     save_file('results.hdf5',
         ORIGEN_data=ORIGEN_data,
-        lib=os.path.basename(xs_tape9),
+        lib=lib,
         nucs=nucs,
         start_nuclide=nuclide,
         time=time,
