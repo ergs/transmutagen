@@ -39,8 +39,7 @@ DATA_DIR = os.path.abspath(os.path.join(__file__, os.path.pardir,
 
 NUCLIDE_KEYS = ['activation_products', 'actinides', 'fission_products']
 
-
-def run_origen(xs_tape9, time, nuclide, phi, origen, decay_tape9):
+def execute_origen(xs_tape9, time, nuclide, phi, origen, decay_tape9):
     xs_tape9 = xs_tape9
     if not os.path.isabs(xs_tape9):
         xs_tape9 = os.path.join(LIBS_DIR, xs_tape9)
@@ -306,30 +305,18 @@ def make_parser():
     p.add_argument('--hdf5-file', default='data/results.hdf5')
     return p
 
-def main():
-    p = make_parser()
-    try:
-        import argcomplete
-        argcomplete.autocomplete(p)
-    except ImportError:
-        pass
-    args = p.parse_args()
-    xs_tape9 = args.xs_tape9
-    time = args.time
-    nuclide = args.nuclide
-    phi = args.phi
-    origen = args.origen
-    decay_tape9 = args.decay_tape9
+def execute(xs_tape9, time, phi, nuclide, hdf5_file='data/results.hdf5',
+    decay_tape9=decay_TAPE9, origen=ORIGEN, run_origen=True, run_cram=True):
     lib = os.path.splitext(os.path.basename(xs_tape9))[0]
 
     npzfilename = os.path.join('data', lib + '_' + str(phi) + '.npz')
     nucs, mat = load_sparse_csr(npzfilename)
 
-    if args.run_origen:
-        ORIGEN_time, ORIGEN_data = run_origen(xs_tape9, time, nuclide, phi,
+    if run_origen:
+        ORIGEN_time, ORIGEN_data = execute_origen(xs_tape9, time, nuclide, phi,
             origen, decay_tape9)
         test_origen_data_sanity(ORIGEN_data)
-        save_file_origen(args.hdf5_file,
+        save_file_origen(hdf5_file,
             ORIGEN_data=ORIGEN_data,
             lib=lib,
             nucs=nucs,
@@ -339,9 +326,9 @@ def main():
             ORIGEN_time=ORIGEN_time,
         )
 
-    if args.run_cram:
+    if run_cram:
         CRAM_time, CRAM_res = test_origen_against_CRAM(xs_tape9, time, nuclide, phi)
-        save_file_cram(args.hdf5_file,
+        save_file_cram(hdf5_file,
             CRAM_res=CRAM_res,
             lib=lib,
             nucs=nucs,
@@ -351,8 +338,18 @@ def main():
             CRAM_time=CRAM_time,
         )
 
-    if args.run_origen and args.run_cram:
+    if run_origen and run_cram:
         compute_mismatch(ORIGEN_data, CRAM_res, nucs)
+
+def main():
+    p = make_parser()
+    try:
+        import argcomplete
+        argcomplete.autocomplete(p)
+    except ImportError:
+        pass
+    args = p.parse_args()
+    execute(**vars(args))
 
 if __name__ == '__main__':
     main()
