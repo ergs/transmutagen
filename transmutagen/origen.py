@@ -38,6 +38,42 @@ DATA_DIR = os.path.abspath(os.path.join(__file__, os.path.pardir,
 
 NUCLIDE_KEYS = ['activation_products', 'actinides', 'fission_products']
 
+
+def run_origen(xs_tape9, time, nuclide, phi, origen, decay_tape9):
+    xs_tape9 = xs_tape9
+    if not os.path.isabs(xs_tape9):
+        xs_tape9 = os.path.join(LIBS_DIR, xs_tape9)
+
+    parsed_xs_tape9 = parse_tape9(xs_tape9)
+    parsed_decay_tape9 = parse_tape9(decay_tape9)
+
+    merged_tape9 = merge_tape9([parsed_decay_tape9, parsed_xs_tape9])
+
+    # Can set outfile to change directory, but the file name needs to be
+    # TAPE9.INP.
+    write_tape9(merged_tape9)
+
+    decay_nlb, xsfpy_nlb = nlbs(parsed_xs_tape9)
+
+    # Can set outfile, but the file name should be called TAPE5.INP.
+    write_tape5_irradiation("IRF", time/(60*60*24), phi,
+        xsfpy_nlb=xsfpy_nlb, cut_off=0, out_table_num=[4, 5],
+        out_table_nes=[True, False, False])
+
+    M = from_atom_frac({nuclide: 1}, mass=1, atoms_per_molecule=1)
+
+    write_tape4(M)
+
+    origen_time, data = time_func(run, origen)
+
+    # Make pyne use naive atomic mass numbers to match ORIGEN
+    for i in pyne.data.atomic_mass_map:
+        pyne.data.atomic_mass_map[i] = float(pyne.nucname.anum(i))
+
+    data = parse_tape6()
+
+    return origen_time, data
+
 def load_data(datafile):
     import pyne.data
     # Make pyne use naive atomic mass numbers to match ORIGEN
@@ -317,52 +353,6 @@ def main():
 
     if args.run_origen and args.run_cram:
         compute_mismatch(ORIGEN_data, CRAM_res, nucs)
-
-def run_origen(xs_tape9, time, nuclide, phi, origen, decay_tape9):
-    xs_tape9 = xs_tape9
-    if not os.path.isabs(xs_tape9):
-        xs_tape9 = os.path.join(LIBS_DIR, xs_tape9)
-
-    parsed_xs_tape9 = parse_tape9(xs_tape9)
-    parsed_decay_tape9 = parse_tape9(decay_tape9)
-
-    merged_tape9 = merge_tape9([parsed_decay_tape9, parsed_xs_tape9])
-
-    # Can set outfile to change directory, but the file name needs to be
-    # TAPE9.INP.
-    write_tape9(merged_tape9)
-
-    decay_nlb, xsfpy_nlb = nlbs(parsed_xs_tape9)
-
-    # Can set outfile, but the file name should be called TAPE5.INP.
-    write_tape5_irradiation("IRF", time/(60*60*24), phi,
-        xsfpy_nlb=xsfpy_nlb, cut_off=0, out_table_num=[4, 5],
-        out_table_nes=[True, False, False])
-
-    M = from_atom_frac({nuclide: 1}, mass=1, atoms_per_molecule=1)
-
-    write_tape4(M)
-
-    origen_time, data = time_func(run, origen)
-
-    # Make pyne use naive atomic mass numbers to match ORIGEN
-    for i in pyne.data.atomic_mass_map:
-        pyne.data.atomic_mass_map[i] = float(pyne.nucname.anum(i))
-
-    data = parse_tape6()
-
-    return origen_time, data
-    # filename = "{library} {time} {nuclide} {phi}.py".format(
-    #     library=os.path.basename(xs_tape9),
-    #     time=time,
-    #     nuclide=nuclide,
-    #     phi=phi,
-    #     )
-    # with open('data/' + filename, 'w') as f:
-    #     f.write(repr(data))
-    #     print("Writing data to data/" + filename)
-
-
 
 if __name__ == '__main__':
     main()
