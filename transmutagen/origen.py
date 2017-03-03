@@ -232,6 +232,7 @@ def compute_mismatch(origen_data, CRAM_res, nucs, rtol=1e-3, atol=1e-5):
 
         logger.info('')
 
+    # TODO: return some information here
 def make_parser():
     p = argparse.ArgumentParser('origen', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     p.add_argument('xs_tape9', metavar='xs-tape9', help="""path to the cross section TAPE9 file. If
