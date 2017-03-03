@@ -27,12 +27,6 @@ def make_parser():
                    help='The filename to write the matrix to, in npz format.')
     return p
 
-
-def main(args=None):
-    p = make_parser()
-    ns = p.parse_args(args=args)
-    save_sparse(**vars(ns))
-
 def save_sparse(tape9, phi=4e14, output=None, format='csr',
     decaylib='decay.lib', include_fission=True, threshold=THRESHOLD):
     if output is None:
@@ -48,6 +42,11 @@ def save_sparse(tape9, phi=4e14, output=None, format='csr',
                                 include_fission=include_fission,
                                 threshold=threshold)
     save_sparse_csr(output, mat, nucs, phi)
+
+def main(args=None):
+    p = make_parser()
+    ns = p.parse_args(args=args)
+    save_sparse(**vars(ns))
 
 if __name__ == '__main__':
     main()
