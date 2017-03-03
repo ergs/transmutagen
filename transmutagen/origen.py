@@ -99,36 +99,65 @@ def initial_vector(start_nuclide, nucs):
 
 # TODO: Split out ORIGEN and CRAM to separate groups
 def create_hdf5_table(file, lib, nucs_size):
-    transmutation_desc = np.dtype([
+    desc_common = [
         ('hash', np.int64),
         ('library', 'S8'),
         ('initial vector', np.float64, (nucs_size, 1)),
         ('time', np.float64),
         ('phi', np.float64),
         ('n_fission_fragments', np.float64),
-        ('execution time CRAM', np.float64),
+    ]
+    desc_origen = [
         ('execution time ORIGEN', np.float64),
         ('ORIGEN atom fraction', np.float64, (nucs_size, 1)),
         ('ORIGEN mass fraction', np.float64, (nucs_size, 1)),
+        ]
+    desc_cram = [
+        ('execution time CRAM', np.float64),
         ('CRAM atom fraction', np.float64, (nucs_size, 1)),
         ('CRAM mass fraction', np.float64, (nucs_size, 1)),
-        ])
+        ]
 
-    h5file = tables.open_file(file, mode="a", title="ORIGEN data", filters=tables.Filters(complevel=1))
-    h5file.create_table('/', lib, transmutation_desc)
+    h5file = tables.open_file(file, mode="a", title="CRAM/ORIGEN test run data", filters=tables.Filters(complevel=1))
+    h5file.create_table('/', 'origen', np.dtype(desc_common + desc_origen))
+    h5file.create_table('/', 'cram', np.dtype(desc_common + desc_cram))
 
-def save_file(file, *, ORIGEN_data, lib, nucs, start_nuclide, time, phi, CRAM_time,
-    ORIGEN_time, CRAM_res, n_fission_fragments=2.004):
-    assert len(CRAM_res) == len(nucs)
+def save_file_origen(file, *, ORIGEN_data, lib, nucs, start_nuclide, time,
+    phi, ORIGEN_time, n_fission_fragments=2.004):
+
     with tables.open_file(file, mode="a", title="ORIGEN data",
         filters=tables.Filters(complevel=1)) as h5file:
 
-        if lib not in h5file.root:
+        if 'origen' not in h5file.root:
             create_hdf5_table(file, lib, len(nucs))
         if 'nucs' not in h5file.root:
             h5file.create_array(h5file.root, 'nucs', np.array(nucs, 'S6'))
 
-        table = h5file.get_node(h5file.root, lib)
+        table = h5file.get_node(h5file.root, 'origen')
+        table.row['initial vector'] = vec = initial_vector(start_nuclide, nucs).toarray()
+        table.row['library'] = lib
+        table.row['hash'] = hash_data(vec, lib, time, phi, n_fission_fragments)
+        table.row['time'] = time
+        table.row['phi'] = phi
+        table.row['n_fission_fragments'] = n_fission_fragments
+        table.row['execution time ORIGEN'] = ORIGEN_time
+        table.row['ORIGEN atom fraction'] = origen_data_to_array_weighted(ORIGEN_data, nucs, n_fission_fragments=n_fission_fragments)
+        table.row['ORIGEN mass fraction'] = origen_data_to_array_materials(ORIGEN_data, nucs)
+        table.row.append()
+        table.flush()
+
+def save_file_cram(file, *, CRAM_res, lib, nucs, start_nuclide, time,
+    phi, CRAM_time, n_fission_fragments=2.004):
+    assert len(CRAM_res) == len(nucs)
+    with tables.open_file(file, mode="a", title="ORIGEN data",
+        filters=tables.Filters(complevel=1)) as h5file:
+
+        if 'cram' not in h5file.root:
+            create_hdf5_table(file, lib, len(nucs))
+        if 'nucs' not in h5file.root:
+            h5file.create_array(h5file.root, 'nucs', np.array(nucs, 'S6'))
+
+        table = h5file.get_node(h5file.root, 'cram')
         table.row['initial vector'] = vec = initial_vector(start_nuclide, nucs).toarray()
         table.row['library'] = lib
         table.row['hash'] = hash_data(vec, lib, time, phi, n_fission_fragments)
@@ -136,9 +165,6 @@ def save_file(file, *, ORIGEN_data, lib, nucs, start_nuclide, time, phi, CRAM_ti
         table.row['phi'] = phi
         table.row['n_fission_fragments'] = n_fission_fragments
         table.row['execution time CRAM'] = CRAM_time
-        table.row['execution time ORIGEN'] = ORIGEN_time
-        table.row['ORIGEN atom fraction'] = origen_data_to_array_weighted(ORIGEN_data, nucs, n_fission_fragments=n_fission_fragments)
-        table.row['ORIGEN mass fraction'] = origen_data_to_array_materials(ORIGEN_data, nucs)
         table.row['CRAM atom fraction'] = CRAM_res
         CRAM_res_normalized = CRAM_res/np.sum(CRAM_res)
         table.row['CRAM mass fraction'] = CRAM_res_normalized
@@ -214,6 +240,11 @@ def make_parser():
         default=decay_TAPE9)
     p.add_argument('--origen', help="Path to the origen executable",
         default=ORIGEN)
+    p.add_argument('--no-run-origen', action='store_false', dest='run_origen',
+        help="Don't run origen")
+    p.add_argument('--no-run-cram', action='store_false', dest='run_cram',
+        help="Don't run cram")
+    p.add_argument('--hdf5-file', default='results.hdf5')
     return p
 
 def main():
@@ -232,24 +263,34 @@ def main():
     decay_tape9 = args.decay_tape9
     lib = os.path.splitext(os.path.basename(xs_tape9))[0]
 
-    ORIGEN_time, ORIGEN_data = run_origen(xs_tape9, time, nuclide, phi,
-        origen, decay_tape9)
-    CRAM_time, CRAM_res = test_origen_against_CRAM(ORIGEN_data, xs_tape9, time, nuclide, phi)
 
     npzfilename = os.path.join('data', lib + '_' + str(phi) + '.npz')
     nucs, mat = load_sparse_csr(npzfilename)
 
-    save_file('results.hdf5',
-        ORIGEN_data=ORIGEN_data,
-        lib=lib,
-        nucs=nucs,
-        start_nuclide=nuclide,
-        time=time,
-        phi=phi,
-        CRAM_time=CRAM_time,
-        ORIGEN_time=ORIGEN_time,
-        CRAM_res=CRAM_res,
-    )
+    if args.run_origen:
+        ORIGEN_time, ORIGEN_data = run_origen(xs_tape9, time, nuclide, phi,
+            origen, decay_tape9)
+        save_file_origen(args.hdf5_file,
+            ORIGEN_data=ORIGEN_data,
+            lib=lib,
+            nucs=nucs,
+            start_nuclide=nuclide,
+            time=time,
+            phi=phi,
+            ORIGEN_time=ORIGEN_time,
+        )
+
+    if args.run_cram:
+        CRAM_time, CRAM_res = test_origen_against_CRAM(ORIGEN_data, xs_tape9, time, nuclide, phi)
+        save_file_cram(args.hdf5_file,
+            CRAM_res=CRAM_res,
+            lib=lib,
+            nucs=nucs,
+            start_nuclide=nuclide,
+            time=time,
+            phi=phi,
+            CRAM_time=CRAM_time,
+        )
 
 def run_origen(xs_tape9, time, nuclide, phi, origen, decay_tape9):
     xs_tape9 = xs_tape9
