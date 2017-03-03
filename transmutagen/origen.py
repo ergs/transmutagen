@@ -171,17 +171,9 @@ def save_file_cram(file, *, CRAM_res, lib, nucs, start_nuclide, time,
         table.row.append()
         table.flush()
 
-def test_origen_against_CRAM(origen_data, xs_tape9, time, nuclide, phi):
+def test_origen_against_CRAM(xs_tape9, time, nuclide, phi):
     e_complex = CRAM_matrix_exp_lambdify()
 
-    # ORIGEN returns 3 digits
-    rtol=1e-3
-    # ORIGEN stops the taylor expansion with the error term
-    # exp(ASUM)*ASUM**n/n! (using Sterling's approximation), where n =
-    # 3.5*ASUM + 6 and ASUM is the max of the column sums. The max of the
-    # column sums is ~2 because of fission, giving ~1e-5 (see ORIGEN lines
-    # 5075-5100)
-    atol=1e-5
 
     logger.info("Analyzing %s at time=%s, nuclide=%s, phi=%s", xs_tape9, time, nuclide, phi)
     logger.info('-'*80)
@@ -195,37 +187,50 @@ def test_origen_against_CRAM(origen_data, xs_tape9, time, nuclide, phi):
 
     CRAM_time, CRAM_res = time_func(e_complex, -mat.T*float(time), b)
     CRAM_res = np.asarray(CRAM_res)
-    CRAM_res_normalized = CRAM_res/np.sum(CRAM_res)
-
-    if origen_data:
-        ORIGEN_res_weighted = origen_data_to_array_weighted(origen_data, nucs,)
-        ORIGEN_res_materials = origen_data_to_array_materials(origen_data, nucs)
-        # ORIGEN_res_atom_fraction = origen_data_to_array_atom_fraction(origen_data, nucs)
-
-        for C, O, units in [
-            (CRAM_res, ORIGEN_res_weighted, 'atom fractions'),
-            (CRAM_res_normalized, ORIGEN_res_materials, 'mass fractions'),
-            # (CRAM_res_normalized, ORIGEN_res_atom_fraction, 'atom fraction'),
-            ]:
-
-            logger.info("Units: %s", units)
-            try:
-                np.testing.assert_allclose(C, O, rtol=rtol, atol=atol)
-            except AssertionError as e:
-                logger.info(e)
-                logger.info("Mismatching elements sorted by error (CRAM, ORIGEN, symmetric relative error)")
-                A = np.isclose(C, O, rtol=rtol, atol=atol)
-                rel_error = abs(C - O)/(C + O)
-                for i, in np.argsort(rel_error, axis=0)[::-1]:
-                    if A[i]:
-                        continue
-                    logger.info("%s %s %s %s", nucs[i], C[i], O[i], rel_error[i])
-            else:
-                logger.info("Arrays match with rtol=%s atol=%s", rtol, atol)
-
-            logger.info('')
 
     return CRAM_time, CRAM_res
+
+def compute_mismatch(origen_data, CRAM_res, nucs, rtol=1e-3, atol=1e-5):
+    """
+    Computes a mismatch analysis for an ORIGEN run vs. CRAM
+
+    The default rtol is 1e-3 because ORIGEN returns 3 digits.
+
+    The default atol is 1e-5 because ORIGEN stops the taylor expansion with
+    the error term exp(ASUM)*ASUM**n/n! (using Sterling's approximation),
+    where n = 3.5*ASUM + 6 and ASUM is the max of the column sums. The max of
+    the column sums is ~2 because of fission, giving ~1e-5 (see ORIGEN lines
+    5075-5100)
+
+    """
+    CRAM_res_normalized = CRAM_res/np.sum(CRAM_res)
+
+    ORIGEN_res_weighted = origen_data_to_array_weighted(origen_data, nucs,)
+    ORIGEN_res_materials = origen_data_to_array_materials(origen_data, nucs)
+    # ORIGEN_res_atom_fraction = origen_data_to_array_atom_fraction(origen_data, nucs)
+
+    for C, O, units in [
+        (CRAM_res, ORIGEN_res_weighted, 'atom fractions'),
+        (CRAM_res_normalized, ORIGEN_res_materials, 'mass fractions'),
+        # (CRAM_res_normalized, ORIGEN_res_atom_fraction, 'atom fraction'),
+        ]:
+
+        logger.info("Units: %s", units)
+        try:
+            np.testing.assert_allclose(C, O, rtol=rtol, atol=atol)
+        except AssertionError as e:
+            logger.info(e)
+            logger.info("Mismatching elements sorted by error (CRAM, ORIGEN, symmetric relative error)")
+            A = np.isclose(C, O, rtol=rtol, atol=atol)
+            rel_error = abs(C - O)/(C + O)
+            for i, in np.argsort(rel_error, axis=0)[::-1]:
+                if A[i]:
+                    continue
+                logger.info("%s %s %s %s", nucs[i], C[i], O[i], rel_error[i])
+        else:
+            logger.info("Arrays match with rtol=%s atol=%s", rtol, atol)
+
+        logger.info('')
 
 def make_parser():
     p = argparse.ArgumentParser('origen', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -280,11 +285,9 @@ def main():
             phi=phi,
             ORIGEN_time=ORIGEN_time,
         )
-    else:
-        ORIGEN_DATA = None
 
     if args.run_cram:
-        CRAM_time, CRAM_res = test_origen_against_CRAM(ORIGEN_data, xs_tape9, time, nuclide, phi)
+        CRAM_time, CRAM_res = test_origen_against_CRAM(xs_tape9, time, nuclide, phi)
         save_file_cram(args.hdf5_file,
             CRAM_res=CRAM_res,
             lib=lib,
@@ -294,6 +297,9 @@ def main():
             phi=phi,
             CRAM_time=CRAM_time,
         )
+
+    if args.run_origen and args.run_cram:
+        compute_mismatch(ORIGEN_data, CRAM_res, nucs)
 
 def run_origen(xs_tape9, time, nuclide, phi, origen, decay_tape9):
     xs_tape9 = xs_tape9
