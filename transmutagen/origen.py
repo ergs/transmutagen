@@ -4,6 +4,7 @@ import argparse
 import os
 from subprocess import run
 import logging
+from itertools import combinations
 
 import numpy as np
 from scipy.sparse import csr_matrix
@@ -97,7 +98,22 @@ def initial_vector(start_nuclide, nucs):
     return csr_matrix(([1], [[nuc_to_idx[start_nuclide]], [0]]),
         shape=(len(nucs), 1))
 
-# TODO: Split out ORIGEN and CRAM to separate groups
+def test_origen_data_sanity(ORIGEN_data):
+    for table in ['table_4', 'table_5']:
+        assert table in ORIGEN_data
+        assert 'nuclide' in ORIGEN_data[table]
+
+        nuclide = ORIGEN_data['table_4']['nuclide']
+
+        # Sanity check
+        for comb in combinations(NUCLIDE_KEYS, 2):
+            a, b = comb
+            for common in set.intersection(set(nuclide[a]), set(nuclide[b])):
+                array_a, array_b = nuclide[a][common], nuclide[b][common]
+                assert np.allclose(array_a, 0) \
+                    or np.allclose(array_b, 0)
+                    # or np.allclose(array_a, array_b)
+
 def create_hdf5_table(file, lib, nucs_size):
     desc_common = [
         ('hash', np.int64),
@@ -173,7 +189,6 @@ def save_file_cram(file, *, CRAM_res, lib, nucs, start_nuclide, time,
 
 def test_origen_against_CRAM(xs_tape9, time, nuclide, phi):
     e_complex = CRAM_matrix_exp_lambdify()
-
 
     logger.info("Analyzing %s at time=%s, nuclide=%s, phi=%s", xs_tape9, time, nuclide, phi)
     logger.info('-'*80)
@@ -277,6 +292,7 @@ def main():
     if args.run_origen:
         ORIGEN_time, ORIGEN_data = run_origen(xs_tape9, time, nuclide, phi,
             origen, decay_tape9)
+        test_origen_data_sanity(ORIGEN_data)
         save_file_origen(args.hdf5_file,
             ORIGEN_data=ORIGEN_data,
             lib=lib,
