@@ -197,32 +197,33 @@ def test_origen_against_CRAM(origen_data, xs_tape9, time, nuclide, phi):
     CRAM_res = np.asarray(CRAM_res)
     CRAM_res_normalized = CRAM_res/np.sum(CRAM_res)
 
-    ORIGEN_res_weighted = origen_data_to_array_weighted(origen_data, nucs,)
-    ORIGEN_res_materials = origen_data_to_array_materials(origen_data, nucs)
-    # ORIGEN_res_atom_fraction = origen_data_to_array_atom_fraction(origen_data, nucs)
+    if origen_data:
+        ORIGEN_res_weighted = origen_data_to_array_weighted(origen_data, nucs,)
+        ORIGEN_res_materials = origen_data_to_array_materials(origen_data, nucs)
+        # ORIGEN_res_atom_fraction = origen_data_to_array_atom_fraction(origen_data, nucs)
 
-    for C, O, units in [
-        (CRAM_res, ORIGEN_res_weighted, 'atom fractions'),
-        (CRAM_res_normalized, ORIGEN_res_materials, 'mass fractions'),
-        # (CRAM_res_normalized, ORIGEN_res_atom_fraction, 'atom fraction'),
-        ]:
+        for C, O, units in [
+            (CRAM_res, ORIGEN_res_weighted, 'atom fractions'),
+            (CRAM_res_normalized, ORIGEN_res_materials, 'mass fractions'),
+            # (CRAM_res_normalized, ORIGEN_res_atom_fraction, 'atom fraction'),
+            ]:
 
-        logger.info("Units: %s", units)
-        try:
-            np.testing.assert_allclose(C, O, rtol=rtol, atol=atol)
-        except AssertionError as e:
-            logger.info(e)
-            logger.info("Mismatching elements sorted by error (CRAM, ORIGEN, symmetric relative error)")
-            A = np.isclose(C, O, rtol=rtol, atol=atol)
-            rel_error = abs(C - O)/(C + O)
-            for i, in np.argsort(rel_error, axis=0)[::-1]:
-                if A[i]:
-                    continue
-                logger.info("%s %s %s %s", nucs[i], C[i], O[i], rel_error[i])
-        else:
-            logger.info("Arrays match with rtol=%s atol=%s", rtol, atol)
+            logger.info("Units: %s", units)
+            try:
+                np.testing.assert_allclose(C, O, rtol=rtol, atol=atol)
+            except AssertionError as e:
+                logger.info(e)
+                logger.info("Mismatching elements sorted by error (CRAM, ORIGEN, symmetric relative error)")
+                A = np.isclose(C, O, rtol=rtol, atol=atol)
+                rel_error = abs(C - O)/(C + O)
+                for i, in np.argsort(rel_error, axis=0)[::-1]:
+                    if A[i]:
+                        continue
+                    logger.info("%s %s %s %s", nucs[i], C[i], O[i], rel_error[i])
+            else:
+                logger.info("Arrays match with rtol=%s atol=%s", rtol, atol)
 
-        logger.info('')
+            logger.info('')
 
     return CRAM_time, CRAM_res
 
@@ -279,6 +280,8 @@ def main():
             phi=phi,
             ORIGEN_time=ORIGEN_time,
         )
+    else:
+        ORIGEN_DATA = None
 
     if args.run_cram:
         CRAM_time, CRAM_res = test_origen_against_CRAM(ORIGEN_data, xs_tape9, time, nuclide, phi)
