@@ -31,20 +31,23 @@ def make_parser():
 def main(args=None):
     p = make_parser()
     ns = p.parse_args(args=args)
-    if ns.output is None:
-        base = os.path.basename(ns.tape9)
+    save_sparse(**vars(ns))
+
+def save_sparse(tape9, phi=4e14, output=None, format='csr',
+    decaylib='decay.lib', include_fission=True, threshold=THRESHOLD):
+    if output is None:
+        base = os.path.basename(tape9)
         base, _ = os.path.splitext(base)
         os.makedirs('data', exist_ok=True)
-        ns.output = os.path.join('data', base + '_' + str(ns.phi) + '.npz')
-    if ns.format != 'csr':
+        output = os.path.join('data', base + '_' + str(phi) + '.npz')
+    if format != 'csr':
         raise ValueError('Only the CSR format is currently available from the '
                          'command line interface.')
-    mat, nucs = tape9_to_sparse(ns.tape9, ns.phi, format=ns.format,
-                                decaylib=ns.decaylib,
-                                include_fission=ns.include_fission,
-                                threshold=ns.threshold)
-    save_sparse_csr(ns.output, mat, nucs, ns.phi)
-
+    mat, nucs = tape9_to_sparse(tape9, phi, format=format,
+                                decaylib=decaylib,
+                                include_fission=include_fission,
+                                threshold=threshold)
+    save_sparse_csr(output, mat, nucs, phi)
 
 if __name__ == '__main__':
     main()
