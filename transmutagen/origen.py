@@ -54,33 +54,33 @@ def origen_to_array(origen_dict, nucs):
 
     return new_data
 
-def origen_data_to_array_weighted(data, nucs, n_fission_fragments=2.004):
+def origen_data_to_array_weighted(ORIGEN_data, nucs, n_fission_fragments=2.004):
     # Table 5 is grams
     table_5_weights = {}
-    table_5_nuclide = data['table_5']['nuclide']
+    table_5_nuclide = ORIGEN_data['table_5']['nuclide']
     for key in NUCLIDE_KEYS:
         table_5_weights[key] = np.sum(origen_to_array(table_5_nuclide[key], nucs), axis=0)
     table_5_weights['fission_products'] *= n_fission_fragments
 
     # Table 4 is atom fraction
-    table_4_nuclide = data['table_4']['nuclide']
+    table_4_nuclide = ORIGEN_data['table_4']['nuclide']
     new_data = np.zeros((len(nucs), 1))
     for key in NUCLIDE_KEYS:
         new_data += table_5_weights[key]*origen_to_array(table_4_nuclide[key], nucs)
 
     return new_data
 
-def origen_data_to_array_atom_fraction(data, nucs):
+def origen_data_to_array_atom_fraction(ORIGEN_data, nucs):
     # Table 4 is atom fraction
-    table_4_nuclide = data['table_4']['nuclide']
+    table_4_nuclide = ORIGEN_data['table_4']['nuclide']
     new_data = np.zeros((len(nucs), 1))
     for key in NUCLIDE_KEYS:
         new_data += origen_to_array(table_4_nuclide[key], nucs)
 
     return new_data
 
-def origen_data_to_array_materials(data, nucs):
-    material = data['materials'][1]
+def origen_data_to_array_materials(ORIGEN_data, nucs):
+    material = ORIGEN_data['materials'][1]
     new_data = np.zeros((len(nucs), 1))
     nuc_to_idx = {v: i for i, v in enumerate(nucs)}
 
@@ -190,7 +190,7 @@ def test_origen_against_CRAM(xs_tape9, time, nuclide, phi):
 
     return CRAM_time, CRAM_res
 
-def compute_mismatch(origen_data, CRAM_res, nucs, rtol=1e-3, atol=1e-5):
+def compute_mismatch(ORIGEN_data, CRAM_res, nucs, rtol=1e-3, atol=1e-5):
     """
     Computes a mismatch analysis for an ORIGEN run vs. CRAM
 
@@ -205,8 +205,8 @@ def compute_mismatch(origen_data, CRAM_res, nucs, rtol=1e-3, atol=1e-5):
     """
     CRAM_res_normalized = CRAM_res/np.sum(CRAM_res)
 
-    ORIGEN_res_weighted = origen_data_to_array_weighted(origen_data, nucs,)
-    ORIGEN_res_materials = origen_data_to_array_materials(origen_data, nucs)
+    ORIGEN_res_weighted = origen_data_to_array_weighted(ORIGEN_data, nucs,)
+    ORIGEN_res_materials = origen_data_to_array_materials(ORIGEN_data, nucs)
     # ORIGEN_res_atom_fraction = origen_data_to_array_atom_fraction(origen_data, nucs)
 
     for C, O, units in [
