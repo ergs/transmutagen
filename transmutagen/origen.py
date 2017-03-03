@@ -302,7 +302,7 @@ def make_parser():
         help="Don't run origen")
     p.add_argument('--no-run-cram', action='store_false', dest='run_cram',
         help="Don't run cram")
-    p.add_argument('--hdf5-file', default='results.hdf5')
+    p.add_argument('--hdf5-file', default='data/results.hdf5')
     return p
 
 def main():
@@ -320,7 +320,6 @@ def main():
     origen = args.origen
     decay_tape9 = args.decay_tape9
     lib = os.path.splitext(os.path.basename(xs_tape9))[0]
-
 
     npzfilename = os.path.join('data', lib + '_' + str(phi) + '.npz')
     nucs, mat = load_sparse_csr(npzfilename)
