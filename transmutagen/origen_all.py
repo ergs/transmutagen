@@ -7,8 +7,7 @@ import os
 from .tape9sparse import save_sparse
 from .origen import execute, ORIGEN, decay_TAPE9, LIBS_DIR
 
-ALL_LIBS = ['amo0ttta.lib',
-    'amo0tttc.lib', 'amo0tttr.lib', 'amo1ttta.lib',
+ALL_LIBS = ['amo0ttta.lib', 'amo0tttc.lib', 'amo0tttr.lib', 'amo1ttta.lib',
     'amo1tttc.lib', 'amo1tttr.lib', 'amo2ttta.lib', 'amo2tttc.lib',
     'amo2tttr.lib', 'amopttta.lib', 'amoptttc.lib', 'amoptttr.lib',
     'amopuuta.lib', 'amopuutc.lib', 'amopuutr.lib', 'amopuuua.lib',
@@ -16,9 +15,10 @@ ALL_LIBS = ['amo0ttta.lib',
     'amoruuur.lib', 'bwrpupu.lib', 'bwrpuu.lib', 'bwru.lib', 'bwrue.lib',
     'bwrus.lib', 'bwrus0.lib', 'candunau.lib', 'canduseu.lib', 'crbra.lib',
     'crbrc.lib', 'crbri.lib', 'crbrr.lib', 'emopuuua.lib', 'emopuuuc.lib',
-    'emopuuur.lib', 'fftfc.lib', 'pwrd5d33.lib', 'pwrd5d35.lib', 'pwrdu3th.lib',
-    'pwrputh.lib', 'pwrpuu.lib', 'pwru.lib', 'pwru50.lib', 'pwrue.lib',
-    'pwrus.lib']
+    'emopuuur.lib', 'fftfc.lib', 'pwrd5d33.lib', 'pwrd5d35.lib',
+    'pwrdu3th.lib', 'pwrputh.lib', 'pwrpuu.lib', 'pwru.lib', 'pwru50.lib',
+    'pwrue.lib', 'pwrus.lib']
+
 INITIAL_NUCS = [
     'Th232',
     'U233',
@@ -29,10 +29,12 @@ INITIAL_NUCS = [
     'Cm245',
     'Cf249',
     ]
+
 DAY = 60*60*24
 YEAR = 365.25*DAY
 MONTH = YEAR/12
 TIME_STEPS = [1, 1*DAY, 1*MONTH, 1*YEAR, 10*YEAR, 1000*YEAR, 1e6*YEAR]
+
 PHI = 4e14
 
 def main():
