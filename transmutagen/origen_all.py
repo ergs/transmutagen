@@ -4,9 +4,10 @@ Collect data for a matrix of ORIGEN and CRAM runs
 import argparse
 import os
 import logging
+import datetime
 
 from .tape9sparse import save_sparse
-from .origen import execute, ORIGEN, decay_TAPE9, LIBS_DIR
+from .origen import execute, ORIGEN, decay_TAPE9, LIBS_DIR, logger as origen_logger
 
 ALL_LIBS = ['amo0ttta.lib', 'amo0tttc.lib', 'amo0tttr.lib', 'amo1ttta.lib',
     'amo1tttc.lib', 'amo1tttr.lib', 'amo2ttta.lib', 'amo2tttc.lib',
@@ -19,6 +20,7 @@ ALL_LIBS = ['amo0ttta.lib', 'amo0tttc.lib', 'amo0tttr.lib', 'amo1ttta.lib',
     'emopuuur.lib', 'fftfc.lib', 'pwrd5d33.lib', 'pwrd5d35.lib',
     'pwrdu3th.lib', 'pwrputh.lib', 'pwrpuu.lib', 'pwru.lib', 'pwru50.lib',
     'pwrue.lib', 'pwrus.lib']
+
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
 # Set to WARN for less output
@@ -52,31 +54,49 @@ def main():
     p.add_argument('--origen', help="Path to the origen executable",
         default=ORIGEN)
     p.add_argument('--libs-dir', default=LIBS_DIR, help="Path to the libs/ directory")
+    p.add_argument('--log-file', default='logs/origen_all.log', help='Path to file where output is logged')
     args = p.parse_args()
 
-    for tape9 in ALL_LIBS:
-        logger.info("Computing library", tape9)
-        xs_tape9 = os.path.join(args.libs_dir, tape9)
 
-        base = os.path.basename(xs_tape9)
-        base, _ = os.path.splitext(base)
-        os.makedirs('data', exist_ok=True)
-        npzfilename = os.path.join('data', base + '_' + str(PHI) + '.npz')
+    logger.addHandler(logging.FileHandler(args.log_file, delay=True))
+    origen_logger.addHandler(logging.FileHandler(args.log_file, delay=True))
 
-        if args.recompute_matrices or not os.path.exists(npzfilename):
-            logger.info("Saving matrix for", xs_tape9, "to", npzfilename)
-            save_sparse(xs_tape9, phi=PHI, output=npzfilename,
-                decaylib=args.decay_tape9)
+    starttime = datetime.datetime.now()
+    logger.info("Start time: %s", starttime)
 
-        for initial_nuclide in INITIAL_NUCS:
-            logger.info("Using initial nuclide", initial_nuclide)
-            for time in TIME_STEPS:
-                logger.info("Using time", time)
-                try:
-                    execute(xs_tape9, time, PHI, initial_nuclide,
-                        decay_tape9=args.decay_tape9, origen=args.origen)
-                except AssertionError as e:
-                    logger.error("AssertionError with lib %s: %s", tape9, e)
+    try:
+        for tape9 in ALL_LIBS:
+            logger.info("Computing library %s", tape9)
+            xs_tape9 = os.path.join(args.libs_dir, tape9)
+
+            base = os.path.basename(xs_tape9)
+            base, _ = os.path.splitext(base)
+            os.makedirs('data', exist_ok=True)
+            npzfilename = os.path.join('data', base + '_' + str(PHI) + '.npz')
+
+            if args.recompute_matrices or not os.path.exists(npzfilename):
+                logger.info("Saving matrix for %s to %s", xs_tape9, npzfilename)
+                save_sparse(xs_tape9, phi=PHI, output=npzfilename,
+                    decaylib=args.decay_tape9)
+
+            for initial_nuclide in INITIAL_NUCS:
+                logger.info("Using initial nuclide %s", initial_nuclide)
+                for time in TIME_STEPS:
+                    logger.info("Using time %s", time)
+                    logger.info("Run: %s %s %s", tape9, initial_nuclide, time)
+                    try:
+                        execute(xs_tape9, time, PHI, initial_nuclide,
+                            decay_tape9=args.decay_tape9, origen=args.origen)
+                    except AssertionError as e:
+                        logger.error("AssertionError with lib %s: %s", tape9, e)
+    except BaseException as e:
+        logger.error("Exception raised", exc_info=True)
+        raise
+    finally:
+        endtime = datetime.datetime.now()
+        logger.info("End time: %s", endtime)
+        logger.info("Total time: %s", endtime - starttime)
+
 
 if __name__ == '__main__':
     main()
