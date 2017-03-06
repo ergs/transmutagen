@@ -150,7 +150,8 @@ def test_origen_data_sanity(ORIGEN_data):
                     or np.allclose(array_b, 0)
                     # or np.allclose(array_a, array_b)
 
-def create_hdf5_table(file, lib, nucs_size):
+def create_hdf5_table(file, lib, nucs):
+    nucs_size = len(nucs)
     desc_common = [
         ('hash', np.int64),
         ('library', 'S8'),
@@ -171,21 +172,21 @@ def create_hdf5_table(file, lib, nucs_size):
         ]
 
     h5file = tables.open_file(file, mode="a", title="CRAM/ORIGEN test run data", filters=tables.Filters(complevel=1))
-    h5file.create_table('/', 'origen', np.dtype(desc_common + desc_origen))
-    h5file.create_table('/', 'cram', np.dtype(desc_common + desc_cram))
+    h5file.create_group('/', lib, '%s data' % lib)
+    h5file.create_table('/' + lib, 'origen', np.dtype(desc_common + desc_origen))
+    h5file.create_table('/' + lib, 'cram', np.dtype(desc_common + desc_cram))
+    h5file.create_array('/' + lib, 'nucs', np.array(nucs, 'S6'))
 
 def save_file_origen(file, *, ORIGEN_data, lib, nucs, start_nuclide, time,
     phi, ORIGEN_time, n_fission_fragments=2.004):
 
-    with tables.open_file(file, mode="a", title="ORIGEN data",
+    with tables.open_file(file, mode="a", title="ORIGEN and CRAM data",
         filters=tables.Filters(complevel=1)) as h5file:
 
-        if 'origen' not in h5file.root:
-            create_hdf5_table(file, lib, len(nucs))
-        if 'nucs' not in h5file.root:
-            h5file.create_array(h5file.root, 'nucs', np.array(nucs, 'S6'))
+        if lib not in h5file.root:
+            create_hdf5_table(file, lib, nucs)
 
-        table = h5file.get_node(h5file.root, 'origen')
+        table = h5file.get_node(h5file.root, lib + '/origen')
         table.row['initial vector'] = vec = initial_vector(start_nuclide, nucs).toarray()
         table.row['library'] = lib
         table.row['hash'] = hash_data(vec, lib, time, phi, n_fission_fragments)
@@ -201,15 +202,13 @@ def save_file_origen(file, *, ORIGEN_data, lib, nucs, start_nuclide, time,
 def save_file_cram(file, *, CRAM_res, lib, nucs, start_nuclide, time,
     phi, CRAM_time, n_fission_fragments=2.004):
     assert len(CRAM_res) == len(nucs)
-    with tables.open_file(file, mode="a", title="ORIGEN data",
+    with tables.open_file(file, mode="a", title="ORIGEN and CRAM data",
         filters=tables.Filters(complevel=1)) as h5file:
 
-        if 'cram' not in h5file.root:
-            create_hdf5_table(file, lib, len(nucs))
-        if 'nucs' not in h5file.root:
-            h5file.create_array(h5file.root, 'nucs', np.array(nucs, 'S6'))
+        if lib not in h5file.root:
+            create_hdf5_table(file, lib, nucs)
 
-        table = h5file.get_node(h5file.root, 'cram')
+        table = h5file.get_node(h5file.root, lib + '/cram')
         table.row['initial vector'] = vec = initial_vector(start_nuclide, nucs).toarray()
         table.row['library'] = lib
         table.row['hash'] = hash_data(vec, lib, time, phi, n_fission_fragments)
