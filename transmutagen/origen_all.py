@@ -3,6 +3,7 @@ Collect data for a matrix of ORIGEN and CRAM runs
 """
 import argparse
 import os
+import logging
 
 from .tape9sparse import save_sparse
 from .origen import execute, ORIGEN, decay_TAPE9, LIBS_DIR
@@ -18,6 +19,10 @@ ALL_LIBS = ['amo0ttta.lib', 'amo0tttc.lib', 'amo0tttr.lib', 'amo1ttta.lib',
     'emopuuur.lib', 'fftfc.lib', 'pwrd5d33.lib', 'pwrd5d35.lib',
     'pwrdu3th.lib', 'pwrputh.lib', 'pwrpuu.lib', 'pwru.lib', 'pwru50.lib',
     'pwrue.lib', 'pwrus.lib']
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler())
+# Set to WARN for less output
+logger.setLevel(logging.INFO)
 
 INITIAL_NUCS = [
     'Th232',
@@ -50,7 +55,7 @@ def main():
     args = p.parse_args()
 
     for tape9 in ALL_LIBS:
-        print("Computing library", tape9)
+        logger.info("Computing library", tape9)
         xs_tape9 = os.path.join(args.libs_dir, tape9)
 
         base = os.path.basename(xs_tape9)
@@ -59,16 +64,19 @@ def main():
         npzfilename = os.path.join('data', base + '_' + str(PHI) + '.npz')
 
         if args.recompute_matrices or not os.path.exists(npzfilename):
-            print("Saving matrix for", xs_tape9, "to", npzfilename)
+            logger.info("Saving matrix for", xs_tape9, "to", npzfilename)
             save_sparse(xs_tape9, phi=PHI, output=npzfilename,
                 decaylib=args.decay_tape9)
 
         for initial_nuclide in INITIAL_NUCS:
-            print("Using initial nuclide", initial_nuclide)
+            logger.info("Using initial nuclide", initial_nuclide)
             for time in TIME_STEPS:
-                print("Using time", time)
-                execute(xs_tape9, time, PHI, initial_nuclide,
-                    decay_tape9=args.decay_tape9, origen=args.origen)
+                logger.info("Using time", time)
+                try:
+                    execute(xs_tape9, time, PHI, initial_nuclide,
+                        decay_tape9=args.decay_tape9, origen=args.origen)
+                except AssertionError as e:
+                    logger.error("AssertionError with lib %s: %s", tape9, e)
 
 if __name__ == '__main__':
     main()
