@@ -11,4 +11,4 @@ RUN cd /home/transmutagen && git pull
 
 ENV PYTHONPATH=/home/sympy:/home/transmutagen
 
-ENTRYPOINT ["python",  "-m", "transmutagen.origen"]
+ENTRYPOINT ["python",  "-m", "transmutagen.origen_all"]
