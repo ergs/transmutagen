@@ -136,7 +136,7 @@ def initial_vector(start_nuclide, nucs):
 
 def test_origen_data_sanity(ORIGEN_data):
     for table in ['table_4', 'table_5']:
-        assert table in ORIGEN_data
+        assert table in ORIGEN_data, table
         assert 'nuclide' in ORIGEN_data[table]
 
         nuclide = ORIGEN_data['table_4']['nuclide']
