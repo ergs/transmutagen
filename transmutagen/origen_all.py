@@ -9,22 +9,59 @@ import datetime
 from .tape9sparse import save_sparse
 from .origen import execute, ORIGEN, decay_TAPE9, LIBS_DIR, logger as origen_logger
 
-ALL_LIBS = ['amo0ttta.lib', 'amo0tttc.lib', 'amo0tttr.lib', 'amo1ttta.lib',
-    'amo1tttc.lib', 'amo1tttr.lib', 'amo2ttta.lib', 'amo2tttc.lib',
-    'amo2tttr.lib', 'amopttta.lib', 'amoptttc.lib', 'amoptttr.lib',
-    'amopuuta.lib', 'amopuutc.lib', 'amopuutr.lib', 'amopuuua.lib',
-    'amopuuuc.lib', 'amopuuur.lib', 'amoruuua.lib', 'amoruuuc.lib',
-    'amoruuur.lib', 'bwrpupu.lib', 'bwrpuu.lib', 'bwru.lib', 'bwrue.lib',
-    'bwrus.lib', 'bwrus0.lib', 'candunau.lib', 'canduseu.lib', 'crbra.lib',
-    'crbrc.lib', 'crbri.lib', 'crbrr.lib', 'emopuuua.lib', 'emopuuuc.lib',
-    'emopuuur.lib', 'fftfc.lib', 'pwrd5d33.lib', 'pwrd5d35.lib',
-    'pwrdu3th.lib', 'pwrputh.lib', 'pwrpuu.lib', 'pwru.lib', 'pwru50.lib',
-    'pwrue.lib', 'pwrus.lib']
-
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
 # Set to WARN for less output
 logger.setLevel(logging.INFO)
+
+ALL_LIBS = [
+    # 'amo0ttta.lib',
+    # 'amo0tttc.lib',
+    'amo0tttr.lib',
+    'amo1ttta.lib',
+    'amo1tttc.lib',
+    # 'amo1tttr.lib',
+    'amo2ttta.lib',
+    # 'amo2tttc.lib',
+    'amo2tttr.lib',
+    'amopttta.lib',
+    'amoptttc.lib',
+    'amoptttr.lib',
+    # 'amopuuta.lib',
+    'amopuutc.lib',
+    # 'amopuutr.lib',
+    'amopuuua.lib',
+    'amopuuuc.lib',
+    'amopuuur.lib',
+    'amoruuua.lib',
+    # 'amoruuuc.lib',
+    'amoruuur.lib',
+    # 'bwrpupu.lib',
+    # 'bwrpuu.lib',
+    'bwru.lib',
+    # 'bwrue.lib',
+    'bwrus.lib',
+    # 'bwrus0.lib',
+    # 'candunau.lib',
+    'canduseu.lib',
+    'crbra.lib',
+    'crbrc.lib',
+    # 'crbri.lib',
+    'crbrr.lib',
+    # 'emopuuua.lib',
+    'emopuuuc.lib',
+    # 'emopuuur.lib',
+    'fftfc.lib',
+    # 'pwrd5d33.lib',
+    # 'pwrd5d35.lib',
+    'pwrdu3th.lib',
+    'pwrputh.lib',
+    # 'pwrpuu.lib',
+    'pwru.lib',
+    'pwru50.lib',
+    'pwrue.lib',
+    'pwrus.lib'
+]
 
 INITIAL_NUCS = [
     'Th232',
