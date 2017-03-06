@@ -225,7 +225,7 @@ def save_file_cram(file, *, CRAM_res, lib, nucs, start_nuclide, time,
 def test_origen_against_CRAM(xs_tape9, time, nuclide, phi):
     e_complex = CRAM_matrix_exp_lambdify()
 
-    logger.info("Analyzing %s at time=%s, nuclide=%s, phi=%s", xs_tape9, time, nuclide, phi)
+    logger.info("Running CRAM %s at time=%s, nuclide=%s, phi=%s", xs_tape9, time, nuclide, phi)
     logger.info('-'*80)
 
     npzfilename = os.path.join('data', os.path.splitext(os.path.basename(xs_tape9))[0] + '_' +
