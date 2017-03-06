@@ -100,6 +100,11 @@ def main():
         default=ORIGEN)
     p.add_argument('--libs-dir', default=LIBS_DIR, help="Path to the libs/ directory")
     p.add_argument('--log-file', default='logs/origen_all.log', help='Path to file where output is logged')
+    p.add_argument('--no-run-origen', action='store_false', dest='run_origen',
+        help="Don't run origen")
+    p.add_argument('--no-run-cram', action='store_false', dest='run_cram',
+        help="Don't run cram")
+
     args = p.parse_args()
 
 
@@ -131,7 +136,8 @@ def main():
                     logger.info("Run: %s %s %s", tape9, initial_nuclide, time)
                     try:
                         execute(xs_tape9, time, PHI, initial_nuclide,
-                            decay_tape9=args.decay_tape9, origen=args.origen)
+                            decay_tape9=args.decay_tape9, origen=args.origen,
+                            run_cram=args.run_cram, run_origen=args.run_origen)
                     except AssertionError as e:
                         logger.error("AssertionError with lib %s: %s", tape9, e)
     except BaseException as e:
