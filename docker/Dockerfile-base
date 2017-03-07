@@ -29,3 +29,8 @@ ENV PYTHONPATH=/home/sympy
 ENV LD_LIBRARY_PATH=/opt/conda/lib
 
 RUN git clone https://github.com/ergs/transmutagen.git
+
+# Checkout https://github.com/sympy/sympy/pull/12088. Remove when it is merged.
+RUN cd sympy && git remote add asmeurer https://github.com/asmeurer/sympy
+RUN cd sympy && git fetch asmeurer
+RUN cd sympy && git checkout asmeurer/Float-prec-fix
