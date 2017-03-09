@@ -1,9 +1,12 @@
 import numpy as np
 from numpy.testing import assert_array_equal
 
+from sympy import symbols, I, S
+
 from pytest import raises
 
-from ..codegen import autoeye
+from ..codegen import autoeye, MatrixNumPyPrinter
+from ..partialfrac import customre
 
 def test_autoeye():
     e = autoeye(2)
@@ -75,3 +78,57 @@ def test_autoeye():
 
     res = e @ e
     assert res == autoeye(4)
+
+def test_MatrixNumPyPrinter():
+    t = symbols('t', positive=True)
+
+    Mautoeye = MatrixNumPyPrinter({'use_autoeye': True}).doprint
+    Mnoautoeye = MatrixNumPyPrinter({'use_autoeye': False}).doprint
+
+    assert Mautoeye(t**2) == Mnoautoeye(t**2) == 'matrix_power(t, 2)'
+
+    assert Mautoeye(S(1)) == 'autoeye(1)'
+    assert Mnoautoeye(S(1)) == '1'
+
+    assert Mautoeye(I) == 'autoeye(1j)'
+    assert Mnoautoeye(I) == '1j'
+
+    assert Mautoeye(S(2.0)) == 'autoeye(2.00000000000000)'
+    assert Mnoautoeye(S(2.0)) == '2.00000000000000'
+
+    assert Mautoeye(customre(t)) == Mautoeye(customre(t)) == 'real(t)'
+
+    assert Mautoeye(2*I) == 'autoeye(2)@autoeye(1j)'
+    # assert Mautoeye(2*I) == 'autoeye(2*1j)'
+    assert Mnoautoeye(2*I) == '2*1j'
+    # assert Mautoeye(2*I) == 'autoeye(2j)'
+    # assert Mnoautoeye(2*I) == '2j'
+
+    assert Mautoeye(1 + I) == 'autoeye(1 + 1j)'
+    assert Mnoautoeye(1 + I) == '1 + 1j'
+
+    assert Mautoeye(t + 1 + I) == 't + autoeye(1 + 1j)'
+    assert Mnoautoeye(t + 1 + I) == '1 + 1j + t'
+
+    assert Mautoeye(t + t**2 + 1 + I) == 't + matrix_power(t, 2) + autoeye(1 + 1j)'
+    assert Mnoautoeye(t + t**2 + 1 + I) == '1 + 1j + t + matrix_power(t, 2)'
+
+    assert Mautoeye(t + t**2 + I) == 't + matrix_power(t, 2) + autoeye(1j)'
+    assert Mnoautoeye(t + t**2 + I) == '1j + t + matrix_power(t, 2)'
+
+    assert Mautoeye(t + t**2) == Mnoautoeye(t + t**2) == 't + matrix_power(t, 2)'
+
+    assert Mautoeye(t*(1 + I)) == 't@(autoeye(1 + 1j))'
+    # assert Mautoeye(t*(1 + I)) == 't@autoeye(1 + 1j)'
+    assert Mnoautoeye(t*(1 + I)) == '(1 + 1j)*t'
+
+    assert Mautoeye(t*(t + 1 + I)) == 't@(t + autoeye(1 + 1j))'
+    assert Mnoautoeye(t*(t + 1 + I)) == 't@(1 + 1j + t)'
+
+    assert Mautoeye(t*(t + t**2 + 1 + I)) == 't@(t + matrix_power(t, 2) + autoeye(1 + 1j))'
+    assert Mnoautoeye(t*(t + t**2 + 1 + I)) == 't@(1 + 1j + t + matrix_power(t, 2))'
+
+    assert Mautoeye(t*(t + t**2 + I)) == 't@(t + matrix_power(t, 2) + autoeye(1j))'
+    assert Mnoautoeye(t*(t + t**2 + I)) == 't@(1j + t + matrix_power(t, 2))'
+
+    assert Mautoeye(t*(t + t**2)) == Mnoautoeye(t*(t + t**2)) == 't@(t + matrix_power(t, 2))'

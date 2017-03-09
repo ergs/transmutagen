@@ -1,4 +1,4 @@
-from sympy import Mul, symbols, lambdify
+from sympy import Mul, symbols, lambdify, Add
 
 from sympy.printing.lambdarepr import NumPyPrinter
 from sympy.printing.precedence import precedence
@@ -21,6 +21,36 @@ class MatrixNumPyPrinter(NumPyPrinter):
         # TODO: Make this automatic
         'use_autoeye': True,
         }
+
+    def _print_Add(self, expr):
+        if not self._settings['use_autoeye']:
+            return super()._print_Add(expr)
+
+        prec = precedence(expr)
+
+        num_terms = [i for i in expr.args if i.is_number]
+        rest_terms = [i for i in expr.args if i not in num_terms]
+        if len(rest_terms) > 1:
+            rest = super()._print_Add(Add(*rest_terms))
+        elif len(rest_terms) == 1:
+            rest = self._print(rest_terms[0])
+        else:
+            rest = ''
+
+        if len(num_terms) > 1:
+            num = self.__class__({**self._settings, 'use_autoeye': False})._print_Add(Add(*num_terms))
+        elif len(num_terms) == 1:
+            num = self.__class__({**self._settings, 'use_autoeye': False})._print(num_terms[0])
+        else:
+            num = ''
+
+        if rest and num:
+            return self.parenthesize(rest + ' + autoeye(%s)' % num, prec)
+        elif rest:
+            return self.parenthesize(rest, prec)
+        else:
+            # No need to parenthesize
+            return 'autoeye(%s)' % num
 
     def _print_Mul(self, expr):
         prec = precedence(expr)
