@@ -72,6 +72,7 @@ def execute_origen(xs_tape9, time, nuclide, phi, origen, decay_tape9):
 
     data = parse_tape6()
 
+    logger.info("ORIGEN time: %s", origen_time)
     return origen_time, data
 
 def load_data(datafile):
@@ -237,6 +238,8 @@ def test_origen_against_CRAM(xs_tape9, time, nuclide, phi):
 
     CRAM_time, CRAM_res = time_func(e_complex, -mat.T*float(time), b)
     CRAM_res = np.asarray(CRAM_res)
+
+    logger.info("CRAM time: %s", CRAM_time)
 
     return CRAM_time, CRAM_res
 
