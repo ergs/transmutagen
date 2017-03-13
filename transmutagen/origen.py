@@ -128,7 +128,7 @@ def origen_data_to_array_materials(ORIGEN_data, nucs):
     return new_data
 
 def hash_data(vec, library, time, phi, n_fission_fragments):
-    return hash((vec.data.tobytes(), library, time, phi, n_fission_fragments))
+    return hash((tuple(vec.flat), library, time, phi, n_fission_fragments))
 
 def initial_vector(start_nuclide, nucs):
     nuc_to_idx = {v: i for i, v in enumerate(nucs)}
