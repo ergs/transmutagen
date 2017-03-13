@@ -98,10 +98,9 @@ def test_MatrixNumPyPrinter():
 
     assert Mautoeye(customre(t)) == Mautoeye(customre(t)) == 'real(t)'
 
-    assert Mautoeye(2*I) == 'autoeye(2)@autoeye(1j)'
-    # assert Mautoeye(2*I) == 'autoeye(2*1j)'
-    assert Mnoautoeye(2*I) == '2*1j'
+    assert Mautoeye(2*I) == 'autoeye(2*1j)'
     # assert Mautoeye(2*I) == 'autoeye(2j)'
+    assert Mnoautoeye(2*I) == '2*1j'
     # assert Mnoautoeye(2*I) == '2j'
 
     assert Mautoeye(1 + I) == 'autoeye(1 + 1j)'
@@ -118,9 +117,7 @@ def test_MatrixNumPyPrinter():
 
     assert Mautoeye(t + t**2) == Mnoautoeye(t + t**2) == 't + matrix_power(t, 2)'
 
-    assert Mautoeye(t*(1 + I)) == 't@(autoeye(1 + 1j))'
-    # assert Mautoeye(t*(1 + I)) == 't@autoeye(1 + 1j)'
-    assert Mnoautoeye(t*(1 + I)) == '(1 + 1j)*t'
+    assert Mautoeye(t*(1 + I)) == Mnoautoeye(t*(1 + I)) == '(1 + 1j)*t'
 
     assert Mautoeye(t*(t + 1 + I)) == 't@(t + autoeye(1 + 1j))'
     assert Mnoautoeye(t*(t + 1 + I)) == 't@(1 + 1j + t)'

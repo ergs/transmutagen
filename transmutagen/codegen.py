@@ -60,18 +60,20 @@ class MatrixNumPyPrinter(NumPyPrinter):
             raise NotImplementedError("Need exactly one inverted Pow, not %s" % len(pows))
 
         if not pows:
-            if self._settings['use_autoeye']:
-                terms = [self._print(self.parenthesize(i, prec)) for i in expr.args]
-                return '@'.join(terms)
+            no_autoeye = self.__class__({**self._settings, 'use_autoeye': False})
+            num_terms = [no_autoeye._print(no_autoeye.parenthesize(i, prec)) for i in
+                expr.args if i.is_number]
+            mat_terms = [self._print(self.parenthesize(i, prec)) for i in
+                expr.args if not i.is_number]
+            if num_terms and mat_terms:
+                return '*'.join(num_terms) + '*' + '@'.join(mat_terms)
             else:
-                num_terms = [self._print(self.parenthesize(i, prec)) for i in
-                    expr.args if i.is_number]
-                mat_terms = [self._print(self.parenthesize(i, prec)) for i in
-                    expr.args if not i.is_number]
-                if num_terms and mat_terms:
-                    return '*'.join(num_terms) + '*' + '@'.join(mat_terms)
-                else:
-                    return '*'.join(num_terms) + '@'.join(mat_terms)
+                if self._settings['use_autoeye']:
+                    if num_terms:
+                        return ('autoeye(%s)' % '*'.join(num_terms)) + '@'.join(mat_terms)
+                    return '@'.join(mat_terms)
+
+                return '*'.join(num_terms) + '@'.join(mat_terms)
 
         [pow] = pows
 
