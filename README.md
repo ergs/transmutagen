@@ -37,3 +37,20 @@ use something like:
     python -m transmutagen.tape9sparse ~/origen22/libs/pwru50.lib 4e14
 
 See `--help` and the `transmutagen.tape9utils` docs for more details.
+
+## Running tests against ORIGEN
+
+Put `ORIGEN.zip` in the `docker/` directory. Also clone `o2prec` to in the
+`docker/` directory. Then run
+
+    ./docker/build_and_run.sh
+
+This requires the docker daemon to be running, and may require `sudo`. There
+are various options, which you can see with
+
+    ./docker/build_and_run.sh --help
+
+This will run both ORIGEN and transmutagen (CRAM) on a suite of ORIGEN
+libraries, starting nuclides, and times, writing the results to
+`data/results.hdf5`. The output will also be logged to `logs/origen_all.log`.
+Be warned total suite takes over 24 hours to run.
