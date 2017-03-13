@@ -143,6 +143,8 @@ def multiply_vector(expr, n0, horner=False):
 
     # TODO: Don't distribute across complex numbers
     if expr.is_Add:
+        if expr.is_number:
+            return expr*n0
         # expand_mul(deep=False) does too much (it breaks horner)
         return Add(*[multiply_vector(i, n0) for i in expr.args])
 
