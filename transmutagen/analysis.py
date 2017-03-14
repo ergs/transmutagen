@@ -5,6 +5,16 @@ import tables
 
 import matplotlib.pyplot as plt
 
+TIME_LABELS = [
+    '1 second',
+    '1 day',
+    '1 month',
+    '1 year',
+    '10 years',
+    '1,000\nyears',
+    '1,000,000\nyears',
+]
+
 def analyze(file):
     times = {'origen': defaultdict(list), 'cram': defaultdict(list)}
     with tables.open_file(file, mode='r') as h5file:
@@ -23,8 +33,14 @@ def analyze(file):
                 x += [i]*len(itimes)
                 y += itimes
 
-            plt.scatter(x, y)
+            plt.plot(x, y, 'o')
 
+        plt.xticks(xvals, TIME_LABELS, wrap=True)
+
+    # # Pad margins so that markers don't get clipped by the axes
+    # plt.margins(0.2)
+    # # Tweak spacing to prevent clipping of tick-labels
+    # plt.subplots_adjust(bottom=0.15)
     plt.title('runtimes')
     plt.semilogy()
 
