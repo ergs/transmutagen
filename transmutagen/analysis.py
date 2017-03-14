@@ -1,9 +1,13 @@
 from collections import defaultdict
 import io
+import os
 
 import tables
 
 import matplotlib.pyplot as plt
+
+from .tests.test_transmute import run_transmute_test
+from .origen_all import MONTH
 
 TIME_LABELS = [
     '1 second',
@@ -15,7 +19,7 @@ TIME_LABELS = [
     '1,000,000\nyears',
 ]
 
-def analyze(file):
+def analyze_origen(file):
     times = {'origen': defaultdict(list), 'cram': defaultdict(list)}
     with tables.open_file(file, mode='r') as h5file:
         for t in 'origen', 'cram':
@@ -53,6 +57,20 @@ def analyze(file):
         plt.savefig(b, format='png')
         print(display_image_bytes(b.getvalue()))
 
+def analyze_nofission():
+    nofission_transmutes = {}
+    for f in os.listdir('data'):
+        if f.endswith('_nofission.npz'):
+            lib = f.split('_', 1)[0]
+            data = os.path.join('data', f)
+            print("analyzing", data)
+            nofission_transmutes[lib] = run_transmute_test(data, 14, 30,
+                MONTH, run_all=False)
+
+
+def analyze(file):
+    analyze_origen(file)
+    analyze_nofission()
 
 if __name__ == '__main__':
     import sys
