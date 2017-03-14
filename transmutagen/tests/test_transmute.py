@@ -37,7 +37,7 @@ def time_and_run(f, *args, _print=False):
         print("Total time", end - start)
     return res
 
-def run_transmute_test(data, degree, prec, expr, time, plot=True,
+def run_transmute_test(data, degree, prec, time, expr=None, plot=True,
     _print=False, run_all=True):
     """
     Run transmute test on the data
@@ -77,7 +77,7 @@ def run_transmute_test(data, degree, prec, expr, time, plot=True,
 def test_transmute():
     data = os.path.join(os.path.dirname(__file__), 'data', 'transmute.npz')
     month = 2.6e6
-    run_transmute_test(data, 6, 30, None, month, plot=False)
+    run_transmute_test(data, 6, 30, month, plot=False)
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -103,8 +103,8 @@ def main():
     if args.log_level:
         logger.setLevel(getattr(logging, args.log_level.upper()))
 
-    res = run_transmute_test(args.data, args.degree, args.prec, args.expr,
-        args.time, _print=True)
+    res = run_transmute_test(args.data, args.degree, args.prec,
+        args.time,expr=args.expr,  _print=True)
 
     print("Column sums (min, max):")
     errors = {}
