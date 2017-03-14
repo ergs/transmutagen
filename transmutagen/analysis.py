@@ -1,4 +1,6 @@
 from collections import defaultdict
+import io
+
 import tables
 
 import matplotlib.pyplot as plt
@@ -25,7 +27,16 @@ def analyze(file):
 
     plt.title('runtimes')
     plt.semilogy()
-    plt.show()
+
+    try:
+        from iterm2_tools.images import display_image_bytes
+    except ImportError:
+        plt.show()
+    else:
+        b = io.BytesIO()
+        plt.savefig(b, format='png')
+        print(display_image_bytes(b.getvalue()))
+
 
 if __name__ == '__main__':
     import sys
