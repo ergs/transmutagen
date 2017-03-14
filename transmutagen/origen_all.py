@@ -104,10 +104,10 @@ def main():
         help="Don't run origen")
     p.add_argument('--no-run-cram', action='store_false', dest='run_cram',
         help="Don't run cram")
-    p.add_argument('--hdf5-file', default='data/results.hdf5')
+    p.add_argument('--hdf5-file', default='data/results.hdf5', help="""hdf5 file
+    to write results to""")
 
     args = p.parse_args()
-
 
     os.makedirs(os.path.dirname(args.log_file), exist_ok=True)
     logger.addHandler(logging.FileHandler(args.log_file, delay=True))

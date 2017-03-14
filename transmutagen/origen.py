@@ -304,7 +304,8 @@ def make_parser():
         help="Don't run origen")
     p.add_argument('--no-run-cram', action='store_false', dest='run_cram',
         help="Don't run cram")
-    p.add_argument('--hdf5-file', default='data/results.hdf5')
+    p.add_argument('--hdf5-file', default='data/results.hdf5', help="""hdf5 file
+    to write results to""")
     return p
 
 def execute(xs_tape9, time, phi, nuclide, hdf5_file='data/results.hdf5',
