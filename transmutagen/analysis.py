@@ -3,11 +3,11 @@ import io
 import os
 
 import tables
-
+import numpy as np
 import matplotlib.pyplot as plt
 
 from .tests.test_transmute import run_transmute_test
-from .origen_all import MONTH
+from .origen_all import MONTH, YEAR
 
 TIME_LABELS = [
     '1 second',
@@ -48,6 +48,9 @@ def analyze_origen(file):
     plt.title('runtimes')
     plt.semilogy()
 
+    plt_show_in_terminal()
+
+def plt_show_in_terminal():
     try:
         from iterm2_tools.images import display_image_bytes
     except ImportError:
@@ -65,11 +68,22 @@ def analyze_nofission():
             data = os.path.join('data', f)
             print("analyzing", data)
             nofission_transmutes[lib] = run_transmute_test(data, 14, 30,
-                MONTH, run_all=False)
+                MONTH, run_all=True, _print=True)
 
+    for lib in nofission_transmutes:
+        for r in nofission_transmutes[lib]:
+            m = nofission_transmutes[lib][r]
+            if m is None or np.isnan(m).any():
+                print("Could not compute", r, "for", lib)
+                continue
+            plt.hist(np.sum(m))
+            plt.xscale('log', nonposy='clip')
+            plt.title(lib + ' ' + r)
+            plt_show_in_terminal()
+            plt.close()
 
 def analyze(file):
-    analyze_origen(file)
+    # analyze_origen(file)
     analyze_nofission()
 
 if __name__ == '__main__':
