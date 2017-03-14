@@ -37,7 +37,14 @@ def time_and_run(f, *args, _print=False):
         print("Total time", end - start)
     return res
 
-def run_transmute_test(data, degree, prec, expr, time, plot=True, _print=False):
+def run_transmute_test(data, degree, prec, expr, time, plot=True,
+    _print=False, run_all=True):
+    """
+    Run transmute test on the data
+
+    If run_all=True, runs the test on all forms of the exponential. Otherwise,
+    only use part_frac_complex (the fastest).
+    """
     nucs, matrix = load_sparse_csr(data)
 
     expr = get_CRAM_from_cache(degree, prec, expr=expr, plot=plot)
@@ -50,12 +57,13 @@ def run_transmute_test(data, degree, prec, expr, time, plot=True, _print=False):
     # part_frac_complex2 = thetas_alphas_to_expr_complex2(thetas, alphas, alpha0)
 
     e = {}
-    e['rat_func'] = lambdify_expr(expr)
-    e['rat_func_horner'] = lambdify_expr(horner(num)/horner(den))
-    e['part_frac'] = lambdify_expr(part_frac)
     e['part_frac_complex'] = lambdify_expr(part_frac_complex)
-    # e['part_frac_complex2'] = lambdify_expr(part_frac_complex2)
-    e['expm'] = lambda m: expm(-m)
+    if run_all:
+        e['rat_func'] = lambdify_expr(expr)
+        e['rat_func_horner'] = lambdify_expr(horner(num)/horner(den))
+        e['part_frac'] = lambdify_expr(part_frac)
+        # e['part_frac_complex2'] = lambdify_expr(part_frac_complex2)
+        e['expm'] = lambda m: expm(-m)
 
     res = {}
     for func in sorted(e):
