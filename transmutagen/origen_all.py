@@ -104,6 +104,7 @@ def main():
         help="Don't run origen")
     p.add_argument('--no-run-cram', action='store_false', dest='run_cram',
         help="Don't run cram")
+    p.add_argument('--hdf5-file', default='data/results.hdf5')
 
     args = p.parse_args()
 
@@ -138,7 +139,9 @@ def main():
                     try:
                         execute(xs_tape9, time, PHI, initial_nuclide,
                             decay_tape9=args.decay_tape9, origen=args.origen,
-                            run_cram=args.run_cram, run_origen=args.run_origen)
+                            run_cram=args.run_cram,
+                            run_origen=args.run_origen,
+                            hdf5_file=args.hdf5_file)
                     except AssertionError as e:
                         logger.error("AssertionError with lib %s: %s", tape9, e)
     except BaseException as e:
