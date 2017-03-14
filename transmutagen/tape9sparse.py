@@ -42,6 +42,7 @@ def save_sparse(tape9, phi=4e14, output=None, format='csr',
                                 decaylib=decaylib,
                                 include_fission=include_fission,
                                 threshold=threshold)
+    print("Writing file to", output)
     save_sparse_csr(output, mat, nucs, phi)
 
 def main(args=None):
