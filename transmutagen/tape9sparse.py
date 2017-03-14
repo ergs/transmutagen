@@ -33,7 +33,8 @@ def save_sparse(tape9, phi=4e14, output=None, format='csr',
         base = os.path.basename(tape9)
         base, _ = os.path.splitext(base)
         os.makedirs('data', exist_ok=True)
-        output = os.path.join('data', base + '_' + str(phi) + '.npz')
+        fission_part = '' if include_fission else '_nofission'
+        output = os.path.join('data', base + '_' + str(phi) + fission_part + '.npz')
     if format != 'csr':
         raise ValueError('Only the CSR format is currently available from the '
                          'command line interface.')
