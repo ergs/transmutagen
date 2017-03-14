@@ -18,7 +18,7 @@ def make_parser():
     p.add_argument('--include-fission', action='store_true', default=True,
                    dest='include_fission',
                    help='Include fission reactions in the matrix.')
-    p.add_argument('--dont-include-fission', action='store_false',
+    p.add_argument('--no-include-fission', action='store_false',
                    dest='include_fission',
                    help="Don't include fission reactions in the matrix.")
     p.add_argument('-t', '--threshold', default=THRESHOLD, dest='threshold',
