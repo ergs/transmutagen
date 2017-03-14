@@ -159,3 +159,18 @@ def time_func(f, *args, **kwargs):
     t = time.perf_counter()
     res = f(*args, **kwargs)
     return time.perf_counter() - t, res
+
+def memoize(f):
+    memo = {}
+    @wraps(f)
+    def inner(*args, **kwargs):
+        if kwargs:
+            # Don't support kwargs for now
+            return f(*args, **kwargs)
+
+        if args not in memo:
+            memo[args] = f(*args)
+
+        return memo[args]
+
+    return inner

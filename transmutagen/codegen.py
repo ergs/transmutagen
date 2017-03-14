@@ -8,6 +8,7 @@ import scipy.sparse.linalg
 
 from .cram import CRAM_exp, get_CRAM_from_cache
 from .partialfrac import thetas_alphas, thetas_alphas_to_expr_complex, t, multiply_vector
+from .util import memoize
 
 class MatrixNumPyPrinter(NumPyPrinter):
     """
@@ -227,6 +228,7 @@ scipy_translations_autoeye = {
     'solve': scipy_sparse_solve_with_autoeye,
     }
 
+@memoize
 def CRAM_matrix_exp_lambdify(degree=14, prec=30, use_cache=True):
     if use_cache:
         rat_func = get_CRAM_from_cache(degree, prec)
