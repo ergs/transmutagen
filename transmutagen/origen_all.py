@@ -77,15 +77,15 @@ INITIAL_NUCS = [
 DAY = 60*60*24
 YEAR = 365.25*DAY
 MONTH = YEAR/12
-TIME_STEPS = [
-    1,
-    1*DAY,
-    1*MONTH,
-    1*YEAR,
-    10*YEAR,
-    1000*YEAR,
-    1e6*YEAR,
-]
+TIME_STEPS = {
+    1:         '1 second',
+    1*DAY:     '1 day',
+    1*MONTH:   '1 month',
+    1*YEAR:    '1 year',
+    10*YEAR:   '10 years',
+    1000*YEAR: '1000 years',
+    1e6*YEAR:  '1 million years',
+}
 
 PHI = 4e14
 
