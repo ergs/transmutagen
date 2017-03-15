@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from .tests.test_transmute import run_transmute_test
-from .origen_all import MONTH, YEAR
+from .origen_all import TIME_STEPS
 
 TIME_LABELS = [
     '1 second',
@@ -61,26 +61,27 @@ def plt_show_in_terminal():
         print(display_image_bytes(b.getvalue()))
 
 def analyze_nofission():
-    nofission_transmutes = {}
-    for f in os.listdir('data'):
-        if f.endswith('_nofission.npz'):
-            lib = f.split('_', 1)[0]
-            data = os.path.join('data', f)
-            print("analyzing", data)
-            nofission_transmutes[lib] = run_transmute_test(data, 14, 30,
-                MONTH, run_all=True, _print=True)
+    for time, time_name in sorted(TIME_STEPS.items()):
+        nofission_transmutes = {}
+        for f in os.listdir('data'):
+            if f.endswith('_nofission.npz'):
+                lib = f.split('_', 1)[0]
+                data = os.path.join('data', f)
+                print("analyzing", data, 'on', time_name)
+                nofission_transmutes[lib] = run_transmute_test(data, 14, 30,
+                    time, run_all=True, _print=True)
 
-    for lib in nofission_transmutes:
-        for r in nofission_transmutes[lib]:
-            m = nofission_transmutes[lib][r]
-            if m is None or np.isnan(m).any():
-                print("Could not compute", r, "for", lib)
-                continue
-            plt.hist(np.sum(m))
-            plt.xscale('log', nonposy='clip')
-            plt.title(lib + ' ' + r)
-            plt_show_in_terminal()
-            plt.close()
+        for lib in nofission_transmutes:
+            for r in nofission_transmutes[lib]:
+                m = nofission_transmutes[lib][r]
+                if m is None or np.isnan(m.toarray()).any():
+                    print("Could not compute", r, "for", lib)
+                    continue
+                plt.hist(np.sum(m, axis=1))
+                plt.yscale('log', nonposy='clip')
+                plt.title(lib + ' ' + r + ' ' + time_name)
+                plt_show_in_terminal()
+                plt.close()
 
 def analyze(file):
     # analyze_origen(file)
