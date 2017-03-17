@@ -11,7 +11,7 @@ from transmutagen.tape9utils import tape9_to_sparse
 
 
 SRC = """/* unrolled solvers */
-void solve_double(double* A, double* b, double* x) {
+void transmutagen_solve_double(double* A, double* b, double* x) {
   /* Forward calc */
   {%- for i in range(N) %}
   x[{{i}}] = b[{{i}}]{% for j in range(i) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{j}}]{%endif%}{% endfor %};
