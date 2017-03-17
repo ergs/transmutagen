@@ -84,7 +84,7 @@ def analyze_nofission():
                 plt.close()
 
 def analyze(file):
-    # analyze_origen(file)
+    analyze_origen(file)
     analyze_nofission()
 
 if __name__ == '__main__':
