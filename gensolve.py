@@ -3,6 +3,7 @@ import sys
 from argparse import ArgumentParser
 
 from jinja2 import Environment
+from scipy.sparse import eye
 
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -12,17 +13,17 @@ from transmutagen.tape9utils import tape9_to_sparse
 SRC = """/* unrolled solvers */
 void solve_double(double* A, double* b, double* x) {
   /* Forward calc */
-  {% for i in range(N) %}
-  x[{{i}}] = b[{{i}}] {% for j in range(i) %}{%if (i, j) in A%} - A[{{ij.get((i, j))}}] * x[{{j}}] {%endif%}{% endfor %};
-  {% endfor %}
+  {%- for i in range(N) %}
+  x[{{i}}] = b[{{i}}]{% for j in range(i) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{j}}]{%endif%}{% endfor %};
+  {%- endfor %}
   /* Backward calc */
-  {% for i in range(N-1, -1, -1) %}
-  x[{{i}}] = x[{{i}}] {% for j in range(i+1, N) %}{%if (i, j) in A%} - A[{{ij[i, j]}}] * x[{{j}}] {%endif%}{% endfor %};
-  {% endfor %}
+  {% for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
+  x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
+  {%-endif-%}{%- endfor %}
   /* divide by diag */
-  {% for i in range(N) %}
+  {%- for i in range(N) %}
   x[{{i}}] /= A[{{ij[i, i]}}];
-  {% endfor %}
+  {%- endfor %}
 }
 """
 
@@ -38,12 +39,14 @@ def csr_ij(mat):
 
 def generate(tape9, decaylib, outfile='transmutagen/solve.c'):
     mat, nucs = tape9_to_sparse(tape9, phi=1.0, format='csr', decaylib=decaylib)
+    N = mat.shape[0]
+    mat = mat + eye(N, format='csr')
     ij = csr_ij(mat)
-    print(ij)
-    return
+    more_than_fore = [len([j for j in range(i+1) if (i, j) in ij]) > 1 for i in range(N)]
+    more_than_back = [len([j for j in range(i, N) if (i, j) in ij]) > 1 for i in range(N)]
     env = Environment()
     template = env.from_string(SRC, globals=globals())
-    src = template.render(N=mat.shape[0], ij=ij)
+    src = template.render(N=mat.shape[0], ij=ij, more_than_back=more_than_back)
     with open(outfile, 'w') as f:
         f.write(src)
 
