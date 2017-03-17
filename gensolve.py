@@ -9,15 +9,18 @@ sys.path.insert(0, os.path.dirname(__file__))
 from transmutagen.tape9utils import tape9_to_sparse
 
 
-SRC = """
+SRC = """/* unrolled solvers */
 void solve_double(double* A, double* b, double* x) {
-  {% for i in range(N) %}/* Forward calc */
-  x[{{i}}] = b[{{i}}] {% for j in range(i) %} - A[{{ij[i, j]}}] * x[{{j}}] {% endfor %};
+  /* Forward calc */
+  {% for i in range(N) %}
+  x[{{i}}] = b[{{i}}] {% for j in range(i) %}{%if (i, j) in A%} - A[{{ij.get((i, j))}}] * x[{{j}}] {%endif%}{% endfor %};
   {% endfor %}
-  {% for i in range(N-1, -1, -1) %}/* Backward calc */
-  x[{{i}}] = x[{{i}}] {% for j in range(i+1, N) %} - A[{{ij[i, j]}}] * x[{{j}}] {% endfor %};
+  /* Backward calc */
+  {% for i in range(N-1, -1, -1) %}
+  x[{{i}}] = x[{{i}}] {% for j in range(i+1, N) %}{%if (i, j) in A%} - A[{{ij[i, j]}}] * x[{{j}}] {%endif%}{% endfor %};
   {% endfor %}
-  {% for i in range(N) %}/* divide by diag */
+  /* divide by diag */
+  {% for i in range(N) %}
   x[{{i}}] /= A[{{ij[i, i]}}];
   {% endfor %}
 }
@@ -33,13 +36,16 @@ def csr_ij(mat):
     return ij
 
 
-def generate(tape9, decaylib):
+def generate(tape9, decaylib, outfile='transmutagen/solve.c'):
     mat, nucs = tape9_to_sparse(tape9, phi=1.0, format='csr', decaylib=decaylib)
     ij = csr_ij(mat)
+    print(ij)
+    return
     env = Environment()
     template = env.from_string(SRC, globals=globals())
     src = template.render(N=mat.shape[0], ij=ij)
-    print(src)
+    with open(outfile, 'w') as f:
+        f.write(src)
 
 
 def main(args=None):
