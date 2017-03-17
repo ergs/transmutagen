@@ -2,6 +2,7 @@
 import argparse
 import os
 import logging
+import ast
 
 import mpmath
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
@@ -24,7 +25,7 @@ logger.setLevel(logging.WARN)
 
 t = symbols('t', real=True)
 
-def general_rat_func(d, x, chebyshev=False):
+def general_rat_func(degree, x, chebyshev=False):
     """
     Return a general rational function with numerator and denominator degree d
 
@@ -32,8 +33,13 @@ def general_rat_func(d, x, chebyshev=False):
 
     The constant coefficient in the denominator is always 1.
     """
-    num_coeffs = symbols('p:%s' % (d+1))
-    den_coeffs = symbols('q:%s' % (d+1))[1:]
+    if isinstance(degree, (list, tuple)):
+        num_degree, den_degree = degree
+    else:
+        num_degree = den_degree = degree
+
+    num_coeffs = symbols('p:%s' % (num_degree+1))
+    den_coeffs = symbols('q:%s' % (den_degree+1))[1:]
     if chebyshev:
         num = Add(*(Mul(c, chebyshevt(i, x)) for i, c in enumerate(num_coeffs)))
         den = Add(*(Mul(c, chebyshevt(i, x)) for i, c in enumerate([1, *den_coeffs])))
@@ -131,7 +137,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     The Remez algorithm is used.
 
     degree is the degree of the numerator and denominator of the
-    approximation.
+    approximation, or a list of [numerator degree, denominator degree].
 
     prec is the precision of the floats used in the calculation. Note that, as
     of now, the result may not be accurate to prec digits.
@@ -171,7 +177,13 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
 
     epsilon, i, y = symbols("epsilon i y")
 
-    c = c or 0.6*degree
+    if isinstance(degree, (list, tuple)):
+        num_degree, den_degree = degree
+    else:
+        num_degree = den_degree = degree
+
+    c = c or 0.6*max(num_degree, den_degree)
+
     maxsteps = int(maxsteps or 1.7*prec)
     tol = tol or 10**-(prec - 7)
 
@@ -188,17 +200,19 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     expr = expr*r.as_numer_denom()[1]
     expr = simplify(expr)
 
-    points = [chebyshevt_root(2*(degree + 1) + 1, 2*(degree + 1) - j) for j in range(1, 2*(degree + 1) + 1)]
+    points = [chebyshevt_root((num_degree + 1) + (den_degree + 1) + 1,
+        (num_degree + 1) + (den_degree + 1) - j) for j in
+        range(1, (num_degree + 1) + (den_degree + 1) + 1)]
     points = [i.evalf(prec) for i in points]
     for iteration in range(max_loops):
         logger.info('-'*80)
         logger.info("Iteration %s:", iteration)
-        system = Tuple(*[expr.subs({i: j, t: points[j]}) for j in range(2*degree + 1)])
-        system = system + Tuple(expr.replace(exp, lambda i: 0).subs({i: 2*degree + 1, t: 1}))
+        system = Tuple(*[expr.subs({i: j, t: points[j]}) for j in range(num_degree + den_degree + 1)])
+        system = system + Tuple(expr.replace(exp, lambda i: 0).subs({i: num_degree + den_degree + 1, t: 1}))
         logger.debug('system: %s', system)
         logger.debug('[*num_coeffs, *den_coeffs, epsilon]: %s', [*num_coeffs, *den_coeffs, epsilon])
         sol = dict(zip([*num_coeffs, *den_coeffs, epsilon], nsolve(system,
-            [*num_coeffs, *den_coeffs, epsilon], [*[1]*(2*(degree + 1) - 1), 0],
+            [*num_coeffs, *den_coeffs, epsilon], [*[1]*((num_degree + 1) + (den_degree + 1) - 1), 0],
             prec=prec, maxsteps=maxsteps)))
         logger.info('sol: %s', sol)
         logger.info('system.subs(sol): %s', [i.evalf() for i in system.subs(sol)])
@@ -214,9 +228,9 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
         logger.debug('points: %s', points)
         logger.info('D: %s', D)
         logger.info('[(i, D.subs(t, i)) for i in points]: %s', [(i, D.subs(t, i)) for i in points])
-        if not len(points) == 2*(degree + 1):
+        if not len(points) == (num_degree + 1) + (den_degree + 1):
             logger.error("ERROR: len(points) is (%s), not 2*(degree + 1) (%s)",
-                len(points), 2*(degree + 1))
+                len(points), (num_degree + 1) + (den_degree + 1))
             raise RuntimeError
         Evals = [E.evalf(prec, subs={**sol, t: point}) for point in points[:-1]] + [-r.evalf(prec, subs={**sol, t: 1})]
         logger.info('Evals: %s', Evals)
@@ -241,6 +255,10 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     inv = solve(-c*(t + 1)/(t - 1) - y, t, rational=False)[0].subs(y, t)
     p, q = map(lambda i: Poly(i, t), fraction(inv))
     n, d = n.transform(p, q), d.transform(p, q)
+    if num_degree > den_degree:
+        d = d*q**(num_degree - den_degree)
+    elif den_degree > num_degree:
+        n = n*q**(den_degree - num_degree)
     rat_func = n/d.TC()/(d/d.TC())
     ret = rat_func.evalf(prec)
 
@@ -268,7 +286,7 @@ def get_CRAM_from_cache(degree, prec, expr=None, plot=False):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
 
-    parser.add_argument('degree', type=int)
+    parser.add_argument('degree')
     parser.add_argument('prec', type=int)
     parser.add_argument('--division', type=int)
     parser.add_argument('--c', type=float)
@@ -290,6 +308,11 @@ def main():
     except ImportError:
         pass
     args = parser.parse_args()
+
+    try:
+        args.degree = ast.literal_eval(args.degree)
+    except (ValueError, SyntaxError) as e:
+        parser.error("Invalid degree: " + str(e))
 
     arguments = args.__dict__.copy()
     for i in arguments.copy():
