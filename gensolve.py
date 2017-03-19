@@ -14,7 +14,7 @@ SRC = """/* unrolled solvers */
 void transmutagen_solve_double(double* A, double* b, double* x) {
   /* Forward calc */
   {%- for i in range(N) %}
-  x[{{i}}] = b[{{i}}]{% for j in range(i) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{j}}]{%endif%}{% endfor %};
+  x[{{i}}] = b[{{i}}]{% for j in range(i) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
   {%- endfor %}
   /* Backward calc */
   {% for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
