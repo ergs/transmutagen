@@ -13,13 +13,24 @@ from transmutagen.tape9utils import tape9_to_sparse
 SRC = """/* unrolled solvers */
 #include "solve.h"
 
-matrix_info_t matrix_info = {
+const int TRANSMUTAGEN_I[{{NNZ}}] =
+  { {%- for i, j in sorted(ij) %}{{i}},{% endfor -%} };
+
+const int TRANSMUTAGEN_J[{{NNZ}}] =
+  { {%- for i, j in sorted(ij) %}{{j}},{% endfor -%} };
+
+const char* TRANSMUTAGEN_NUCS[{{NNZ}}] =
+  { {%- for nuc in nucs %}"{{nuc}}",{% endfor -%} };
+
+
+transmutagen_info_t transmutagen_info = {
   .n = {{N}},
-  .nnz = {{len(ij)}},
-  .i = { {% for i, j in sorted(ij) %}{{i}},{% endfor %} },
-  .j = { {% for i, j in sorted(ij) %}{{j}},{% endfor %} },
-  .nucs = { {% for nuc in nucs %}"{{nuc}}",{% endfor %} },
+  .nnz = {{NNZ}},
+  .i = (int*) TRANSMUTAGEN_I,
+  .j = (int*) TRANSMUTAGEN_J,
+  .nucs = (char**) TRANSMUTAGEN_NUCS,
 };
+
 
 void transmutagen_solve_double(double* A, double* b, double* x) {
   /* Forward calc */
@@ -57,7 +68,7 @@ def generate(tape9, decaylib, outfile='transmutagen/solve.c'):
     env = Environment()
     template = env.from_string(SRC, globals=globals())
     src = template.render(N=mat.shape[0], ij=ij, nucs=nucs, sorted=sorted, len=len,
-                          more_than_back=more_than_back)
+                          more_than_back=more_than_back, NNZ=len(ij))
     with open(outfile, 'w') as f:
         f.write(src)
 
