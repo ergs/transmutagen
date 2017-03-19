@@ -11,6 +11,16 @@ from transmutagen.tape9utils import tape9_to_sparse
 
 
 SRC = """/* unrolled solvers */
+#include "solve.h"
+
+matrix_info_t matrix_info = {
+  .n = {{N}},
+  .nnz = {{len(ij)}},
+  .i = { {% for i, j in sorted(ij) %}{{i}},{% endfor %} },
+  .j = { {% for i, j in sorted(ij) %}{{j}},{% endfor %} },
+  .nucs = { {% for nuc in nucs %}"{{nuc}}",{% endfor %} },
+};
+
 void transmutagen_solve_double(double* A, double* b, double* x) {
   /* Forward calc */
   {%- for i in range(N) %}
@@ -46,7 +56,8 @@ def generate(tape9, decaylib, outfile='transmutagen/solve.c'):
     more_than_back = [len([j for j in range(i, N) if (i, j) in ij]) > 1 for i in range(N)]
     env = Environment()
     template = env.from_string(SRC, globals=globals())
-    src = template.render(N=mat.shape[0], ij=ij, more_than_back=more_than_back)
+    src = template.render(N=mat.shape[0], ij=ij, nucs=nucs, sorted=sorted, len=len,
+                          more_than_back=more_than_back)
     with open(outfile, 'w') as f:
         f.write(src)
 
