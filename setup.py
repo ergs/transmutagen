@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+import os
 try:
     from setuptools import setup
     HAVE_SETUPTOOLS = True
@@ -24,6 +25,16 @@ setup_kwargs = {
     "zip_safe": False,
     "data_files": [("", ['LICENSE', 'README.md']),],
     }
+
+
+# Cython parts
+if os.path.exists('transmutagen/solve.c'):
+    from Cython.Build import cythonize
+    from distutils.extension import Extension
+
+    sourcefiles = ['transmutagen/py_solve.pyx', 'transmutagen/solve.c']
+    extensions = [Extension("transmutagen.solve", sourcefiles)]
+    setup_kwargs['ext_modules'] = cythonize(extensions)
 
 
 if __name__ == '__main__':
