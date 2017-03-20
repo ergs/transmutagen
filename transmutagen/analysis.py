@@ -1,6 +1,7 @@
 from collections import defaultdict
 import io
 import os
+import argparse
 
 import tables
 import numpy as np
@@ -83,10 +84,26 @@ def analyze_nofission():
                 plt_show_in_terminal()
                 plt.close()
 
-def analyze(file):
-    analyze_origen(file)
-    analyze_nofission()
+def analyze():
+    parser = argparse.ArgumentParser(description=__doc__)
+
+    parser.add_argument('--origen-results', default='data/results.hdf5',
+        help="""HDF5 file for the results of the ORIGEN runs.""")
+    parser.add_argument('--no-origen', action='store_false', dest='origen',
+        help="""Don't run the origen analysis.""")
+    parser.add_argument('--no-nofission', action='store_false',
+        dest='nofission', help="""Don't run the nofission analysis.""")
+    try:
+        import argcomplete
+        argcomplete.autocomplete(parser)
+    except ImportError:
+        pass
+    args = parser.parse_args()
+
+    if args.origen:
+        analyze_origen(args.origen_results)
+    if args.nofission:
+        analyze_nofission()
 
 if __name__ == '__main__':
-    import sys
-    analyze(sys.argv[-1])
+    analyze()
