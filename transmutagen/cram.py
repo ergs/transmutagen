@@ -137,7 +137,8 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     The Remez algorithm is used.
 
     degree is the degree of the numerator and denominator of the
-    approximation, or a list of [numerator degree, denominator degree].
+    approximation, or a list of [numerator degree, denominator degree]. Note
+    that list degrees are still not fully supported.
 
     prec is the precision of the floats used in the calculation. Note that, as
     of now, the result may not be accurate to prec digits.
