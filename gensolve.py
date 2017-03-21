@@ -50,25 +50,28 @@ void transmutagen_solve_double(double* A, double* b, double* x) {
 
 
 def csr_ij(mat):
-    #ij = {}
-    #i = j = 0
-    #for i, l, u in zip(range(mat.shape[0]), mat.indptr[:-1], mat.indptr[1:]):
-    #    for p in range(l, u):
-    #        ij[i, mat.indices[p]] = p
-    i, j, _ = find(mat)
-    ij = {(int(r), int(c)): p for p, (r, c) in enumerate(zip(i, j))}
+    ij = {}
+    i = j = 0
+    for i, l, u in zip(range(mat.shape[0]), mat.indptr[:-1], mat.indptr[1:]):
+        for p in range(l, u):
+            ij[i, mat.indices[p]] = p
+    #i, j, _ = find(mat)
+    #ij = {(int(r), int(c)): p for p, (r, c) in enumerate(zip(i, j))}
     return ij
 
 
 def generate(tape9, decaylib, outfile='transmutagen/solve.c'):
     mat, nucs = tape9_to_sparse(tape9, phi=1.0, format='csr', decaylib=decaylib)
     N = mat.shape[0]
-    N = 2
-    mat = eye(N, format='csr')
-    nucs = nucs[:N]
+    #N = 3
+    #mat = eye(N, format='csr')
+    #nucs = nucs[:N]
     mat = mat + eye(N, format='csr')
-    mat[0, 1] = 1.0
+    #mat[0, 2] = 1.0
+    #mat[2, 1] = 1.0
+    #print(mat.data)
     ij = csr_ij(mat)
+    #print(ij)
     more_than_fore = [len([j for j in range(i+1) if (i, j) in ij]) > 1 for i in range(N)]
     more_than_back = [len([j for j in range(i, N) if (i, j) in ij]) > 1 for i in range(N)]
     env = Environment()

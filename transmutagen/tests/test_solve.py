@@ -21,10 +21,11 @@ def sparse_ones():
 def test_identity_ones():
     b = np.ones(solver.N, 'f8')
     mat = sp.eye(solver.N, format='csr')
-    mat[0, 1] = 0.0
+    #mat[0, 1] = 0.0
+    #mat[2, 1] = 0.0
     obs = solver.solve(mat, b)
     exp = spla.spsolve(mat, b)
-    print(exp[:100])
-    print(obs[:100])
+    print("exp: ", exp[:100])
+    print("obs: ", obs[:100])
     assert np.allclose(exp, obs)
 
