@@ -6,15 +6,9 @@ import argparse
 import tables
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.ticker import Formatter
 
 from .tests.test_transmute import run_transmute_test
 from .origen_all import TIME_STEPS
-
-class TimeStepFormatter(Formatter):
-    def __call__(self, i, pos=None):
-        # TODO: Wrap the text
-        return TIME_STEPS.get(i, str(i)).replace(' ', '\n')
 
 def analyze_origen(file):
     fig, ax = plt.subplots()
@@ -46,7 +40,8 @@ def analyze_origen(file):
 
     ax.set_xscale('log')
     ax.set_xticks(sorted(TIME_STEPS))
-    ax.get_xaxis().set_major_formatter(TimeStepFormatter())
+    ax.xaxis.set_ticklabels([TIME_STEPS[i].replace(' ', '\n') for i in
+        sorted(TIME_STEPS)], size='small')
     ax.set_yscale('log')
 
     plt_show_in_terminal()
