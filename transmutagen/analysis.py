@@ -14,7 +14,7 @@ from .origen_all import TIME_STEPS
 class TimeStepFormatter(Formatter):
     def __call__(self, i, pos=None):
         # TODO: Wrap the text
-        return TIME_STEPS.get(i, str(i))
+        return TIME_STEPS.get(i, str(i)).replace(' ', '\n')
 
 def analyze_origen(file):
     fig, ax = plt.subplots()
