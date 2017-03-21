@@ -44,7 +44,7 @@ over several starting libraries, nuclides, and timesteps.""")
         sorted(TIME_STEPS)], size='small')
     ax.set_yscale('log')
     ax.legend()
-    plt.ylabel('Run time (seconds)')
+    plt.ylabel('Runtime (seconds)')
     plt.xlabel('Time step t')
 
     plt_show_in_terminal()
