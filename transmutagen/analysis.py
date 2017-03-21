@@ -30,6 +30,8 @@ def analyze_origen(file):
                 x += [t]*len(itimes)
                 y += itimes
 
+            print("Longest", run, "runtime", max(y), "seconds")
+
             ax.plot(x, y, 'o', label=run)
 
     # Tweak spacing to prevent clipping of tick-labels
