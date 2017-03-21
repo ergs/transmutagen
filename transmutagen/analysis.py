@@ -31,6 +31,7 @@ def analyze_origen(file):
                 y += itimes
 
             print("Longest", run, "runtime", max(y), "seconds")
+            print("Shortest", run, "runtime", min(y), "seconds")
 
             ax.plot(x, y, 'o', label=run)
 
