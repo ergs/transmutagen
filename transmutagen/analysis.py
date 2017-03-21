@@ -36,7 +36,9 @@ def analyze_origen(file):
     # plt.margins(0.2)
     # # Tweak spacing to prevent clipping of tick-labels
     # plt.subplots_adjust(bottom=0.15)
-    plt.title('runtimes')
+    plt.title("""\
+Runtimes for ORIGEN and CRAM computing transmutation
+over several starting libraries, nuclides, and timesteps.""")
 
     ax.set_xscale('log')
     ax.set_xticks(sorted(TIME_STEPS))
