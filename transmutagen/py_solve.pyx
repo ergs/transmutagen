@@ -32,6 +32,7 @@ def solve(A, b):
     if not sp.isspmatrix_csr(A):
         A = A.tocsr(copy=True)
     cdef np.ndarray[np.float64_t] x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+    print("A data", A.data)
     c_solve.transmutagen_solve_double(<double*> np.PyArray_DATA(A.data),
                                       <double*> np.PyArray_DATA(b),
                                       <double*> np.PyArray_DATA(x))
