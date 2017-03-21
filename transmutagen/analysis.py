@@ -13,13 +13,13 @@ from .origen_all import TIME_STEPS
 def analyze_origen(file):
     fig, ax = plt.subplots()
 
-    times = {'origen': defaultdict(list), 'cram': defaultdict(list)}
+    times = {'ORIGEN': defaultdict(list), 'CRAM': defaultdict(list)}
     with tables.open_file(file, mode='r') as h5file:
-        for run in 'origen', 'cram':
+        for run in 'ORIGEN', 'CRAM':
             for lib in h5file.root:
-                table = h5file.get_node(lib, run)
+                table = h5file.get_node(lib, run.lower())
                 for row in table:
-                    times[run][row['time']].append(row['execution time ' + run.upper()])
+                    times[run][row['time']].append(row['execution time ' + run])
 
             xvals = sorted(TIME_STEPS)
 
