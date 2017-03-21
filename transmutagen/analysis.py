@@ -30,7 +30,7 @@ def analyze_origen(file):
                 x += [t]*len(itimes)
                 y += itimes
 
-            ax.plot(x, y, 'o')
+            ax.plot(x, y, 'o', label=run)
 
     # # Pad margins so that markers don't get clipped by the axes
     # plt.margins(0.2)
@@ -43,6 +43,9 @@ def analyze_origen(file):
     ax.xaxis.set_ticklabels([TIME_STEPS[i].replace(' ', '\n') for i in
         sorted(TIME_STEPS)], size='small')
     ax.set_yscale('log')
+    ax.legend()
+    plt.ylabel('Run time (seconds)')
+    plt.xlabel('t')
 
     plt_show_in_terminal()
 
