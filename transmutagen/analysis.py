@@ -32,10 +32,8 @@ def analyze_origen(file):
 
             ax.plot(x, y, 'o', label=run)
 
-    # # Pad margins so that markers don't get clipped by the axes
-    # plt.margins(0.2)
-    # # Tweak spacing to prevent clipping of tick-labels
-    # plt.subplots_adjust(bottom=0.15)
+    # Tweak spacing to prevent clipping of tick-labels
+    plt.subplots_adjust(bottom=0.15)
     plt.title("""\
 Runtimes for ORIGEN and CRAM computing transmutation
 over several starting libraries, nuclides, and timesteps.""")
@@ -47,7 +45,7 @@ over several starting libraries, nuclides, and timesteps.""")
     ax.set_yscale('log')
     ax.legend()
     plt.ylabel('Run time (seconds)')
-    plt.xlabel('t')
+    plt.xlabel('Time step t')
 
     plt_show_in_terminal()
 
