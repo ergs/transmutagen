@@ -6,26 +6,20 @@ import argparse
 import tables
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.ticker import Formatter
 
 from .tests.test_transmute import run_transmute_test
 from .origen_all import TIME_STEPS
 
-class TimeStepFormatter(Formatter):
-    def __call__(self, i, pos=None):
-        # TODO: Wrap the text
-        return TIME_STEPS.get(i, str(i))
-
 def analyze_origen(file):
     fig, ax = plt.subplots()
 
-    times = {'origen': defaultdict(list), 'cram': defaultdict(list)}
+    times = {'ORIGEN': defaultdict(list), 'CRAM': defaultdict(list)}
     with tables.open_file(file, mode='r') as h5file:
-        for run in 'origen', 'cram':
+        for run in 'ORIGEN', 'CRAM':
             for lib in h5file.root:
-                table = h5file.get_node(lib, run)
+                table = h5file.get_node(lib, run.lower())
                 for row in table:
-                    times[run][row['time']].append(row['execution time ' + run.upper()])
+                    times[run][row['time']].append(row['execution time ' + run])
 
             xvals = sorted(TIME_STEPS)
 
@@ -36,18 +30,25 @@ def analyze_origen(file):
                 x += [t]*len(itimes)
                 y += itimes
 
-            ax.plot(x, y, 'o')
+            print("Longest", run, "runtime", max(y), "seconds")
+            print("Shortest", run, "runtime", min(y), "seconds")
 
-    # # Pad margins so that markers don't get clipped by the axes
-    # plt.margins(0.2)
-    # # Tweak spacing to prevent clipping of tick-labels
-    # plt.subplots_adjust(bottom=0.15)
-    plt.title('runtimes')
+            ax.plot(x, y, 'o', label=run)
+
+    # Tweak spacing to prevent clipping of tick-labels
+    plt.subplots_adjust(bottom=0.15)
+    plt.title("""\
+Runtimes for ORIGEN and CRAM computing transmutation
+over several starting libraries, nuclides, and timesteps.""")
 
     ax.set_xscale('log')
     ax.set_xticks(sorted(TIME_STEPS))
-    ax.get_xaxis().set_major_formatter(TimeStepFormatter())
+    ax.xaxis.set_ticklabels([TIME_STEPS[i].replace(' ', '\n') for i in
+        sorted(TIME_STEPS)], size='small')
     ax.set_yscale('log')
+    ax.legend()
+    plt.ylabel('Runtime (seconds)')
+    plt.xlabel('Time step t')
 
     plt_show_in_terminal()
 
