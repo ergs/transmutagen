@@ -40,14 +40,18 @@ void transmutagen_solve_double(double* A, double* b, double* x) {
   /* Backward calc */
   {% for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
   x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
-  {%-endif-%}{%- endfor %}
-  /* divide by diag */
-  {%- for i in range(N) %}
+  {%-endif%}
   x[{{i}}] /= A[{{ij[i, i]}}];
   {%- endfor %}
 }
 """
 
+TRASH = """
+  /* divide by diag */
+  {%- for i in range(N) %}
+  x[{{i}}] /= A[{{ij[i, i]}}];
+  {%- endfor %}
+"""
 
 def csr_ij(mat):
     ij = {}
