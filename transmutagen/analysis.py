@@ -10,6 +10,16 @@ import matplotlib.pyplot as plt
 from .tests.test_transmute import run_transmute_test
 from .origen_all import TIME_STEPS
 
+def plt_show_in_terminal():
+    try:
+        from iterm2_tools.images import display_image_bytes
+    except ImportError:
+        plt.show()
+    else:
+        b = io.BytesIO()
+        plt.savefig(b, format='png')
+        print(display_image_bytes(b.getvalue()))
+
 def analyze_origen(file):
     fig, ax = plt.subplots()
 
@@ -51,16 +61,6 @@ over several starting libraries, nuclides, and timesteps.""")
     plt.xlabel('Time step t')
 
     plt_show_in_terminal()
-
-def plt_show_in_terminal():
-    try:
-        from iterm2_tools.images import display_image_bytes
-    except ImportError:
-        plt.show()
-    else:
-        b = io.BytesIO()
-        plt.savefig(b, format='png')
-        print(display_image_bytes(b.getvalue()))
 
 def analyze_nofission():
     for time, time_name in sorted(TIME_STEPS.items()):
