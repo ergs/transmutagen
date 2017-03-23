@@ -4,7 +4,9 @@ import numpy as np
 import scipy.sparse as sp
 import scipy.sparse.linalg as spla
 
-import transmutagen.py_solve as solver
+import pytest
+
+solver = pytest.importorskip('transmutagen.py_solve')
 
 
 def sparse_ones():
@@ -43,5 +45,3 @@ def test_ones_ones():
     print("exp: ", exp[:100])
     print("obs: ", obs[:100])
     assert np.allclose(exp, obs)
-
-
