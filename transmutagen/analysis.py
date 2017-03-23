@@ -21,6 +21,7 @@ def plt_show_in_terminal():
         print(display_image_bytes(b.getvalue()))
 
 def analyze_origen(file):
+    plt.clf()
     fig, ax = plt.subplots()
 
     times = {'ORIGEN': defaultdict(list), 'CRAM': defaultdict(list)}
@@ -63,6 +64,7 @@ over several starting libraries, nuclides, and timesteps.""")
     plt_show_in_terminal()
 
 def analyze_nofission():
+    plt.clf()
     for time, time_name in sorted(TIME_STEPS.items()):
         nofission_transmutes = {}
         for f in os.listdir('data'):
