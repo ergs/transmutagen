@@ -270,7 +270,12 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
 
     return ret
 
-def get_CRAM_from_cache(degree, prec, expr=None, plot=False):
+def get_CRAM_from_cache(degree, prec, expr=None, plot=False, log=False):
+    if log:
+        if log is True:
+            log = "INFO"
+        logger.setLevel(getattr(logging, log.upper()))
+
     os.makedirs('CRAM_cache', exist_ok=True)
     cache_file = os.path.join('CRAM_cache', '%s_%s' % (degree, prec))
 
