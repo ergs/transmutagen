@@ -2,7 +2,7 @@ import random
 
 from sympy import (symbols, fraction, nsimplify, intervals, div, LC, Add,
     degree, re, im, together, expand_complex, Mul, I, nsolve, Function,
-    Symbol, Poly, pi)
+    Symbol, Poly, pi, count_roots)
 
 from sympy.utilities.decorator import conserve_mpmath_dps
 
@@ -97,7 +97,7 @@ def thetas_alphas_to_expr_complex2(thetas, alphas, alpha0):
     return alpha0 + Add(*[alpha/(t - theta) for theta,
         alpha in zip(thetas, alphas)])
 
-def allroots(expr, degree, prec):
+def allroots(expr, degree, prec, chop=True):
     roots = set()
     start = random.random() + random.random()*I
     MAX_ITERATIONS = 5*degree
@@ -113,6 +113,16 @@ def allroots(expr, degree, prec):
             start = 10*(random.random() + random.random()*I)
         else:
             roots.add(r)
+
+    # Because we started with a complex number, real roots will have a small
+    # complex part. Assume that the roots with the smallest complex parts are
+    # real. We could also check which roots are conjugate pairs.
+    if chop:
+        n_real_roots = count_roots(nsimplify(expr))
+        roots = sorted(roots, key=lambda i:abs(im(i)))
+        real_roots, complex_roots = roots[:n_real_roots], roots[n_real_roots:]
+        real_roots = [re(i) for i in real_roots]
+        roots = {*real_roots, *complex_roots}
     return roots
 
 @conserve_mpmath_dps
