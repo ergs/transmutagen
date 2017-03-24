@@ -37,8 +37,13 @@ def test_allroots():
     assert len([i for i in num_roots if i.is_real]) == 8
 
     num_roots2 = allroots(num, 14, 200)
-    assert all(abs(i - j) < 1e-197 for i, j in zip(sorted(num_roots,
-        key=abs),sorted(num_roots2, key=abs)))
+    # We have to sort im, re instead of re, im here because of some bugs in
+    # SymPy. See
+    # https://github.com/sympy/sympy/issues/11703#issuecomment-289120070.
+    for i, j in zip(sorted(num_roots, key=lambda x: (im(x), re(x))),
+        sorted(num_roots2, key=lambda y: (im(y), re(y)))):
+
+        assert abs(i - j) < 1e-197
 
 def test_exprs():
     num = random_poly(t, 10, -10, 10)
