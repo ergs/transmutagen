@@ -6,7 +6,7 @@ import scipy.sparse.linalg as spla
 
 import pytest
 
-solver = pytest.importorskip('transmutagen.py_solve')
+import transmutagen.py_solve as solver
 
 
 def sparse_ones():
