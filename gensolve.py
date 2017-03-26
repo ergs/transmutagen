@@ -11,6 +11,8 @@ from transmutagen.tape9utils import tape9_to_sparse
 
 
 SRC = """/* unrolled solvers */
+#include <string.h>
+
 #include "solve.h"
 
 const int TRANSMUTAGEN_I[{{NNZ}}] =
@@ -33,25 +35,64 @@ transmutagen_info_t transmutagen_info = {
 
 
 void transmutagen_solve_double(double* A, double* b, double* x) {
-  /* Forward calc */
+  /* Decompose first */
+  double LU [{{NNZ}}];
+  memcpy(LU, A, {{NNZ}}*sizeof(double));
   {%- for i in range(N) %}
-  x[{{i}}] = b[{{i}}]{% for j in range(i) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
+  {%- for j in range(i+1, N) %}
+  {%- if (j, i) in ij %}
+  LU[{{ij[j, i]}}] /= LU[{{ij[i, i]}}];
+  {%- for k in range(i+1, N) %}
+  {%- if (i, k) in ij %}
+  LU[{{ij[j, k]}}] -= LU[{{ij[j, i]}}] * LU[{{ij[i, k]}}];
+  {%- endif %}
+  {%- endfor %}
+  {%- endif %}
+  {%- endfor %}
+  {%- endfor %}
+
+
+  /* Perform Solve */
+  {%- for i in range(N) %}
+  x[{{i}}] = b[{{i}}]{% for j in range(i) %}{%if (i, j) in ij%} - LU[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
   {%- endfor %}
   /* Backward calc */
   {% for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
-  x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
+  x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ij%} - LU[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
   {%-endif%}
-  x[{{i}}] /= A[{{ij[i, i]}}];
+  x[{{i}}] /= LU[{{ij[i, i]}}];
   {%- endfor %}
 }
 """
 
-TRASH = """
-  /* divide by diag */
-  {%- for i in range(N) %}
-  x[{{i}}] /= A[{{ij[i, i]}}];
-  {%- endfor %}
-"""
+
+# Algo from Wikipedia LU Decomopsition page.
+#
+#  /* Forward calc */
+#  {%- for i in range(N) %}
+#  x[{{i}}] = b[{{i}}]{% for j in range(i) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
+#  {%- endfor %}
+#  /* Backward calc */
+#  {% for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
+#  x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
+#  {%-endif%}
+#  x[{{i}}] /= A[{{ij[i, i]}}];
+#  {%- endfor %}
+
+
+# Algo from http://www.johnloomis.org/ece538/notes/Matrix/ludcmp.html
+#
+#  /* Forward calc */
+#  {%- for i in range(N) %}
+#  x[{{i}}] = b[{{i}}]{% for j in range(i) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
+#  x[{{i}}] /= A[{{ij[i, i]}}];
+#  {%- endfor %}
+#  /* Backward calc */
+#  {% for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
+#  x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
+#  {%-endif%}
+#  {%- endfor %}
+
 
 def csr_ij(mat):
     ij = {}
@@ -67,15 +108,15 @@ def csr_ij(mat):
 def generate(tape9, decaylib, outfile='transmutagen/solve.c'):
     mat, nucs = tape9_to_sparse(tape9, phi=1.0, format='csr', decaylib=decaylib)
     N = mat.shape[0]
-    #N = 3
-    #mat = eye(N, format='csr')
-    #nucs = nucs[:N]
+    N = 3
+    mat = eye(N, format='csr')
+    nucs = nucs[:N]
     mat = mat + eye(N, format='csr')
-    #mat[0, 2] = 1.0
-    #mat[2, 1] = 1.0
+    mat[0, 2] = 1.0
+    mat[2, 1] = 1.0
     #print(mat.data)
     ij = csr_ij(mat)
-    #print(ij)
+    print(ij)
     more_than_fore = [len([j for j in range(i+1) if (i, j) in ij]) > 1 for i in range(N)]
     more_than_back = [len([j for j in range(i, N) if (i, j) in ij]) > 1 for i in range(N)]
     env = Environment()

@@ -39,6 +39,7 @@ def test_identity_range():
 def test_ones_ones():
     b = np.ones(solver.N, 'f8')
     mat = sparse_ones() + 9*sp.eye(solver.N, format='csr')
+    print(mat)
     obs = solver.solve(mat, b)
     exp = spla.spsolve(mat, b)
     print()
