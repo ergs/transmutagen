@@ -12,10 +12,12 @@ __all__ += ['t', 'thetas_alphas', 'thetas_alphas_to_expr',
     'allroots', 'multiply_vector']
 
 from .codegen import (MatrixNumPyPrinter, autoeye, numpy_solve_with_autoeye,
-    scipy_sparse_solve_with_autoeye, scipy_translations, CRAM_matrix_exp_lambdify)
+    scipy_sparse_solve_with_autoeye, scipy_translations,
+    scipy_translations_autoeye, CRAM_matrix_exp_lambdify)
 
 __all__ += ['MatrixNumPyPrinter', 'autoeye', 'numpy_solve_with_autoeye',
-    'scipy_sparse_solve_with_autoeye', 'scipy_translations', 'CRAM_matrix_exp_lambdify']
+    'scipy_sparse_solve_with_autoeye', 'scipy_translations',
+    'scipy_translations_autoeye', 'CRAM_matrix_exp_lambdify']
 
 from .util import (diff_strs, relative_error, mean_log10_relative_error,
     log_function_args, plot_in_terminal, save_sparse_csr, load_sparse_csr)
