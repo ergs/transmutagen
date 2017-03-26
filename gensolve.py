@@ -19,7 +19,7 @@ const int TRANSMUTAGEN_I[{{NNZ}}] =
 const int TRANSMUTAGEN_J[{{NNZ}}] =
   { {%- for i, j in sorted(ij) %}{{j}},{% endfor -%} };
 
-const char* TRANSMUTAGEN_NUCS[{{NNZ}}] =
+const char* TRANSMUTAGEN_NUCS[{{N}}] =
   { {%- for nuc in nucs %}"{{nuc}}",{% endfor -%} };
 
 
