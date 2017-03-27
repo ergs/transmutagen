@@ -42,7 +42,23 @@ def test_ones_ones():
     print(mat)
     obs = solver.solve(mat, b)
     exp = spla.spsolve(mat, b)
-    print()
-    print("exp: ", exp[:100])
-    print("obs: ", obs[:100])
+    assert np.allclose(exp, obs)
+
+
+def test_ones_range():
+    b = np.arange(solver.N, dtype='f8')
+    mat = sparse_ones() + 9*sp.eye(solver.N, format='csr')
+    print(mat)
+    obs = solver.solve(mat, b)
+    exp = spla.spsolve(mat, b)
+    assert np.allclose(exp, obs)
+
+
+def test_range_range():
+    b = np.arange(solver.N, dtype='f8')
+    mat = sparse_ones() + sp.diags([b], offsets=[0], shape=(solver.N, solver.N),
+                                   format='csr')
+    print(mat)
+    obs = solver.solve(mat, b)
+    exp = spla.spsolve(mat, b)
     assert np.allclose(exp, obs)
