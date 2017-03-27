@@ -65,6 +65,20 @@ void transmutagen_solve_{{typefuncname}}({{type}}* A, {{type}}* b, {{type}}* x) 
   x[{{i}}] /= LU[{{ijk[i, i]}}];
   {%- endfor %}
 }
+
+void transmutagen_diag_add_{{typefuncname}}({{type}}* A, {{type}} alpha) {
+  /* In-place, performs the addition A + alpha I, for a scalar alpha. */
+  {% for i in range(N) %}
+  A[{{ij[i, i]}}] += alpha;
+  {%- endfor %}
+}
+
+void transmutagen_dot_{{typefuncname}}({{type}}* A, {{type}}* x, {{type}}* y) {
+  /* Performs the caclulation Ax = y and returns y */
+  {% for i in range(N) %}
+    y[{{i}}] ={% for j in range(N) %}{% if (i,j) in ij %} + A[{{ij[i, j]}}]*x[{{j}}]{% endif %}{% endfor %};
+  {%- endfor %}
+}
 {%- endfor %}
 """
 

@@ -40,8 +40,8 @@ def flatten_sparse_matrix(mat):
     return A
 
 
-def solve(A, b):
-    """Solves Ax = b for x."""
+def asflat(A):
+    """Returns a flat version of the matrix. Does nothing if the matrix is already flat."""
     if not sp.issparse(A):
         pass
     elif A.nnz != c_solve.transmutagen_info.nnz or not sp.isspmatrix_csr(A):
@@ -49,6 +49,12 @@ def solve(A, b):
     else:
         # is CSR with right shape
         A = A.data
+    return A
+
+
+def solve(A, b):
+    """Solves Ax = b for x."""
+    A = asflat(A)
     # solve for type
     if A.dtype == np.complex128:
         x = np.empty(c_solve.transmutagen_info.n, dtype=np.complex128)
@@ -60,6 +66,37 @@ def solve(A, b):
         c_solve.transmutagen_solve_double(<double*> np.PyArray_DATA(A),
                                           <double*> np.PyArray_DATA(b),
                                           <double*> np.PyArray_DATA(x))
+    else:
+        raise ValueError("dtype not recognized.")
+    return x
+
+
+def diag_add(A, alpha):
+    """Returns a flat matrix which represents A + αI."""
+    r = np.array(asflat(A))
+    if A.dtype == np.complex128:
+        c_solve.transmutagen_diag_add_complex(<double complex*> np.PyArray_DATA(r), alpha)
+    elif A.dtype == np.float64:
+        c_solve.transmutagen_diag_add_double(<double*> np.PyArray_DATA(r), alpha)
+    else:
+        raise ValueError("dtype not recognized.")
+    return r
+
+
+def dot(A, x):
+    """Takes the dot product of Ax and returns y."""
+    A = asflat(A)
+    # solve for type
+    if A.dtype == np.complex128:
+        y = np.empty(c_solve.transmutagen_info.n, dtype=np.complex128)
+        c_solve.transmutagen_dot_complex(<double complex*> np.PyArray_DATA(A),
+                                           <double complex*> np.PyArray_DATA(x),
+                                           <double complex*> np.PyArray_DATA(y))
+    elif A.dtype == np.float64:
+        y = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+        c_solve.transmutagen_dot_double(<double*> np.PyArray_DATA(A),
+                                          <double*> np.PyArray_DATA(x),
+                                          <double*> np.PyArray_DATA(y))
     else:
         raise ValueError("dtype not recognized.")
     return x
