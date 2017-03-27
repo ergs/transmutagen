@@ -49,8 +49,17 @@ def solve(A, b):
     else:
         # is CSR with right shape
         A = A.data
-    cdef np.ndarray[np.float64_t] x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
-    c_solve.transmutagen_solve_double(<double*> np.PyArray_DATA(A),
-                                      <double*> np.PyArray_DATA(b),
-                                      <double*> np.PyArray_DATA(x))
+    # solve for type
+    if A.dtype == np.complex128:
+        x = np.empty(c_solve.transmutagen_info.n, dtype=np.complex128)
+        c_solve.transmutagen_solve_complex(<double complex*> np.PyArray_DATA(A),
+                                           <double complex*> np.PyArray_DATA(b),
+                                           <double complex*> np.PyArray_DATA(x))
+    elif A.dtype == np.float64:
+        x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+        c_solve.transmutagen_solve_double(<double*> np.PyArray_DATA(A),
+                                          <double*> np.PyArray_DATA(b),
+                                          <double*> np.PyArray_DATA(x))
+    else:
+        raise ValueError("dtype not recognized.")
     return x

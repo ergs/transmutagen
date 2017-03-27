@@ -11,3 +11,4 @@ cdef extern from "solve.h":
     cdef transmutagen_info_t transmutagen_info
 
     void transmutagen_solve_double(double*, double*, double*)
+    void transmutagen_solve_complex(double complex*, double complex*, double complex*)

@@ -33,7 +33,9 @@ if os.path.exists('transmutagen/solve.c'):
     from distutils.extension import Extension
 
     sourcefiles = ['transmutagen/py_solve.pyx', 'transmutagen/solve.c']
-    extensions = [Extension("transmutagen.py_solve", sourcefiles, extra_compile_args=['-O0'])]
+    extensions = [Extension("transmutagen.py_solve", sourcefiles,
+                            extra_compile_args=['-O0', '-fcx-fortran-rules',
+                                                '-fcx-limited-range'])]
     setup_kwargs['ext_modules'] = cythonize(extensions)
 
 

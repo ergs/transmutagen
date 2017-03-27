@@ -33,12 +33,12 @@ transmutagen_info_t transmutagen_info = {
   .nucs = (char**) TRANSMUTAGEN_NUCS,
 };
 
-
-void transmutagen_solve_double(double* A, double* b, double* x) {
+{% for type, typefuncname in types %}
+void transmutagen_solve_{{typefuncname}}({{type}}* A, {{type}}* b, {{type}}* x) {
   /* Decompose first */
-  double LU [{{NIJK}}];
-  memcpy(LU, A, {{NNZ}}*sizeof(double));
-  memset(LU+{{NNZ}}, 0, {{NIJK-NNZ}}*sizeof(double));
+  {{type}} LU [{{NIJK}}];
+  memcpy(LU, A, {{NNZ}}*sizeof({{type}}));
+  memset(LU+{{NNZ}}, 0, {{NIJK-NNZ}}*sizeof({{type}}));
   {%- for i in range(N) %}
   {%- for j in range(i+1, N) %}
   {%- if (j, i) in ijk %}
@@ -53,7 +53,7 @@ void transmutagen_solve_double(double* A, double* b, double* x) {
   {%- endfor %}
 
   /* Perform Solve */
-  memcpy(x, b, {{N}}*sizeof(double));
+  memcpy(x, b, {{N}}*sizeof({{type}}));
   {%- for i in range(N) %}{% if more_than_fore[i] %}
   x[{{i}}] = x[{{i}}]{% for j in range(i) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
   {%- endif %}
@@ -65,6 +65,7 @@ void transmutagen_solve_double(double* A, double* b, double* x) {
   x[{{i}}] /= LU[{{ijk[i, i]}}];
   {%- endfor %}
 }
+{%- endfor %}
 """
 
 
@@ -99,11 +100,14 @@ def generate(tape9, decaylib, outfile='transmutagen/solve.c'):
     ijk = make_ijk(ij, N)
     more_than_fore = [len([j for j in range(i+1) if (i, j) in ijk]) > 1 for i in range(N)]
     more_than_back = [len([j for j in range(i, N) if (i, j) in ijk]) > 1 for i in range(N)]
+    types = [  # C type, type function name
+             ('double', 'double'),
+             ('double complex', 'complex')]
     env = Environment()
     template = env.from_string(SRC, globals=globals())
     src = template.render(N=mat.shape[0], ij=ij, ijk=ijk, nucs=nucs, sorted=sorted, len=len,
                           more_than_back=more_than_back, NNZ=len(ij), NIJK=len(ijk),
-                          more_than_fore=more_than_fore,)
+                          more_than_fore=more_than_fore, types=types)
     with open(outfile, 'w') as f:
         f.write(src)
 
