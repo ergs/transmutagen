@@ -31,7 +31,7 @@ def flatten_sparse_matrix(mat):
     """Flattens a sparse matrix to a solvable form."""
     rows, cols, vals = sp.find(mat)
     cdef int nmat = len(rows)
-    cdef np.ndarray[np.float64_t] A = np.zeros(c_solve.transmutagen_info.nnz, dtype=np.float64)
+    cdef np.ndarray A = np.zeros(c_solve.transmutagen_info.nnz, dtype=mat.dtype)
     cdef int n
     for n in range(nmat):
         idx = C_IJ.get((rows[n], cols[n]), None)
