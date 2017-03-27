@@ -81,11 +81,16 @@ def analyze_nofission():
                 if m is None or np.isnan(m.toarray()).any():
                     print("Could not compute", r, "for", lib)
                     continue
-                plt.hist(np.sum(m, axis=1))
-                plt.yscale('log', nonposy='clip')
-                plt.title(lib + ' ' + r + ' ' + time_name)
-                plt_show_in_terminal()
-                plt.close()
+                title = lib + ' ' + r + ' ' + time_name
+                plot_matrix_sum_histogram(m, title)
+
+def plot_matrix_sum_histogram(m, title='', axis=1):
+    plt.clf()
+    plt.hist(np.sum(m, axis=axis))
+    plt.yscale('log', nonposy='clip')
+    plt.title(title)
+    plt_show_in_terminal()
+    plt.close()
 
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
