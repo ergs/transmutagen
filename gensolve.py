@@ -36,15 +36,16 @@ transmutagen_info_t transmutagen_info = {
 
 void transmutagen_solve_double(double* A, double* b, double* x) {
   /* Decompose first */
-  double LU [{{NNZ}}];
+  double LU [{{NIJK}}];
   memcpy(LU, A, {{NNZ}}*sizeof(double));
+  memset(LU+{{NNZ}}, 0, {{NIJK-NNZ}}*sizeof(double));
   {%- for i in range(N) %}
   {%- for j in range(i+1, N) %}
-  {%- if (j, i) in ij %}
-  LU[{{ij[j, i]}}] /= LU[{{ij[i, i]}}];
+  {%- if (j, i) in ijk %}
+  LU[{{ijk[j, i]}}] /= LU[{{ijk[i, i]}}];
   {%- for k in range(i+1, N) %}
-  {%- if (i, k) in ij %}
-  LU[{{ij[j, k]}}] -= LU[{{ij[j, i]}}] * LU[{{ij[i, k]}}];
+  {%- if (i, k) in ijk %}
+  LU[{{ijk[j, k]}}] -= LU[{{ijk[j, i]}}] * LU[{{ijk[i, k]}}];
   {%- endif %}
   {%- endfor %}
   {%- endif %}
@@ -54,13 +55,13 @@ void transmutagen_solve_double(double* A, double* b, double* x) {
 
   /* Perform Solve */
   {%- for i in range(N) %}
-  x[{{i}}] = b[{{i}}]{% for j in range(i) %}{%if (i, j) in ij%} - LU[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
+  x[{{i}}] = b[{{i}}]{% for j in range(i) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
   {%- endfor %}
   /* Backward calc */
   {% for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
-  x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ij%} - LU[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
+  x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
   {%-endif%}
-  x[{{i}}] /= LU[{{ij[i, i]}}];
+  x[{{i}}] /= LU[{{ijk[i, i]}}];
   {%- endfor %}
 }
 """
@@ -105,24 +106,39 @@ def csr_ij(mat):
     return ij
 
 
+def make_ijk(ij, N):
+    ijk = ij.copy()
+    nnz = idx = len(ij)
+    for i in range(N):
+        for j in range(i+1, N):
+            if (j, i) not in ijk:
+                continue
+            for k in range(i+1, N):
+                if (i, k) in ijk and (j, k) not in ijk:
+                    ijk[j, k] = idx
+                    idx += 1
+    return ijk
+
+
 def generate(tape9, decaylib, outfile='transmutagen/solve.c'):
     mat, nucs = tape9_to_sparse(tape9, phi=1.0, format='csr', decaylib=decaylib)
     N = mat.shape[0]
-    N = 3
-    mat = eye(N, format='csr')
-    nucs = nucs[:N]
+    #N = 3
+    #mat = eye(N, format='csr')
+    #nucs = nucs[:N]
     mat = mat + eye(N, format='csr')
-    mat[0, 2] = 1.0
-    mat[2, 1] = 1.0
+    #mat[0, 2] = 1.0
+    #mat[2, 1] = 1.0
     #print(mat.data)
+    #print(ij)
     ij = csr_ij(mat)
-    print(ij)
-    more_than_fore = [len([j for j in range(i+1) if (i, j) in ij]) > 1 for i in range(N)]
-    more_than_back = [len([j for j in range(i, N) if (i, j) in ij]) > 1 for i in range(N)]
+    ijk = make_ijk(ij, N)
+    more_than_fore = [len([j for j in range(i+1) if (i, j) in ijk]) > 1 for i in range(N)]
+    more_than_back = [len([j for j in range(i, N) if (i, j) in ijk]) > 1 for i in range(N)]
     env = Environment()
     template = env.from_string(SRC, globals=globals())
-    src = template.render(N=mat.shape[0], ij=ij, nucs=nucs, sorted=sorted, len=len,
-                          more_than_back=more_than_back, NNZ=len(ij))
+    src = template.render(N=mat.shape[0], ij=ij, ijk=ijk, nucs=nucs, sorted=sorted, len=len,
+                          more_than_back=more_than_back, NNZ=len(ij), NIJK=len(ijk))
     with open(outfile, 'w') as f:
         f.write(src)
 
