@@ -52,15 +52,16 @@ void transmutagen_solve_double(double* A, double* b, double* x) {
   {%- endfor %}
   {%- endfor %}
 
-
   /* Perform Solve */
-  {%- for i in range(N) %}
-  x[{{i}}] = b[{{i}}]{% for j in range(i) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
+  memcpy(x, b, {{N}}*sizeof(double));
+  {%- for i in range(N) %}{% if more_than_fore[i] %}
+  x[{{i}}] = x[{{i}}]{% for j in range(i) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
+  {%- endif %}
   {%- endfor %}
   /* Backward calc */
   {% for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
   x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
-  {%-endif%}
+  {%- endif %}
   x[{{i}}] /= LU[{{ijk[i, i]}}];
   {%- endfor %}
 }
@@ -138,7 +139,8 @@ def generate(tape9, decaylib, outfile='transmutagen/solve.c'):
     env = Environment()
     template = env.from_string(SRC, globals=globals())
     src = template.render(N=mat.shape[0], ij=ij, ijk=ijk, nucs=nucs, sorted=sorted, len=len,
-                          more_than_back=more_than_back, NNZ=len(ij), NIJK=len(ijk))
+                          more_than_back=more_than_back, NNZ=len(ij), NIJK=len(ijk),
+                          more_than_fore=more_than_fore,)
     with open(outfile, 'w') as f:
         f.write(src)
 
