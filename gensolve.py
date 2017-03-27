@@ -68,42 +68,12 @@ void transmutagen_solve_double(double* A, double* b, double* x) {
 """
 
 
-# Algo from Wikipedia LU Decomopsition page.
-#
-#  /* Forward calc */
-#  {%- for i in range(N) %}
-#  x[{{i}}] = b[{{i}}]{% for j in range(i) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
-#  {%- endfor %}
-#  /* Backward calc */
-#  {% for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
-#  x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
-#  {%-endif%}
-#  x[{{i}}] /= A[{{ij[i, i]}}];
-#  {%- endfor %}
-
-
-# Algo from http://www.johnloomis.org/ece538/notes/Matrix/ludcmp.html
-#
-#  /* Forward calc */
-#  {%- for i in range(N) %}
-#  x[{{i}}] = b[{{i}}]{% for j in range(i) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
-#  x[{{i}}] /= A[{{ij[i, i]}}];
-#  {%- endfor %}
-#  /* Backward calc */
-#  {% for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
-#  x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
-#  {%-endif%}
-#  {%- endfor %}
-
-
 def csr_ij(mat):
     ij = {}
     i = j = 0
     for i, l, u in zip(range(mat.shape[0]), mat.indptr[:-1], mat.indptr[1:]):
         for p in range(l, u):
             ij[i, mat.indices[p]] = p
-    #i, j, _ = find(mat)
-    #ij = {(int(r), int(c)): p for p, (r, c) in enumerate(zip(i, j))}
     return ij
 
 
@@ -124,14 +94,7 @@ def make_ijk(ij, N):
 def generate(tape9, decaylib, outfile='transmutagen/solve.c'):
     mat, nucs = tape9_to_sparse(tape9, phi=1.0, format='csr', decaylib=decaylib)
     N = mat.shape[0]
-    #N = 3
-    #mat = eye(N, format='csr')
-    #nucs = nucs[:N]
     mat = mat + eye(N, format='csr')
-    #mat[0, 2] = 1.0
-    #mat[2, 1] = 1.0
-    #print(mat.data)
-    #print(ij)
     ij = csr_ij(mat)
     ijk = make_ijk(ij, N)
     more_than_fore = [len([j for j in range(i+1) if (i, j) in ijk]) > 1 for i in range(N)]
