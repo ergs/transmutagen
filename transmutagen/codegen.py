@@ -22,21 +22,32 @@ class MatrixNumPyPrinter(NumPyPrinter):
         **NumPyPrinter._default_settings,
         # TODO: Make this automatic
         'use_autoeye': True,
+        'py_solve': False,
         }
 
+    def __init__(self, settings=None):
+        if settings is not None and 'py_solve' in settings:
+            if settings.get('use_autoeye', False):
+                raise ValueError("use_autoeye cannot be used with py_solve")
+            settings['use_autoeye'] = False
+        super().__init__(settings)
+
     def _print_Add(self, expr):
-        if not self._settings['use_autoeye']:
+        if not (self._settings['use_autoeye'] or self._settings['py_solve']):
             return super()._print_Add(expr)
 
         prec = precedence(expr)
 
         num_terms = [i for i in expr.args if i.is_number]
         rest_terms = [i for i in expr.args if i not in num_terms]
+
         if len(rest_terms) > 1:
             rest = super()._print_Add(Add(*rest_terms))
         elif len(rest_terms) == 1:
             rest = self._print(rest_terms[0])
         else:
+            if self._settings['py_solve']:
+                return super()._print_Add(expr)
             rest = ''
 
         if len(num_terms) > 1:
@@ -47,12 +58,17 @@ class MatrixNumPyPrinter(NumPyPrinter):
             num = ''
 
         if rest and num:
+            if self._settings['py_solve']:
+                return "diag_add(%s, %s)" % (self._print(rest_terms[0]), self._print(Add(*num_terms)))
             return self.parenthesize(rest + ' + autoeye(%s)' % num, prec)
         elif rest:
             return self.parenthesize(rest, prec)
         else:
-            # No need to parenthesize
-            return 'autoeye(%s)' % num
+            if self._settings['use_autoeye']:
+                # No need to parenthesize
+                return 'autoeye(%s)' % num
+            else:
+                return self.parenthesize(num, prec)
 
     def _print_Mul(self, expr):
         prec = precedence(expr)
