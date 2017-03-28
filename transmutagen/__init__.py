@@ -7,9 +7,9 @@ __all__ = ['general_rat_func', 'nsolve_intervals', 'nsolve_points',
 from .partialfrac import (t, thetas_alphas, thetas_alphas_to_expr_real,
     thetas_alphas_to_expr_complex, thetas_alphas_to_expr_complex2, allroots, multiply_vector)
 
-__all__ += ['t', 'thetas_alphas', 'thetas_alphas_to_expr',
-    'thetas_alphas_to_expr_real', 'thetas_alphas_to_expr_complex',
-    'thetas_alphas_to_expr_complex2', 'allroots', 'multiply_vector']
+__all__ += ['t', 'thetas_alphas', 'thetas_alphas_to_expr_real',
+    'thetas_alphas_to_expr_complex', 'thetas_alphas_to_expr_complex2',
+    'allroots', 'multiply_vector']
 
 from .codegen import (MatrixNumPyPrinter, autoeye, numpy_solve_with_autoeye,
     scipy_sparse_solve_with_autoeye, scipy_translations,
