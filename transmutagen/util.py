@@ -164,13 +164,10 @@ def memoize(f):
     memo = {}
     @wraps(f)
     def inner(*args, **kwargs):
-        if kwargs:
-            # Don't support kwargs for now
-            return f(*args, **kwargs)
+        hashable_kwargs = frozenset(kwargs.items())
+        if (args, hashable_kwargs) not in memo:
+            memo[args, hashable_kwargs] = f(*args, **kwargs)
 
-        if args not in memo:
-            memo[args] = f(*args)
-
-        return memo[args]
+        return memo[args, hashable_kwargs]
 
     return inner
