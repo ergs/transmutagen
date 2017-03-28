@@ -3,7 +3,7 @@ from sympy import (together, expand_complex, re, im, symbols, sympify,
 
 import numpy as np
 
-from ..partialfrac import (t, allroots, thetas_alphas, thetas_alphas_to_expr,
+from ..partialfrac import (t, allroots, thetas_alphas, thetas_alphas_to_expr_real,
     thetas_alphas_to_expr_complex, multiply_vector, customre)
 
 n0 = symbols("n0", commutative=False)
@@ -62,7 +62,7 @@ def test_exprs():
 
     rat_func = num/den
     thetas, alphas, alpha0 = thetas_alphas(rat_func, 15)
-    part_frac = thetas_alphas_to_expr(thetas, alphas, alpha0)
+    part_frac = thetas_alphas_to_expr_real(thetas, alphas, alpha0)
     part_frac_complex = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
 
     lrat_func = lambdify(t, rat_func, 'numpy')
@@ -106,7 +106,7 @@ def test_forms():
     """
     thetas, alphas, alpha0 = thetas_alphas(rat_func4, 30)
 
-    part_frac = thetas_alphas_to_expr(thetas, alphas, alpha0)
+    part_frac = thetas_alphas_to_expr_real(thetas, alphas, alpha0)
     assert part_frac == part_frac4
 
     part_frac_complex = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)

@@ -69,7 +69,7 @@ def thetas_alphas(rat_func, prec, *, use_intervals=False, eps=None):
     alpha0 = (LC(num)/LC(den)).evalf(prec)
     return thetas, alphas, alpha0
 
-def thetas_alphas_to_expr(thetas, alphas, alpha0):
+def thetas_alphas_to_expr_real(thetas, alphas, alpha0):
     theta, alpha = symbols('theta, alpha')
 
     re_form = together(expand_complex(re(alpha/(t - theta))))

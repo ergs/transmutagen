@@ -11,7 +11,7 @@ import numpy as np
 from scipy.sparse.linalg import expm
 
 from ..cram import logger
-from ..partialfrac import (thetas_alphas, thetas_alphas_to_expr,
+from ..partialfrac import (thetas_alphas, thetas_alphas_to_expr_real,
     thetas_alphas_to_expr_complex, t)
 from ..codegen import MatrixNumPyPrinter, scipy_translations_autoeye, get_CRAM_from_cache
 from ..util import load_sparse_csr
@@ -52,7 +52,7 @@ def run_transmute_test(data, degree, prec, time, expr=None, plot=True,
     num, den = fraction(expr)
 
     thetas, alphas, alpha0 = thetas_alphas(expr, prec)
-    part_frac = thetas_alphas_to_expr(thetas, alphas, alpha0)
+    part_frac = thetas_alphas_to_expr_real(thetas, alphas, alpha0)
     part_frac_complex = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
     # part_frac_complex2 = thetas_alphas_to_expr_complex2(thetas, alphas, alpha0)
 
