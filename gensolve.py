@@ -76,7 +76,7 @@ void transmutagen_diag_add_{{typefuncname}}({{type}}* A, {{type}} alpha) {
 void transmutagen_dot_{{typefuncname}}({{type}}* A, {{type}}* x, {{type}}* y) {
   /* Performs the caclulation Ax = y and returns y */
   {% for i in range(N) %}
-    y[{{i}}] ={% for j in range(N) %}{% if (i,j) in ij %} + A[{{ij[i, j]}}]*x[{{j}}]{% endif %}{% endfor %};
+  y[{{i}}] ={% for j in range(N) %}{% if (i,j) in ij %} + A[{{ij[i, j]}}]*x[{{j}}]{% endif %}{% endfor %};
   {%- endfor %}
 }
 {%- endfor %}

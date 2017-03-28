@@ -15,7 +15,7 @@ DTYPES = ['f8', np.complex128]
 
 
 @pytest.mark.parametrize('dtype', DTYPES)
-def test_identity_ones(dtype):
+def test_solve_identity_ones(dtype):
     b = np.ones(solver.N, dtype=dtype)
     mat = sp.eye(solver.N, format='csr', dtype=dtype)
     obs = solver.solve(mat, b)
@@ -24,7 +24,7 @@ def test_identity_ones(dtype):
 
 
 @pytest.mark.parametrize('dtype', DTYPES)
-def test_identity_range(dtype):
+def test_solve_identity_range(dtype):
     b = np.arange(solver.N, dtype=dtype)
     mat = sp.eye(solver.N, format='csr', dtype=dtype)
     obs = solver.solve(mat, b)
@@ -33,7 +33,7 @@ def test_identity_range(dtype):
 
 
 @pytest.mark.parametrize('dtype', DTYPES)
-def test_ones_ones(dtype):
+def test_solve_ones_ones(dtype):
     b = np.ones(solver.N, dtype=dtype)
     mat = solver.ones(dtype=dtype) + 9*sp.eye(solver.N, format='csr', dtype=dtype)
     obs = solver.solve(mat, b)
@@ -42,7 +42,7 @@ def test_ones_ones(dtype):
 
 
 @pytest.mark.parametrize('dtype', DTYPES)
-def test_ones_range(dtype):
+def test_solve_ones_range(dtype):
     b = np.arange(solver.N, dtype=dtype)
     mat = solver.ones(dtype=dtype) + 9*sp.eye(solver.N, format='csr', dtype=dtype)
     obs = solver.solve(mat, b)
@@ -51,7 +51,7 @@ def test_ones_range(dtype):
 
 
 @pytest.mark.parametrize('dtype', DTYPES)
-def test_range_range(dtype):
+def test_solve_range_range(dtype):
     b = np.arange(solver.N, dtype=dtype)
     mat = solver.ones(dtype=dtype) + sp.diags([b], offsets=[0], shape=(solver.N, solver.N),
                                               format='csr', dtype=dtype)
@@ -60,4 +60,19 @@ def test_range_range(dtype):
     assert np.allclose(exp, obs)
 
 
+@pytest.mark.parametrize('dtype', DTYPES)
+def test_diag_add(dtype):
+    mat = solver.ones(dtype=dtype)
+    res = mat + 9*sp.eye(solver.N, format='csr', dtype=dtype)
+    exp = solver.flatten_sparse_matrix(res)
+    obs = solver.diag_add(mat, 9.0)
+    assert np.allclose(exp, obs)
 
+
+@pytest.mark.parametrize('dtype', DTYPES)
+def test_dot(dtype):
+    x = np.arange(solver.N, dtype=dtype)
+    mat = solver.ones(dtype=dtype) + 9*sp.eye(solver.N, format='csr', dtype=dtype)
+    exp = mat.dot(x)
+    obs = solver.dot(mat, x)
+    assert np.allclose(exp, obs)
