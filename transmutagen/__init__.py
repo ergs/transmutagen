@@ -19,6 +19,10 @@ __all__ += ['MatrixNumPyPrinter', 'autoeye', 'numpy_solve_with_autoeye',
     'scipy_sparse_solve_with_autoeye', 'scipy_translations',
     'scipy_translations_autoeye', 'CRAM_matrix_exp_lambdify']
 
+from .origen import (initial_vector,)
+
+__all__ += ['initial_vector']
+
 from .util import (diff_strs, relative_error, mean_log10_relative_error,
     log_function_args, plot_in_terminal, save_sparse_csr, load_sparse_csr)
 
