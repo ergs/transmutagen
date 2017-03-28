@@ -33,65 +33,54 @@ transmutagen_info_t transmutagen_info = {
   .nucs = (char**) TRANSMUTAGEN_NUCS,
 };
 
-
-void transmutagen_solve_double(double* A, double* b, double* x) {
+{% for type, typefuncname in types %}
+void transmutagen_solve_{{typefuncname}}({{type}}* A, {{type}}* b, {{type}}* x) {
   /* Decompose first */
-  double LU [{{NNZ}}];
-  memcpy(LU, A, {{NNZ}}*sizeof(double));
+  {{type}} LU [{{NIJK}}];
+  memcpy(LU, A, {{NNZ}}*sizeof({{type}}));
+  memset(LU+{{NNZ}}, 0, {{NIJK-NNZ}}*sizeof({{type}}));
   {%- for i in range(N) %}
   {%- for j in range(i+1, N) %}
-  {%- if (j, i) in ij %}
-  LU[{{ij[j, i]}}] /= LU[{{ij[i, i]}}];
+  {%- if (j, i) in ijk %}
+  LU[{{ijk[j, i]}}] /= LU[{{ijk[i, i]}}];
   {%- for k in range(i+1, N) %}
-  {%- if (i, k) in ij %}
-  LU[{{ij[j, k]}}] -= LU[{{ij[j, i]}}] * LU[{{ij[i, k]}}];
+  {%- if (i, k) in ijk %}
+  LU[{{ijk[j, k]}}] -= LU[{{ijk[j, i]}}] * LU[{{ijk[i, k]}}];
   {%- endif %}
   {%- endfor %}
   {%- endif %}
   {%- endfor %}
   {%- endfor %}
-
 
   /* Perform Solve */
-  {%- for i in range(N) %}
-  x[{{i}}] = b[{{i}}]{% for j in range(i) %}{%if (i, j) in ij%} - LU[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
+  memcpy(x, b, {{N}}*sizeof({{type}}));
+  {%- for i in range(N) %}{% if more_than_fore[i] %}
+  x[{{i}}] = x[{{i}}]{% for j in range(i) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
+  {%- endif %}
   {%- endfor %}
   /* Backward calc */
   {% for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
-  x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ij%} - LU[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
-  {%-endif%}
-  x[{{i}}] /= LU[{{ij[i, i]}}];
+  x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
+  {%- endif %}
+  x[{{i}}] /= LU[{{ijk[i, i]}}];
   {%- endfor %}
 }
+
+void transmutagen_diag_add_{{typefuncname}}({{type}}* A, {{type}} alpha) {
+  /* In-place, performs the addition A + alpha I, for a scalar alpha. */
+  {% for i in range(N) %}
+  A[{{ij[i, i]}}] += alpha;
+  {%- endfor %}
+}
+
+void transmutagen_dot_{{typefuncname}}({{type}}* A, {{type}}* x, {{type}}* y) {
+  /* Performs the caclulation Ax = y and returns y */
+  {% for i in range(N) %}
+    y[{{i}}] ={% for j in range(N) %}{% if (i,j) in ij %} + A[{{ij[i, j]}}]*x[{{j}}]{% endif %}{% endfor %};
+  {%- endfor %}
+}
+{%- endfor %}
 """
-
-
-# Algo from Wikipedia LU Decomopsition page.
-#
-#  /* Forward calc */
-#  {%- for i in range(N) %}
-#  x[{{i}}] = b[{{i}}]{% for j in range(i) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
-#  {%- endfor %}
-#  /* Backward calc */
-#  {% for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
-#  x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
-#  {%-endif%}
-#  x[{{i}}] /= A[{{ij[i, i]}}];
-#  {%- endfor %}
-
-
-# Algo from http://www.johnloomis.org/ece538/notes/Matrix/ludcmp.html
-#
-#  /* Forward calc */
-#  {%- for i in range(N) %}
-#  x[{{i}}] = b[{{i}}]{% for j in range(i) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
-#  x[{{i}}] /= A[{{ij[i, i]}}];
-#  {%- endfor %}
-#  /* Backward calc */
-#  {% for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
-#  x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ij%} - A[{{ij[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
-#  {%-endif%}
-#  {%- endfor %}
 
 
 def csr_ij(mat):
@@ -100,29 +89,39 @@ def csr_ij(mat):
     for i, l, u in zip(range(mat.shape[0]), mat.indptr[:-1], mat.indptr[1:]):
         for p in range(l, u):
             ij[i, mat.indices[p]] = p
-    #i, j, _ = find(mat)
-    #ij = {(int(r), int(c)): p for p, (r, c) in enumerate(zip(i, j))}
     return ij
+
+
+def make_ijk(ij, N):
+    ijk = ij.copy()
+    nnz = idx = len(ij)
+    for i in range(N):
+        for j in range(i+1, N):
+            if (j, i) not in ijk:
+                continue
+            for k in range(i+1, N):
+                if (i, k) in ijk and (j, k) not in ijk:
+                    ijk[j, k] = idx
+                    idx += 1
+    return ijk
 
 
 def generate(tape9, decaylib, outfile='transmutagen/solve.c'):
     mat, nucs = tape9_to_sparse(tape9, phi=1.0, format='csr', decaylib=decaylib)
     N = mat.shape[0]
-    N = 3
-    mat = eye(N, format='csr')
-    nucs = nucs[:N]
     mat = mat + eye(N, format='csr')
-    mat[0, 2] = 1.0
-    mat[2, 1] = 1.0
-    #print(mat.data)
     ij = csr_ij(mat)
-    print(ij)
-    more_than_fore = [len([j for j in range(i+1) if (i, j) in ij]) > 1 for i in range(N)]
-    more_than_back = [len([j for j in range(i, N) if (i, j) in ij]) > 1 for i in range(N)]
+    ijk = make_ijk(ij, N)
+    more_than_fore = [len([j for j in range(i+1) if (i, j) in ijk]) > 1 for i in range(N)]
+    more_than_back = [len([j for j in range(i, N) if (i, j) in ijk]) > 1 for i in range(N)]
+    types = [  # C type, type function name
+             ('double', 'double'),
+             ('double complex', 'complex')]
     env = Environment()
     template = env.from_string(SRC, globals=globals())
-    src = template.render(N=mat.shape[0], ij=ij, nucs=nucs, sorted=sorted, len=len,
-                          more_than_back=more_than_back, NNZ=len(ij))
+    src = template.render(N=mat.shape[0], ij=ij, ijk=ijk, nucs=nucs, sorted=sorted, len=len,
+                          more_than_back=more_than_back, NNZ=len(ij), NIJK=len(ijk),
+                          more_than_fore=more_than_fore, types=types)
     with open(outfile, 'w') as f:
         f.write(src)
 
