@@ -6,7 +6,10 @@ import scipy.sparse.linalg as spla
 
 import pytest
 
-import transmutagen.py_solve as solver
+try:
+    import transmutagen.py_solve as solver
+except ImportError:
+    pytestmark = pytest.mark.skipif(True, reason='transmutagen.py_solve not found')
 
 DTYPES = ['f8', np.complex128]
 
