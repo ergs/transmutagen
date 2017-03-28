@@ -7,6 +7,7 @@ except ImportError:
     from distutils.core import setup
     HAVE_SETUPTOOLS = False
 
+import numpy as np
 
 VERSION = '1.0'
 
@@ -44,5 +45,6 @@ if __name__ == '__main__':
         name='transmutagen',
         packages=['transmutagen'],
         long_description=open('README.md').read(),
+        include_dirs = [np.get_include()],
         **setup_kwargs
         )
