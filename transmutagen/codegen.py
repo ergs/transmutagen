@@ -1,4 +1,4 @@
-from sympy import Mul, symbols, lambdify, Add
+from sympy import Mul, symbols, lambdify, Add, LC, fraction
 
 from sympy.printing.lambdarepr import NumPyPrinter
 from sympy.printing.precedence import precedence
@@ -7,7 +7,8 @@ import numpy as np
 import scipy.sparse.linalg
 
 from .cram import CRAM_exp, get_CRAM_from_cache
-from .partialfrac import thetas_alphas, thetas_alphas_to_expr_complex, t, multiply_vector
+from .partialfrac import (thetas_alphas, thetas_alphas_to_expr_complex,
+    thetas_alphas_to_expr_real, t, multiply_vector, allroots)
 from .util import memoize
 
 class MatrixNumPyPrinter(NumPyPrinter):
@@ -229,15 +230,58 @@ scipy_translations_autoeye = {
     }
 
 @memoize
-def CRAM_matrix_exp_lambdify(degree=14, prec=30, use_cache=True):
+def CRAM_matrix_exp_lambdify(degree=14, prec=30, use_cache=True,
+    form='complex partial fraction'):
+    """
+    Return a lambdified function for the CRAM approximation to exp(-x)
+
+    form can be one of
+
+    'complex partial fraction' (the default)
+    'real partial fraction'
+    'rational function'
+    'rational function horner'
+    'factored'
+    """
     if use_cache:
         rat_func = get_CRAM_from_cache(degree, prec)
     else:
         rat_func = CRAM_exp(degree, prec, plot=False)
     thetas, alphas, alpha0 = thetas_alphas(rat_func, prec)
-    part_frac_complex = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
+    if form == 'complex partial fraction':
+        expr = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
+    elif form == 'real partial fraction':
+        expr = thetas_alphas_to_expr_real(thetas, alphas, alpha0)
+    elif form in ['rational function', 'rational function horner']:
+        expr = rat_func
+    elif form == 'factored':
+        num, den = fraction(rat_func)
+        # XXX: complex conjugate roots have the same absolute value
+        numroots = sorted(allroots(num, degree, prec), key=lambda i: abs(i))
+        denroots = sorted(allroots(den, degree, prec), key=lambda i: abs(i))
+        p1q1 = LC(num)/LC(den)
+    else:
+        raise ValueError("Invalid argument for 'form': %s" % (form,))
     n0 = symbols("n0", commutative=False)
 
-    return lambdify((t, n0), multiply_vector(part_frac_complex, n0),
-        scipy_translations_autoeye, printer=MatrixNumPyPrinter({'use_autoeye': True
-            }))
+    if form != 'factored':
+        return lambdify((t, n0), multiply_vector(expr, n0,
+            horner=(form == 'rational function horner')),
+            scipy_translations_autoeye, printer=MatrixNumPyPrinter({'use_autoeye': True
+                }))
+    else:
+        # TODO: Code generate this as a single expression
+        def e_factored(mat, b, reverse=False):
+            if reverse:
+                r = reversed
+            else:
+                r = lambda i: i
+
+            for num_root, den_root in zip(r(numroots), r(denroots)):
+                f = lambdify((t, n0), multiply_vector((t - num_root)/(t -
+                    den_root), n0), scipy_translations_autoeye,
+                    printer=MatrixNumPyPrinter())
+                b = f(mat, b)
+            return float(p1q1)*b
+
+        return e_factored
