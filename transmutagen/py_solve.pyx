@@ -26,6 +26,17 @@ for idx in range(c_solve.transmutagen_info.n):
 NUCS= C_NUCS
 NUCS_IDX = {nuc: idx for idx, nuc in enumerate(NUCS)}
 
+cdef np.npy_intp npy_nnz = c_solve.transmutagen_info.nnz
+ROWS = np.PyArray_SimpleNewFromData(1, &npy_nnz, np.NPY_INT, c_solve.transmutagen_info.i)
+COLS = np.PyArray_SimpleNewFromData(1, &npy_nnz, np.NPY_INT, c_solve.transmutagen_info.j)
+
+
+def ones(dtype='f8'):
+    """Returns a CSR matrix of ones with the given sparsity pattern."""
+    data = np.ones(c_solve.transmutagen_info.nnz, dtype=dtype)
+    mat = sp.csr_matrix((data, (ROWS, COLS)))
+    return mat
+
 
 def flatten_sparse_matrix(mat):
     """Flattens a sparse matrix to a solvable form."""
@@ -38,6 +49,11 @@ def flatten_sparse_matrix(mat):
         if idx is not None:
             A[idx] = vals[n]
     return A
+
+
+def csr_from_flat(A):
+    """Converts a flatten matrix into a CSR sparse matrix."""
+    return sp.csr_matrix((A, (ROWS, COLS)))
 
 
 def asflat(A):
