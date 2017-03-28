@@ -106,13 +106,13 @@ def dot(A, x):
     if A.dtype == np.complex128:
         y = np.empty(c_solve.transmutagen_info.n, dtype=np.complex128)
         c_solve.transmutagen_dot_complex(<double complex*> np.PyArray_DATA(A),
-                                           <double complex*> np.PyArray_DATA(x),
-                                           <double complex*> np.PyArray_DATA(y))
+                                         <double complex*> np.PyArray_DATA(x),
+                                         <double complex*> np.PyArray_DATA(y))
     elif A.dtype == np.float64:
         y = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
         c_solve.transmutagen_dot_double(<double*> np.PyArray_DATA(A),
-                                          <double*> np.PyArray_DATA(x),
-                                          <double*> np.PyArray_DATA(y))
+                                        <double*> np.PyArray_DATA(x),
+                                        <double*> np.PyArray_DATA(y))
     else:
         raise ValueError("dtype not recognized.")
-    return x
+    return y
