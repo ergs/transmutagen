@@ -243,6 +243,8 @@ def CRAM_matrix_exp_lambdify(degree=14, prec=30, use_cache=True,
     'rational function horner'
     'factored'
     """
+    # TODO: This function should give exp(x), not exp(-x)
+
     if use_cache:
         rat_func = get_CRAM_from_cache(degree, prec)
     else:
