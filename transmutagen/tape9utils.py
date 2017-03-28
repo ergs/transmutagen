@@ -251,21 +251,21 @@ def create_dok(phi, nucs, decay_consts, gammas, sigma_ij, sigma_fission,
     dok : defaultdict
         Mapping from (i, j) nuclide name tuples to the transmutation rate.
     """
-    phi = phi * 1e-24  # flux, n / barn /s
-    dok = defaultdict(float) # indexed b y nuclide name
+    phi = phi * 1e-24  # flux, n / barn / s
+    dok = defaultdict(float) # indexed by nuclide name
     # let's first add the cross section channels
     for i, j in sigma_ij:
         v = sigma_ij.get((i, j), 0.0) * phi
-        dok[i, j] += v
+        dok[j, i] += v
         dok[i, i] -= v
     # now let's add the fission products
     for (i, j), fpy in fission_product_yields.items():
-        dok[i, j] += fpy * sigma_fission.get(i, 0.0) * phi
+        dok[j, i] += fpy * sigma_fission.get(i, 0.0) * phi
     for i, sigf in sigma_fission.items():
         dok[i, i] -= sigf * phi
     # now let's add the decay consts
     for (i, j), g in gammas.items():
-        dok[i, j] += g * decay_consts[i]
+        dok[j, i] += g * decay_consts[i]
     for i, v in decay_consts.items():
         dok[i, i] -= v
     return dok

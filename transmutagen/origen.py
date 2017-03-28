@@ -236,7 +236,7 @@ def test_origen_against_CRAM(xs_tape9, time, nuclide, phi):
     assert mat.shape[1] == len(nucs)
     b = initial_vector(nuclide, nucs)
 
-    CRAM_time, CRAM_res = time_func(e_complex, -mat.T*float(time), b)
+    CRAM_time, CRAM_res = time_func(e_complex, -mat*float(time), b)
     CRAM_res = np.asarray(CRAM_res)
 
     logger.info("CRAM time: %s", CRAM_time)
