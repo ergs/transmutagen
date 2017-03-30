@@ -106,7 +106,7 @@ def make_ijk(ij, N):
     return ijk
 
 
-def generate(tape9, decaylib, outfile='transmutagen/solve.c'):
+def generate(tape9, decaylib, outfile='py_solve/solve/solve.c'):
     mat, nucs = tape9_to_sparse(tape9, phi=1.0, format='csr', decaylib=decaylib)
     N = mat.shape[0]
     mat = mat + eye(N, format='csr')
@@ -122,6 +122,7 @@ def generate(tape9, decaylib, outfile='transmutagen/solve.c'):
     src = template.render(N=mat.shape[0], ij=ij, ijk=ijk, nucs=nucs, sorted=sorted, len=len,
                           more_than_back=more_than_back, NNZ=len(ij), NIJK=len(ijk),
                           more_than_fore=more_than_fore, types=types)
+    print("Writing", outfile)
     with open(outfile, 'w') as f:
         f.write(src)
 

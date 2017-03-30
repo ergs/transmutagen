@@ -1,4 +1,13 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
+
+"""
+This is a dummy module, for testing. To generate it, run
+
+   python -m transmutagen.gensolve
+
+"""
+import os
+import sys
 try:
     from setuptools import setup
     HAVE_SETUPTOOLS = True
@@ -27,11 +36,24 @@ setup_kwargs = {
     }
 
 
+# Cython parts
+if not os.path.exists('py_solve/solve.c'):
+    sys.exit("py_solve/solve.c not found. Run python -m transmutagen.gensolve to generate the solver")
+
+from Cython.Build import cythonize
+from distutils.extension import Extension
+
+sourcefiles = ['py_solve/py_solve.pyx', 'py_solve/solve.c']
+extensions = [Extension("py_solve/py_solve", sourcefiles,
+                        extra_compile_args=['-O0', '-fcx-fortran-rules',
+                                            '-fcx-limited-range'])]
+setup_kwargs['ext_modules'] = cythonize(extensions)
+
+
 if __name__ == '__main__':
     setup(
-        name='transmutagen',
-        packages=['transmutagen'],
-        long_description=open('README.md').read(),
+        name='py_solve',
+        long_description=__doc__,
         include_dirs = [np.get_include()],
         **setup_kwargs
         )
