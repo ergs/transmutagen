@@ -85,6 +85,8 @@ class MatrixNumPyPrinter(NumPyPrinter):
                 expr.args if i.is_number]
             mat_terms = [self._print(self.parenthesize(i, prec)) for i in
                 expr.args if not i.is_number]
+            if len(mat_terms) >= 2 and self._settings['py_solve']:
+                raise NotImplementedError("matrix multiplication is not yet supported with py_solve")
             if num_terms and mat_terms:
                 return '*'.join(num_terms) + '*' + '@'.join(mat_terms)
             else:
@@ -112,6 +114,8 @@ class MatrixNumPyPrinter(NumPyPrinter):
         return super()._print_Float(expr)
 
     def _print_Pow(self, expr):
+        if self._settings['py_solve']:
+            raise NotImplementedError("Matrix powers are not yet supported with py_solve")
         if expr.exp.is_Integer and expr.exp > 1:
             return 'matrix_power(%s, %s)' % (self._print(expr.base), expr.exp)
         return super()._print_Pow(expr)
