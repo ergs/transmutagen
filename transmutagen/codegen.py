@@ -316,7 +316,7 @@ def CRAM_matrix_exp_lambdify(degree=14, prec=30, use_cache=True,
     if form != 'factored':
         return wrapper(lambdify((t, n0), multiply_vector(expr, n0,
             horner=(form == 'rational function horner')),
-            module, printer=printer))
+            module, printer=printer, dummify=False))
     else:
         if py_solve:
             raise NotImplementedError("py_solve is not supported with factor yet")
