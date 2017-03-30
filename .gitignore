@@ -8,6 +8,7 @@ TAPE*
 log
 data/
 docker/data/
+py_solve/py_solve/*.c
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
