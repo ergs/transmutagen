@@ -3,7 +3,7 @@ import sys
 from argparse import ArgumentParser
 
 from jinja2 import Environment
-from scipy.sparse import eye, find
+from scipy.sparse import eye
 
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -85,7 +85,6 @@ void transmutagen_dot_{{typefuncname}}({{type}}* A, {{type}}* x, {{type}}* y) {
 
 def csr_ij(mat):
     ij = {}
-    i = j = 0
     for i, l, u in zip(range(mat.shape[0]), mat.indptr[:-1], mat.indptr[1:]):
         for p in range(l, u):
             ij[i, mat.indices[p]] = p
@@ -94,7 +93,7 @@ def csr_ij(mat):
 
 def make_ijk(ij, N):
     ijk = ij.copy()
-    nnz = idx = len(ij)
+    idx = len(ij)
     for i in range(N):
         for j in range(i+1, N):
             if (j, i) not in ijk:
