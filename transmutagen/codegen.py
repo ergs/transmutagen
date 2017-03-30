@@ -260,6 +260,16 @@ def CRAM_matrix_exp_lambdify(degree=14, prec=30, use_cache=True,
     'rational function'
     'rational function horner'
     'factored'
+
+    When py_solve = True, the py_solve module will be used (scipy is used
+    otherwise). In this case, it is much faster to pre-flatten the input
+    matrix:
+
+    >>> mat, time, b = ...
+    >>> mat = py_solve.asflat(mat)
+    >>> f = CRAM_matrix_exp_lambdify(py_solve=True)
+    >>> f(-mat*time, b)
+
     """
     # TODO: This function should give exp(x), not exp(-x)
 
