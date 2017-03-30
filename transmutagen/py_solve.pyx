@@ -71,6 +71,7 @@ def asflat(A):
 def solve(A, b):
     """Solves Ax = b for x."""
     A = asflat(A)
+    b_flat = b.flatten()
     # solve for type
     if A.dtype == np.complex128:
         x = np.empty(c_solve.transmutagen_info.n, dtype=np.complex128)
@@ -84,6 +85,7 @@ def solve(A, b):
                                           <double*> np.PyArray_DATA(x))
     else:
         raise ValueError("dtype not recognized.")
+    x.shape = b.shape
     return x
 
 
