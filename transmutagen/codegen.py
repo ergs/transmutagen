@@ -1,3 +1,5 @@
+from functools import wraps
+
 from sympy import Mul, symbols, lambdify, Add, LC, fraction
 
 from sympy.printing.lambdarepr import NumPyPrinter
@@ -247,7 +249,7 @@ scipy_translations_autoeye = {
 
 @memoize
 def CRAM_matrix_exp_lambdify(degree=14, prec=30, use_cache=True,
-    form='complex partial fraction'):
+    form='complex partial fraction', py_solve=False):
     """
     Return a lambdified function for the CRAM approximation to exp(-x)
 
@@ -282,12 +284,29 @@ def CRAM_matrix_exp_lambdify(degree=14, prec=30, use_cache=True,
         raise ValueError("Invalid argument for 'form': %s" % (form,))
     n0 = symbols("n0", commutative=False)
 
-    if form != 'factored':
-        return lambdify((t, n0), multiply_vector(expr, n0,
-            horner=(form == 'rational function horner')),
-            scipy_translations_autoeye, printer=MatrixNumPyPrinter({'use_autoeye': True
-                }))
+    if py_solve:
+        from . import py_solve
+        module = [py_solve, 'numpy']
+        printer = MatrixNumPyPrinter({'py_solve': True})
+        def wrapper(f):
+            @wraps(f)
+            def _f(t, n0):
+                t = py_solve.asflat(t)
+                return f(t, n0)
+            return _f
     else:
+        module = scipy_translations_autoeye
+        printer = MatrixNumPyPrinter({'use_autoeye': True})
+        wrapper = lambda f: f
+
+    if form != 'factored':
+        return wrapper(lambdify((t, n0), multiply_vector(expr, n0,
+            horner=(form == 'rational function horner')),
+            module, printer=printer))
+    else:
+        if py_solve:
+            raise NotImplementedError("py_solve is not supported with factor yet")
+
         # TODO: Code generate this as a single expression
         def e_factored(mat, b, reverse=False):
             if reverse:
