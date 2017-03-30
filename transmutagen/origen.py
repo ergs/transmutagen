@@ -133,7 +133,7 @@ def hash_data(vec, library, time, phi, n_fission_fragments):
 def initial_vector(start_nuclide, nucs):
     nuc_to_idx = {v: i for i, v in enumerate(nucs)}
     return csr_matrix(([1], [[nuc_to_idx[start_nuclide]], [0]]),
-        shape=(len(nucs), 1))
+        shape=(len(nucs), 1)).toarray()
 
 def test_origen_data_sanity(ORIGEN_data):
     for table in ['table_4', 'table_5']:
