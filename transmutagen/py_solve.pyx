@@ -91,10 +91,11 @@ def solve(A, b):
 
 def diag_add(A, alpha):
     """Returns a flat matrix which represents A + αI."""
-    r = np.array(asflat(A))
-    if A.dtype == np.complex128:
+    dtype = np.common_type(A, np.array(alpha))
+    r = np.array(asflat(A), dtype=dtype)
+    if dtype == np.complex128:
         c_solve.transmutagen_diag_add_complex(<double complex*> np.PyArray_DATA(r), alpha)
-    elif A.dtype == np.float64:
+    elif dtype == np.float64:
         c_solve.transmutagen_diag_add_double(<double*> np.PyArray_DATA(r), alpha)
     else:
         raise ValueError("dtype not recognized.")
