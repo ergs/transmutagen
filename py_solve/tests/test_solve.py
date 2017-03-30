@@ -1,4 +1,5 @@
 import sys
+import os
 
 import numpy as np
 import scipy.sparse as sp
@@ -6,8 +7,11 @@ import scipy.sparse.linalg as spla
 
 import pytest
 
+this_dir = os.path.dirname(__file__)
+sys.path.insert(0, os.path.join(this_dir, os.pardir))
+
 try:
-    import transmutagen.py_solve as solver
+    import py_solve as solver
 except ImportError:
     pytestmark = pytest.mark.skipif(True, reason='transmutagen.py_solve not found')
 
