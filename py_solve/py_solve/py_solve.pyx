@@ -119,3 +119,21 @@ def dot(A, x):
     else:
         raise ValueError("dtype not recognized.")
     return y
+
+cdef add7(x0, x1, x2, x3, x4, x5, x6):
+    """Takes the dot product of Ax and returns y."""
+    if x0.dtype == np.complex128:
+        y = np.empty(c_solve.transmutagen_info.n, dtype=np.complex128)
+        c_solve.transmutagen_vector_add_7_complex(
+            <double complex*> np.PyArray_DATA(x0),
+            <double complex*> np.PyArray_DATA(x1),
+            <double complex*> np.PyArray_DATA(x2),
+            <double complex*> np.PyArray_DATA(x3),
+            <double complex*> np.PyArray_DATA(x4),
+            <double complex*> np.PyArray_DATA(x5),
+            <double complex*> np.PyArray_DATA(x6),
+            <double complex*> np.PyArray_DATA(y))
+    else:
+        raise ValueError("dtype not recognized.")
+    return y
+

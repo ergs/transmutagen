@@ -77,6 +77,13 @@ void transmutagen_dot_{{typefuncname}}({{type}}* A, {{type}}* x, {{type}}* y) {
   y[{{i}}] ={% for j in range(N) %}{% if (i,j) in ij %} + A[{{ij[i, j]}}]*x[{{j}}]{% endif %}{% endfor %};
   {%- endfor %}
 }
+
+void transmutagen_vector_add_{{degree//2}}_{{typefuncname}}({% for i in range(degree//2) %}{{type}}* x{{i}}, {%- endfor %}{{type}}* y) {
+  /* Performs y = x0 + x1 + ... + x{{degree//2}} */
+  {% for i in range(N) %}
+  y[{{i}}] ={% for j in range(degree//2) %} + x{{j}}[{{i}}]{%- endfor %};
+  {%- endfor %}
+}
 {%- endfor %}
 """
 
@@ -118,7 +125,7 @@ def generate(tape9, decaylib, outfile='py_solve/py_solve/solve.c'):
     template = env.from_string(SRC, globals=globals())
     src = template.render(N=mat.shape[0], ij=ij, ijk=ijk, nucs=nucs, sorted=sorted, len=len,
                           more_than_back=more_than_back, NNZ=len(ij), NIJK=len(ijk),
-                          more_than_fore=more_than_fore, types=types)
+                          more_than_fore=more_than_fore, types=types, degree=14)
     print("Writing", outfile)
     with open(outfile, 'w') as f:
         f.write(src)
