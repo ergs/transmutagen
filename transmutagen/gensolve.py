@@ -5,8 +5,6 @@ from argparse import ArgumentParser
 from jinja2 import Environment
 from scipy.sparse import eye
 
-sys.path.insert(0, os.path.dirname(__file__))
-
 from transmutagen.tape9utils import tape9_to_sparse
 
 
