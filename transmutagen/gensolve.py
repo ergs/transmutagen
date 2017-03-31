@@ -103,7 +103,7 @@ def make_ijk(ij, N):
     return ijk
 
 
-def generate(tape9, decaylib, outfile='py_solve/solve/solve.c'):
+def generate(tape9, decaylib, outfile='py_solve/py_solve/solve.c'):
     mat, nucs = tape9_to_sparse(tape9, phi=1.0, format='csr', decaylib=decaylib)
     N = mat.shape[0]
     mat = mat + eye(N, format='csr')
