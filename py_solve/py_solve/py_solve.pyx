@@ -138,7 +138,7 @@ def add7(x0, x1, x2, x3, x4, x5, x6):
     y.shape = x0.shape
     return y
 
-cdef scalar_times_vector(alpha, v):
+def scalar_times_vector(alpha, v):
     """Returns alpha*v, there alpha is a scalar and v is a vector"""
     dtype = np.common_type(v, np.array(alpha))
     r = np.array(asflat(v), dtype=dtype)
