@@ -120,7 +120,7 @@ def dot(A, x):
         raise ValueError("dtype not recognized.")
     return y
 
-cdef add7(x0, x1, x2, x3, x4, x5, x6):
+def add7(x0, x1, x2, x3, x4, x5, x6):
     """Takes the dot product of Ax and returns y."""
     if x0.dtype == np.complex128:
         y = np.empty(c_solve.transmutagen_info.n, dtype=np.complex128)
