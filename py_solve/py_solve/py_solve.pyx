@@ -135,6 +135,7 @@ def add7(x0, x1, x2, x3, x4, x5, x6):
             <double complex*> np.PyArray_DATA(y))
     else:
         raise ValueError("dtype not recognized.")
+    y.shape = x0.shape
     return y
 
 cdef scalar_times_vector(theta, v):
