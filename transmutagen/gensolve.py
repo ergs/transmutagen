@@ -64,10 +64,10 @@ void transmutagen_solve_{{typefuncname}}({{type}}* A, {{type}}* b, {{type}}* x) 
   {%- endfor %}
 }
 
-void transmutagen_diag_add_{{typefuncname}}({{type}}* A, {{type}} alpha) {
-  /* In-place, performs the addition A + alpha I, for a scalar alpha. */
+void transmutagen_diag_add_{{typefuncname}}({{type}}* A, {{type}} theta) {
+  /* In-place, performs the addition A + theta I, for a scalar theta. */
   {% for i in range(N) %}
-  A[{{ij[i, i]}}] += alpha;
+  A[{{ij[i, i]}}] += theta;
   {%- endfor %}
 }
 

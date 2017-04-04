@@ -89,14 +89,14 @@ def solve(A, b):
     return x
 
 
-def diag_add(A, alpha):
-    """Returns a flat matrix which represents A + αI."""
-    dtype = np.common_type(A, np.array(alpha))
+def diag_add(A, theta):
+    """Returns a flat matrix which represents A + theta*I."""
+    dtype = np.common_type(A, np.array(theta))
     r = np.array(asflat(A), dtype=dtype)
     if dtype == np.complex128:
-        c_solve.transmutagen_diag_add_complex(<double complex*> np.PyArray_DATA(r), alpha)
+        c_solve.transmutagen_diag_add_complex(<double complex*> np.PyArray_DATA(r), theta)
     elif dtype == np.float64:
-        c_solve.transmutagen_diag_add_double(<double*> np.PyArray_DATA(r), alpha)
+        c_solve.transmutagen_diag_add_double(<double*> np.PyArray_DATA(r), theta)
     else:
         raise ValueError("dtype not recognized.")
     return r
@@ -138,20 +138,20 @@ def add7(x0, x1, x2, x3, x4, x5, x6):
     y.shape = x0.shape
     return y
 
-cdef scalar_times_vector(theta, v):
-    """Returns theta*v, there theta is a scalar and v is a vector"""
-    dtype = np.common_type(v, np.array(theta))
+cdef scalar_times_vector(alpha, v):
+    """Returns alpha*v, there alpha is a scalar and v is a vector"""
+    dtype = np.common_type(v, np.array(alpha))
     r = np.array(asflat(v), dtype=dtype)
     if dtype == np.complex128:
         y = np.empty(c_solve.transmutagen_info.n, dtype=np.complex128)
         c_solve.transmutagen_scalar_times_vector_complex(
-            theta,
+            alpha,
             <double complex*> np.PyArray_DATA(r)
             )
     elif dtype == np.float64:
         y = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
         c_solve.transmutagen_scalar_times_vector_double(
-            theta,
+            alpha,
             <double*> np.PyArray_DATA(r)
             )
     else:
