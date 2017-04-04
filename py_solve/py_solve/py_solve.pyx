@@ -137,3 +137,23 @@ def add7(x0, x1, x2, x3, x4, x5, x6):
         raise ValueError("dtype not recognized.")
     return y
 
+cdef scalar_times_vector(theta, v):
+    """Returns theta*v, there theta is a scalar and v is a vector"""
+    dtype = np.common_type(v, np.array(theta))
+    r = np.array(asflat(v), dtype=dtype)
+    if dtype == np.complex128:
+        y = np.empty(c_solve.transmutagen_info.n, dtype=np.complex128)
+        c_solve.transmutagen_scalar_times_vector_complex(
+            theta,
+            <double complex*> np.PyArray_DATA(r)
+            )
+    elif dtype == np.float64:
+        y = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+        c_solve.transmutagen_scalar_times_vector_double(
+            theta,
+            <double*> np.PyArray_DATA(r)
+            )
+    else:
+        raise NotImplementedError(v.dtype)
+    r.shape = v.shape
+    return r
