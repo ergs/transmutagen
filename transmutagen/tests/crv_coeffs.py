@@ -1158,4 +1158,7 @@ if __name__ == '__main__':
     except ImportError:
         pass
     args = parser.parse_args()
+    if not hasattr(args, 'func'):
+        parser.print_help()
+        parser.error("no command given")
     args.func(args)
