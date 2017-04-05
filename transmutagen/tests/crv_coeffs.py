@@ -177,7 +177,6 @@ def _parse_coeffs(args):
     check_existing = args.check_existing
 
     _coeffs = parse_crv_coeffs(file=file)
-    pprint.pprint(_coeffs, width=20)
 
     if check_existing:
         for n in sorted(coeffs):
@@ -190,6 +189,9 @@ def _parse_coeffs(args):
                 print('\n'.join(difflib.ndiff(_coeffs[n]['p'], coeffs[n]['p'])))
                 print('q diff')
                 print('\n'.join(difflib.ndiff(_coeffs[n]['q'], coeffs[n]['q'])))
+    else:
+        pprint.pprint(_coeffs, width=20)
+
 
 if __name__ == '__main__':
     # Run this with
