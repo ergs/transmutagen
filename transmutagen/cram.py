@@ -290,7 +290,7 @@ def get_CRAM_from_cache(degree, prec, expr=None, plot=False, log=False):
 
     return expr
 
-def CRAM_coeffs(expr, prec, decimal_rounding=False):
+def CRAM_coeffs(expr, prec, decimal_rounding=False, truncate=False):
     """
     Returns a dictionary of the coefficients from expr, as strings
 
@@ -303,6 +303,9 @@ def CRAM_coeffs(expr, prec, decimal_rounding=False):
 
     If decimal_rounding is True (the default is False), rounding to prec will
     be done using decimal arithmetic instead of binary arithmetic.
+
+    If truncate is True (the default is False), the value is truncated instead
+    of rounded (decimal_rounding is ignored in this case).
 
     """
     import decimal
@@ -317,7 +320,15 @@ def CRAM_coeffs(expr, prec, decimal_rounding=False):
     format_str = '{:.%se}' % (prec - 1)
     for _l, l in zip([_p, _q], [p, q]):
         for i in _l:
-            if decimal_rounding:
+            if truncate:
+                i_prec = mpmath.libmp.prec_to_dps(i._prec)
+                s = ('{:.%se}'%i_prec).format(i)
+                m, e = s.split('e')
+                length = prec + 1
+                if '-' in m:
+                    length += 1
+                l.append(m[:length] + 'e' + e)
+            elif decimal_rounding:
                 l.append(format_str.format(decimal.Decimal(repr(i))))
             else:
                 l.append(format_str.format((Float(i, prec))))
