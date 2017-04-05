@@ -11,6 +11,54 @@ are ordered from the 0th (constant) to the nth (t**n) term. The constant term
 in the denominator is always normalized to 1.
 """
 
+import os
+import re
+
+def parse_crv_coeffs(file=os.path.join(os.path.dirname( __file__), 'data', 'crv_coeffs')):
+    """
+    Used to generate the below dictionaries from the OCRed file.
+    """
+    _coeffs = {}
+    # Lines like
+    # n = 12
+    N = re.compile(r'n = (\d+)')
+    # Lines like
+    # 1 1.7271172505820169235 (+00) -1.1542504579210602494 (-01)
+    COEFF = re.compile(r'(\d+) ([\d.-]+) \(([+-]\d\d)\) ([\d.-]+) \(([+-]\d\d)\)')
+
+    with open(file) as f:
+        coeffstxt = f.read()
+
+    for line in coeffstxt.splitlines():
+        m_n = N.match(line)
+        m_coeff = COEFF.match(line)
+        if m_n:
+            n, = m_n.groups()
+            n = int(n)
+            if n in _coeffs:
+                raise ValueError("n given twice: " + n)
+            _coeffs[n] = {'p': [], 'q': []}
+            continue
+        elif m_coeff:
+            i, qb, qe, pb, pe = m_coeff.groups()
+            i = int(i)
+            if not (len(_coeffs[n]['p']) == len(_coeffs[n]['q']) == i):
+                raise ValueError('Unexpected i: ' + repr(i))
+            qblen = 22 if '-' in qb else 21
+            pblen = 22 if '-' in pb else 21
+            if len(qb) != qblen:
+                raise ValueError('Unexpected length for q: ' + repr(line))
+            if len(pb) != pblen:
+                raise ValueError('Unexpected length for p: ' + repr(line))
+
+            p = pb + 'e' + pe
+            q = qb + 'e' + qe
+            _coeffs[n]['p'].append(p)
+            _coeffs[n]['q'].append(q)
+        else:
+            raise ValueError("Line did not match: " + repr(line))
+
+    return _coeffs
 
 coeffs = {}
 
@@ -93,6 +141,7 @@ coeffs[18] = {'p': [
     ]
 }
 
+
 def create_expression(n, t=None):
     if n not in coeffs:
         raise ValueError("Don't have coefficients for {}".format(n))
@@ -114,13 +163,20 @@ def create_expression(n, t=None):
 if __name__ == '__main__':
     # Run this with
     # PYTHONPATH=/path/to/development/sympy python -m transmutagen.tests.crv_coeffs
-    from sympy import exp, symbols
 
-    from .. import plot_in_terminal
+    import sys
+    if len(sys.argv) > 1:
+        n = int(sys.argv[1])
+        from sympy import exp, symbols
 
-    rat_func = create_expression(17)
+        from .. import plot_in_terminal
 
-    print(rat_func)
+        rat_func = create_expression(n)
 
-    t = symbols('t')
-    plot_in_terminal(rat_func - exp(-t), (0, 100), prec=20)
+        print(rat_func)
+
+        t = symbols('t')
+        plot_in_terminal(rat_func - exp(-t), (0, 100), prec=20)
+    else:
+        import pprint
+        pprint.pprint(parse_crv_coeffs())
