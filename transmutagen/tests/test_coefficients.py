@@ -17,4 +17,6 @@ def test_coefficients(degree):
     expr = get_CRAM_from_cache(degree, 30)
     generated_coeffs[degree] = CRAM_coeffs(expr, 20,
         decimal_rounding=True)
-    assert generated_coeffs[degree] == correct_coeffs[degree]
+    # pytest won't show the full expr from the assert, so we print it too
+    print(expr)
+    assert generated_coeffs[degree] == correct_coeffs[degree], expr
