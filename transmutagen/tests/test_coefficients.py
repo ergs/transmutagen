@@ -12,10 +12,10 @@ from .crv_coeffs import coeffs as correct_coeffs
 from ..cram import CRAM_exp, CRAM_coeffs
 
 @slow
-def test_coefficients():
+@pytest.mark.parametrize('degree', range(1, TOTAL_DEGREES+1))
+def test_coefficients(degree):
     generated_coeffs = {}
-    for degree in range(1, TOTAL_DEGREES+1):
-        expr = CRAM_exp(degree, 30)
-        generated_coeffs[degree] = CRAM_coeffs(expr, 20,
-            decimal_rounding=True)
-        assert generated_coeffs[degree] == correct_coeffs[degree]
+    expr = CRAM_exp(degree, 30)
+    generated_coeffs[degree] = CRAM_coeffs(expr, 20,
+        decimal_rounding=True)
+    assert generated_coeffs[degree] == correct_coeffs[degree]
