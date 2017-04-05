@@ -6,7 +6,8 @@ import ast
 
 import mpmath
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
-    chebyshevt_root, Tuple, diff, N, solve, Poly, lambdify, sign, fraction, sympify)
+    chebyshevt_root, Tuple, diff, N, solve, Poly, lambdify, sign, fraction,
+    sympify, Float)
 
 from sympy.utilities.decorator import conserve_mpmath_dps
 
@@ -288,6 +289,42 @@ def get_CRAM_from_cache(degree, prec, expr=None, plot=False, log=False):
             f.write(str(expr))
 
     return expr
+
+def CRAM_coeffs(expr, prec, decimal_rounding=False):
+    """
+    Returns a dictionary of the coefficients from expr, as strings
+
+    The dictionary keys are 'p' and 'q'. 'p' has a list of the numerator
+    coefficients and 'q' has a list of the denominator coefficients. The
+    coefficients are listed from 0th (constant) to nth.
+
+    The coefficients are rounded to prec, regardless of their original
+    precision.
+
+    If decimal_rounding is True (the default is False), rounding to prec will
+    be done using decimal arithmetic instead of binary arithmetic.
+
+    """
+    import decimal
+    coeffs = {}
+    n, d = fraction(expr)
+    _p = list(reversed(Poly(n).coeffs()))
+    _q = list(reversed(Poly(d).coeffs()))
+    p = []
+    q = []
+    assert len(_p) == len(_q)
+
+    format_str = '{:.%se}' % (prec - 1)
+    for _l, l in zip([_p, _q], [p, q]):
+        for i in _l:
+            if decimal_rounding:
+                l.append(format_str.format(decimal.Decimal(repr(i))))
+            else:
+                l.append(format_str.format((Float(i, prec))))
+
+    coeffs['p'] = p
+    coeffs['q'] = q
+    return coeffs
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
