@@ -179,4 +179,17 @@ if __name__ == '__main__':
         plot_in_terminal(rat_func - exp(-t), (0, 100), prec=20)
     else:
         import pprint
-        pprint.pprint(parse_crv_coeffs())
+        import difflib
+
+        _coeffs = parse_crv_coeffs()
+        pprint.pprint(_coeffs)
+        for n in sorted(coeffs):
+            print('Checking against', n)
+            if _coeffs[n] == coeffs[n]:
+                print(n, "matches")
+            else:
+                print(n, "doesn't match")
+                print('p diff:')
+                print('\n'.join(difflib.ndiff(_coeffs[n]['p'], coeffs[n]['p'])))
+                print('q diff')
+                print('\n'.join(difflib.ndiff(_coeffs[n]['q'], coeffs[n]['q'])))
