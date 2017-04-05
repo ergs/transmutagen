@@ -13,6 +13,8 @@ in the denominator is always normalized to 1.
 
 import os
 import re
+import pprint
+import difflib
 
 def parse_crv_coeffs(file=os.path.join(os.path.dirname( __file__), 'data', 'crv_coeffs')):
     """
@@ -160,29 +162,27 @@ def create_expression(n, t=None):
 
     return num/den
 
-if __name__ == '__main__':
-    # Run this with
-    # PYTHONPATH=/path/to/development/sympy python -m transmutagen.tests.crv_coeffs
+def _plot(args):
+    n = args.degree
+    from sympy import exp, symbols
 
-    import sys
-    if len(sys.argv) > 1:
-        n = int(sys.argv[1])
-        from sympy import exp, symbols
+    from .. import plot_in_terminal
 
-        from .. import plot_in_terminal
+    rat_func = create_expression(n)
 
-        rat_func = create_expression(n)
+    print(rat_func)
 
-        print(rat_func)
+    t = symbols('t')
+    plot_in_terminal(rat_func - exp(-t), (0, 100), prec=20)
 
-        t = symbols('t')
-        plot_in_terminal(rat_func - exp(-t), (0, 100), prec=20)
-    else:
-        import pprint
-        import difflib
+def _parse_coeffs(args):
+    file = args.file
+    check_existing = args.check_existing
 
-        _coeffs = parse_crv_coeffs()
-        pprint.pprint(_coeffs, width=20)
+    _coeffs = parse_crv_coeffs(file=file)
+    pprint.pprint(_coeffs, width=20)
+
+    if check_existing:
         for n in sorted(coeffs):
             print('Checking against', n)
             if _coeffs[n] == coeffs[n]:
@@ -193,3 +193,33 @@ if __name__ == '__main__':
                 print('\n'.join(difflib.ndiff(_coeffs[n]['p'], coeffs[n]['p'])))
                 print('q diff')
                 print('\n'.join(difflib.ndiff(_coeffs[n]['q'], coeffs[n]['q'])))
+
+if __name__ == '__main__':
+    # Run this with
+    # PYTHONPATH=/path/to/development/sympy python -m transmutagen.tests.crv_coeffs
+
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+
+    subparser = parser.add_subparsers()
+
+    plot = subparser.add_parser('plot', help='Plot a rational function')
+    plot.add_argument('degree', type=int)
+    plot.set_defaults(func=_plot)
+
+    parse_coeffs = subparser.add_parser('parse-coeffs', help='Parse the coeffs in the data file')
+    parse_coeffs.add_argument('--file', default=os.path.join(os.path.dirname(
+        __file__), 'data', 'crv_coeffs'), help="Path to the crv_coeffs data file")
+    parse_coeffs.add_argument('--check-existing', action='store_true',
+        default=False, help="""Print a diff from the parsed coeffs and the
+        existing ones in this file""")
+    parse_coeffs.set_defaults(func=_parse_coeffs)
+
+    # TODO: Add options for arguments to pass to various functions as needed.
+    try:
+        import argcomplete
+        argcomplete.autocomplete(parser)
+    except ImportError:
+        pass
+    args = parser.parse_args()
+    args.func(args)
