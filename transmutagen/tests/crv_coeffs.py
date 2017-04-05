@@ -9,6 +9,22 @@ Abbyy, and verified by hand.
 p are the numerator coefficients and q are the denominator coefficients. They
 are ordered from the 0th (constant) to the nth (t**n) term. The constant term
 in the denominator is always normalized to 1.
+
+To regenerate the coefficients in this file from the data, use
+
+    python -m transmutagen.tests.crv_coeffs parse-coeffs
+
+To test the coefficients in this file against the data, use
+
+    python -m transmutagen.tests.crv_coeffs parse-coeffs --check-existing
+
+To generate and plot a rational function expression of degree n from the
+coefficients in this file, use
+
+    python -m transmutagen.tests.crv_coeffs plot n
+
+where n is from 1-30.
+
 """
 
 import os
@@ -198,7 +214,7 @@ if __name__ == '__main__':
     # PYTHONPATH=/path/to/development/sympy python -m transmutagen.tests.crv_coeffs
 
     import argparse
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 
     subparser = parser.add_subparsers()
 
