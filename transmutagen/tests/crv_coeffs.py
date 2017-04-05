@@ -1117,15 +1117,14 @@ def _parse_coeffs(args):
 
     if check_existing:
         for n in sorted(coeffs):
-            print('Checking against', n)
-            if _coeffs[n] == coeffs[n]:
-                print(n, "matches")
-            else:
-                print(n, "doesn't match")
-                print('p diff:')
-                print('\n'.join(difflib.ndiff(_coeffs[n]['p'], coeffs[n]['p'])))
-                print('q diff')
-                print('\n'.join(difflib.ndiff(_coeffs[n]['q'], coeffs[n]['q'])))
+            for v in 'pq':
+                print('Checking against', n, v)
+                if _coeffs[n][v] == coeffs[n][v]:
+                    print(n, v, "matches")
+                else:
+                    print(n, v, "doesn't match")
+                    print(v, 'diff:')
+                    print('\n'.join(difflib.ndiff(_coeffs[n][v], coeffs[n][v])))
     else:
         pprint.pprint(_coeffs, width=20)
 
