@@ -15,6 +15,7 @@ import os
 import re
 import pprint
 import difflib
+from ..partialfrac import t
 
 def parse_crv_coeffs(file=os.path.join(os.path.dirname( __file__), 'data', 'crv_coeffs')):
     """
@@ -144,14 +145,11 @@ coeffs[18] = {'p': [
 }
 
 
-def create_expression(n, t=None):
+def create_expression(n):
     if n not in coeffs:
         raise ValueError("Don't have coefficients for {}".format(n))
 
-    from sympy import Float, symbols, Add
-
-    if not t:
-        t = symbols('t')
+    from sympy import Float, Add
 
     p = coeffs[n]['p']
     q = coeffs[n]['q']
@@ -164,7 +162,7 @@ def create_expression(n, t=None):
 
 def _plot(args):
     n = args.degree
-    from sympy import exp, symbols
+    from sympy import exp
 
     from .. import plot_in_terminal
 
@@ -172,7 +170,6 @@ def _plot(args):
 
     print(rat_func)
 
-    t = symbols('t')
     plot_in_terminal(rat_func - exp(-t), (0, 100), prec=20)
 
 def _parse_coeffs(args):
