@@ -182,7 +182,7 @@ if __name__ == '__main__':
         import difflib
 
         _coeffs = parse_crv_coeffs()
-        pprint.pprint(_coeffs)
+        pprint.pprint(_coeffs, width=20)
         for n in sorted(coeffs):
             print('Checking against', n)
             if _coeffs[n] == coeffs[n]:
