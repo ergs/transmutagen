@@ -159,6 +159,18 @@ def scalar_times_vector(alpha, v):
     r.shape = v.shape
     return r
 
+def expm14(A, b):
+    A = np.asarray(A, dtype=np.complex128)
+    b = np.asarray(b, dtype=np.complex128)
+    x = np.empty(c_solve.transmutagen_info.n, dtype=np.complex128)
+    c_solve.expm14(
+        <double complex*> np.PyArray_DATA(A),
+        <double complex*> np.PyArray_DATA(b),
+        <double complex*> np.PyArray_DATA(x)
+        )
+    x.shape = b.shape
+    return x
+
 def expm(t, n0):
     return 2*np.real(add7(
         solve(diag_add(t, 5.62314257274597712494520326004 + (-1.19406904634396697320055795941)*1j), scalar_times_vector(27.8751619401456463960237466985 + (-102.147339990564514248579577671)*1j, n0)),
