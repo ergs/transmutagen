@@ -86,7 +86,7 @@ def plot_in_terminal(expr, *args, prec=None, logname=None, **kwargs):
         print(display_image_bytes(b.getvalue()))
 
 def plt_show_in_terminal():
-    import matplolib.pyplot as plt
+    import matplotlib.pyplot as plt
     try:
         from iterm2_tools.images import display_image_bytes
     except ImportError:
