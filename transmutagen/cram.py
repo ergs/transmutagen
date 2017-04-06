@@ -131,7 +131,8 @@ def nsolve_points(expr, bounds, division=300, scale=True, **kwargs):
 @conserve_mpmath_dps
 @log_function_args
 def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
-    tol=None, nsolve_type='intervals', D_scale=1, plot=False, log_to_file=False, **kwargs):
+    convergence_value=None, tol=None, nsolve_type='intervals', D_scale=1,
+    plot=False, log_to_file=False, **kwargs):
     """
     Compute the CRAM approximation of exp(-t) from t in [0, oo) of the given degree
 
@@ -155,6 +156,10 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     maxsteps is the argument passed to the mpmath bisection solver. The
     default is 1.7*prec. See also
     https://github.com/fredrik-johansson/mpmath/issues/339.
+
+    convergence_value is the value where the algorithm converges if the
+    maximum absolute error minus the minimum absolute error is below this
+    value. The default is 10**-prec.
 
     tol is the tolerance passed to nsolve. The default is 10**-(prec - 7).
 
@@ -188,6 +193,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
 
     maxsteps = int(maxsteps or 1.7*prec)
     tol = tol or 10**-(prec - 7)
+    convergence_value = convergence_value or 10**-prec
 
     if nsolve_type == 'points':
         nsolve_func = nsolve_points
@@ -241,9 +247,6 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
         maxmins.append(maxmin)
         logger.info('max - min: %s', maxmin)
         logger.info('epsilon: %s', N(sol[epsilon]))
-        if maxmin < 10**-prec:
-            logger.info("Converged in %d iterations.", iteration + 1)
-            break
         if plot:
             import matplotlib.pyplot as plt
             plt.clf()
@@ -255,6 +258,10 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
             plt.ylabel("max - min")
             plt.title("Convergence")
             plt_show_in_terminal()
+
+        if maxmin < convergence_value:
+            logger.info("Converged in %d iterations.", iteration + 1)
+            break
     else:
         logger.warn("!!!WARNING: DID NOT CONVERGE AFTER %d ITERATIONS!!!", max_loops)
 
@@ -359,6 +366,7 @@ def main():
     parser.add_argument('--c', type=float)
     parser.add_argument('--maxsteps', type=int)
     parser.add_argument('--max-loops', type=int)
+    parser.add_argument('--convergence-value', type=mpmath.mpf)
     parser.add_argument('--tol', type=mpmath.mpf)
     parser.add_argument('--nsolve-type', default=None, choices=['points',
         'intervals'])
