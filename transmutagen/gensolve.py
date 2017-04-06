@@ -1,5 +1,3 @@
-import os
-import sys
 from argparse import ArgumentParser
 
 from jinja2 import Environment
