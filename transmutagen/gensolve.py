@@ -85,10 +85,10 @@ void transmutagen_vector_add_{{degree//2}}_{{typefuncname}}({% for i in range(de
   {%- endfor %}
 }
 
-void transmutagen_scalar_times_vector_{{typefuncname}}({{type}} theta, {{type}}* v) {
-  /* In-place, performs theta*v, for a scalar theta and vector v. */
+void transmutagen_scalar_times_vector_{{typefuncname}}({{type}} alpha, {{type}}* v) {
+  /* In-place, performs alpha*v, for a scalar alpha and vector v. */
   {% for i in range(N) %}
-  v[{{i}}] *= theta;
+  v[{{i}}] *= alpha;
   {%- endfor %}
 }
 
