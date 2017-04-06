@@ -1,5 +1,4 @@
 from collections import defaultdict
-import io
 import os
 import argparse
 
@@ -9,16 +8,7 @@ import matplotlib.pyplot as plt
 
 from .tests.test_transmute import run_transmute_test
 from .origen_all import TIME_STEPS
-
-def plt_show_in_terminal():
-    try:
-        from iterm2_tools.images import display_image_bytes
-    except ImportError:
-        plt.show()
-    else:
-        b = io.BytesIO()
-        plt.savefig(b, format='png')
-        print(display_image_bytes(b.getvalue()))
+from .util import plt_show_in_terminal
 
 def analyze_origen(file):
     plt.clf()

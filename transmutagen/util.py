@@ -5,6 +5,7 @@ import os
 import logging
 import time
 from functools import wraps
+import io
 
 import numpy as np
 from scipy.sparse import csr_matrix
@@ -56,8 +57,6 @@ def mean_log10_relative_error(exact, approx):
 # Calculations", Pusa and Leppänen:
 # mpmath.cplot(lambdify(t, rat_func14 - exp(-t), 'mpmath'), re=[0, 100], im=[-30, 30], color=lambda i: -mpmath.floor(mpmath.log(abs(i), 10))/(30 - mpmath.floor(mpmath.log(abs(i), 10))), points=100000, verbose=True)
 
-
-
 @conserve_mpmath_dps
 def plot_in_terminal(expr, *args, prec=None, logname=None, **kwargs):
     """
@@ -84,6 +83,17 @@ def plot_in_terminal(expr, *args, prec=None, logname=None, **kwargs):
             os.makedirs('plots', exist_ok=True)
             with open('plots/%s.png' % logname, 'wb') as f:
                 f.write(b.getvalue())
+        print(display_image_bytes(b.getvalue()))
+
+def plt_show_in_terminal():
+    import matplolib.pyplot as plt
+    try:
+        from iterm2_tools.images import display_image_bytes
+    except ImportError:
+        plt.show()
+    else:
+        b = io.BytesIO()
+        plt.savefig(b, format='png')
         print(display_image_bytes(b.getvalue()))
 
 def _get_log_file_name(locals_dict):
