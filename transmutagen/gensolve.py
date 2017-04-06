@@ -92,6 +92,48 @@ void transmutagen_scalar_times_vector_{{typefuncname}}({{type}} alpha, {{type}}*
   {%- endfor %}
 }
 
+void transmutagen_solve_special_{{typefuncname}}({{type}}* A, {{type}} theta, {{type}} alpha, {{type}}* b, {{type}}* x) {
+  /* Solves (A + theta*I)\\alpha*b and stores the result in x */
+  {{type}} LU [{{NIJK}}];
+  memcpy(LU, A, {{NNZ}}*sizeof({{type}}));
+  memset(LU+{{NNZ}}, 0, {{NIJK-NNZ}}*sizeof({{type}}));
+
+  /* Add theta*I to A */
+  {% for i in range(N) %}
+  LU[{{ij[i, i]}}] += theta;
+  {%- endfor %}
+
+  /* Decompose first */
+  {%- for i in range(N) %}
+  {%- for j in range(i+1, N) %}
+  {%- if (j, i) in ijk %}
+  LU[{{ijk[j, i]}}] /= LU[{{ijk[i, i]}}];
+  {%- for k in range(i+1, N) %}
+  {%- if (i, k) in ijk %}
+  LU[{{ijk[j, k]}}] -= LU[{{ijk[j, i]}}] * LU[{{ijk[i, k]}}];
+  {%- endif %}
+  {%- endfor %}
+  {%- endif %}
+  {%- endfor %}
+  {%- endfor %}
+
+  memcpy(x, b, {{N}}*sizeof({{type}}));
+  {% for i in range(N) %}
+  x[{{i}}] *= alpha;
+  {%- endfor %}
+
+  /* Perform Solve */
+  {%- for i in range(N) %}{% if more_than_fore[i] %}
+  x[{{i}}] = x[{{i}}]{% for j in range(i) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
+  {%- endif %}
+  {%- endfor %}
+  /* Backward calc */
+  {% for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
+  x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
+  {%- endif %}
+  x[{{i}}] /= LU[{{ijk[i, i]}}];
+  {%- endfor %}
+}
 {%- endfor %}
 """
 
