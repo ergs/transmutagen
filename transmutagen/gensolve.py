@@ -93,7 +93,7 @@ void transmutagen_scalar_times_vector_{{typefuncname}}({{type}} alpha, {{type}}*
 }
 
 void transmutagen_solve_special_{{typefuncname}}({{type}}* A, {{type}} theta, {{type}} alpha, {{type}}* b, {{type}}* x) {
-  /* Solves (A + theta*I)\\alpha*b and stores the result in x */
+  /* Solves (A + theta*I)x = alpha*b and stores the result in x */
   {{type}} LU [{{NIJK}}];
   memcpy(LU, A, {{NNZ}}*sizeof({{type}}));
   memset(LU+{{NNZ}}, 0, {{NIJK-NNZ}}*sizeof({{type}}));
