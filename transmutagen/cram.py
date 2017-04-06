@@ -159,8 +159,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
 
     convergence_value is the value where the algorithm converges if the
     maximum absolute error minus the minimum absolute error is below this
-    value. The default is to stop when the relative difference is below
-    10**-15.
+    value. The default is 10**-prec.
 
     tol is the tolerance passed to nsolve. The default is 10**-(prec - 7).
 
@@ -194,6 +193,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
 
     maxsteps = int(maxsteps or 1.7*prec)
     tol = tol or 10**-(prec - 7)
+    convergence_value = convergence_value or 10**-prec
 
     if nsolve_type == 'points':
         nsolve_func = nsolve_points
@@ -246,8 +246,6 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
         maxmin = N(max(map(abs, Evals)) - min(map(abs, Evals)))
         maxmins.append(maxmin)
         logger.info('max - min: %s', maxmin)
-        if len(maxmins) > 1:
-            logger.info('max - min relative difference from previous iteration: %s', (maxmins[-1] - maxmins[-2])/maxmins[-2])
         logger.info('epsilon: %s', N(sol[epsilon]))
         if plot:
             import matplotlib.pyplot as plt
@@ -261,9 +259,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
             plt.title("Convergence")
             plt_show_in_terminal()
 
-        if (convergence_value and maxmin < convergence_value) \
-            or (len(maxmins) > 1 and abs(maxmins[-1] - maxmins[-2])/maxmins[-2] < 1e-15):
-
+        if maxmin < convergence_value:
             logger.info("Converged in %d iterations.", iteration + 1)
             break
     else:
