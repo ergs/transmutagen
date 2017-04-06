@@ -11,7 +11,7 @@ from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
 
 from sympy.utilities.decorator import conserve_mpmath_dps
 
-from .util import plot_in_terminal, log_function_args
+from .util import plot_in_terminal, plt_show_in_terminal, log_function_args
 
 # Give a better error message if not using SymPy master
 try:
@@ -206,6 +206,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
         (num_degree + 1) + (den_degree + 1) - j) for j in
         range(1, (num_degree + 1) + (den_degree + 1) + 1)]
     points = [i.evalf(prec) for i in points]
+    maxmins = []
     for iteration in range(max_loops):
         logger.info('-'*80)
         logger.info("Iteration %s:", iteration)
@@ -237,11 +238,23 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
         Evals = [E.evalf(prec, subs={**sol, t: point}) for point in points[:-1]] + [-r.evalf(prec, subs={**sol, t: 1})]
         logger.info('Evals: %s', Evals)
         maxmin = N(max(map(abs, Evals)) - min(map(abs, Evals)))
+        maxmins.append(maxmin)
         logger.info('max - min: %s', maxmin)
         logger.info('epsilon: %s', N(sol[epsilon]))
         if maxmin < 10**-prec:
             logger.info("Converged in %d iterations.", iteration + 1)
             break
+        if plot:
+            import matplotlib.pyplot as plt
+            plt.clf()
+            fig, ax = plt.subplots()
+            ax.plot(range(iteration+1), maxmins, linestyle='-', marker='o')
+            ax.set_yscale('log')
+            ax.set_xticks(range(iteration+1))
+            plt.xlabel("Iteration")
+            plt.ylabel("max - min")
+            plt.title("Convergence")
+            plt_show_in_terminal()
     else:
         logger.warn("!!!WARNING: DID NOT CONVERGE AFTER %d ITERATIONS!!!", max_loops)
 
