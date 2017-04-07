@@ -238,9 +238,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
         logger.info('D: %s', D)
         logger.info('[(i, D.subs(t, i)) for i in points]: %s', [(i, D.subs(t, i)) for i in points])
         if not len(points) == (num_degree + 1) + (den_degree + 1):
-            logger.error("ERROR: len(points) is (%s), not 2*(degree + 1) (%s)",
-                len(points), (num_degree + 1) + (den_degree + 1))
-            raise RuntimeError
+            raise RuntimeError("ERROR: len(points) is (%s), not 2*(degree + 1) (%s)" % (len(points), (num_degree + 1) + (den_degree + 1)))
         Evals = [E.evalf(prec, subs={**sol, t: point}) for point in points[:-1]] + [-r.evalf(prec, subs={**sol, t: 1})]
         logger.info('Evals: %s', Evals)
         maxmin = N(max(map(abs, Evals)) - min(map(abs, Evals)))
