@@ -130,7 +130,7 @@ def nsolve_points(expr, bounds, division=300, scale=True, **kwargs):
 
 @conserve_mpmath_dps
 @log_function_args
-def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
+def CRAM_exp(degree, prec=128, *, max_loops=20, c=None, maxsteps=None,
     convergence_value=None, tol=None, nsolve_type='intervals', D_scale=1,
     plot=False, log_to_file=False, **kwargs):
     """
@@ -146,7 +146,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
     of now, the result may not be accurate to prec digits.
 
     max_loops is the number of loops to run the Remez algorithm before giving
-    up (default 10).
+    up (default 20).
 
     c is the coefficient of the transformation c*(t + 1)/(t - 1) that is
     applied to exp(-t) to translate it to the interval [-1, 1]. It should be
