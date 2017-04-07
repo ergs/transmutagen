@@ -7,7 +7,7 @@ import ast
 import mpmath
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
     chebyshevt_root, Tuple, diff, N, solve, Poly, lambdify, sign, fraction,
-    sympify, Float)
+    sympify, Float, srepr)
 
 from sympy.utilities.decorator import conserve_mpmath_dps
 
@@ -304,7 +304,7 @@ def get_CRAM_from_cache(degree, prec, expr=None, plot=False, log=False):
     else:
         expr = expr or CRAM_exp(degree, prec, plot=plot)
         with open(cache_file, 'w') as f:
-            f.write(str(expr))
+            f.write(srepr(expr))
 
     return expr
 
