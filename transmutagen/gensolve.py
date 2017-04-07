@@ -116,6 +116,8 @@ void transmutagen_solve_special_{{typefuncname}}({{type}}* A, {{type}} theta, {{
   {%- endfor %}
 
   memcpy(x, b, {{N}}*sizeof({{type}}));
+
+  /* Multiply x by alpha */
   {% for i in range(N) %}
   x[{{i}}] *= alpha;
   {%- endfor %}
