@@ -7,7 +7,7 @@ import ast
 import mpmath
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
     chebyshevt_root, Tuple, diff, N, solve, Poly, lambdify, sign, fraction,
-    sympify, Float, srepr)
+    sympify, Float, srepr, Rational)
 
 from sympy.utilities.decorator import conserve_mpmath_dps
 
@@ -241,7 +241,10 @@ def CRAM_exp(degree, prec=128, *, max_loops=10, c=None, maxsteps=None,
             raise RuntimeError("ERROR: len(points) is (%s), not 2*(degree + 1) (%s)" % (len(points), (num_degree + 1) + (den_degree + 1)))
         Evals = [E.evalf(prec, subs={**sol, t: point}) for point in points[:-1]] + [-r.evalf(prec, subs={**sol, t: 1})]
         logger.info('Evals: %s', Evals)
-        maxmin = N(max(map(abs, Evals)) - min(map(abs, Evals)))
+        # Rational is needed because of a SymPy issue with sorting Floats. See
+        # https://github.com/sympy/sympy/issues/11707#issuecomment-292623480.
+        absEvals = list(map(abs, map(Rational, Evals)))
+        maxmin = N(max(absEvals) - min(absEvals))
         maxmins.append(maxmin)
         logger.info('max - min: %s', maxmin)
         logger.info('epsilon: %s', N(sol[epsilon]))
