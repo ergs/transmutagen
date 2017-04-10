@@ -18,7 +18,13 @@ Run
 where `D` is the degree of the approximation and `N` is the number of digits.
 A typical run would be something like
 
-    python -m transmutagen.cram 18 30
+    python -m transmutagen.cram 14 200
+
+Note that the digits returned are not necessarily all accurate. To compute `N`
+correct digits one generally needs to many more working digits in the
+computation. Furthermore, when roots are taken, the precision may decrease
+even further. So it is recommend to always compute the CRAM expression with a
+very high number of digits.
 
 There are many options, but it is not recommending changing them unless you
 know what you are doing. See `python -m transmutagen --help`. To
