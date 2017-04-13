@@ -258,7 +258,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=20, c=None, maxsteps=None,
             plt.xlabel("Iteration")
             plt.ylabel("max - min")
             plt.title("Convergence")
-            plt_show_in_terminal()
+            plt_show_in_terminal(logname=log_to_file and logname + ' iteration=%s convergence' % iteration)
 
         if maxmin < convergence_value:
             logger.info("Converged in %d iterations.", iteration + 1)

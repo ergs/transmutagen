@@ -85,7 +85,7 @@ def plot_in_terminal(expr, *args, prec=None, logname=None, **kwargs):
                 f.write(b.getvalue())
         print(display_image_bytes(b.getvalue()))
 
-def plt_show_in_terminal():
+def plt_show_in_terminal(logname=None):
     import matplotlib.pyplot as plt
     try:
         from iterm2_tools.images import display_image_bytes
@@ -95,6 +95,9 @@ def plt_show_in_terminal():
         b = io.BytesIO()
         plt.savefig(b, format='png')
         print(display_image_bytes(b.getvalue()))
+    if logname:
+        os.makedirs('plots', exist_ok=True)
+        plt.savefig('plots/%s.png' % logname, format='png')
 
 def _get_log_file_name(locals_dict):
     d = locals_dict.copy()
