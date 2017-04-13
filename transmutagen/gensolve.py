@@ -29,6 +29,18 @@ transmutagen_info_t transmutagen_info = {
   .nucs = (char**) TRANSMUTAGEN_NUCS,
 };
 
+int transmutagen_ij(int i, int j) {
+  int n = (i << 12) + j;
+  switch (n) {
+    {%- for i, j in sorted(ij) %}
+    case {{(i * 2**12) + j}}:
+        return {{ij[i, j]}};
+    {%- endfor %}
+    default:
+        return -1;
+  }
+}
+
 {% for type, typefuncname in types %}
 void transmutagen_solve_{{typefuncname}}({{type}}* A, {{type}}* b, {{type}}* x) {
   /* Decompose first */
