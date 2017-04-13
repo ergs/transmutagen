@@ -90,7 +90,7 @@ void transmutagen_scalar_times_vector_{{typefuncname}}({{type}} alpha, {{type}}*
   {%- endfor %}
 }
 
-void transmutagen_solve_special_{{typefuncname}}({{type}}* A, {{type}} theta, {{type}} alpha, {{type}}* b, {{type}}* x) {
+void transmutagen_solve_special_{{typefuncname}}({{type}}* A, {{type}} theta, {{type}} alpha, double* b, {{type}}* x) {
   /* Solves (A + theta*I)x = alpha*b and stores the result in x */
   {{type}} LU [{{NIJK}}];
   memcpy(LU, A, {{NNZ}}*sizeof({{type}}));
@@ -115,11 +115,9 @@ void transmutagen_solve_special_{{typefuncname}}({{type}}* A, {{type}} theta, {{
   {%- endfor %}
   {%- endfor %}
 
-  memcpy(x, b, {{N}}*sizeof({{type}}));
-
   /* Multiply x by alpha */
   {% for i in range(N) %}
-  x[{{i}}] *= alpha;
+  x[{{i}}] = alpha*b[{{i}}];
   {%- endfor %}
 
   /* Perform Solve */
@@ -136,7 +134,7 @@ void transmutagen_solve_special_{{typefuncname}}({{type}}* A, {{type}} theta, {{
 }
 {%- endfor %}
 
-void expm14(double complex* A, double complex* b, double complex* x) {
+void expm14(double complex* A, double* b, double* x) {
     {%- for i in range(14//2) %}
     double complex x{{i}} [{{N}}];
     {%- endfor %}
@@ -150,7 +148,7 @@ void expm14(double complex* A, double complex* b, double complex* x) {
     transmutagen_solve_special_complex(A, -3.70327504942344806084144231316 + (-13.6563718714832681701880222932)*I, -0.00943902531073616885305862658337 + (-0.0171847919584830175365187052932)*I, b, x6);
 
     {%- for i in range(N) %}
-    x[{{i}}] = 2*creal({%- for j in range(14//2) %}+x{{j}}[{{i}}]{%- endfor %}) + 1.83217437825404121359416895790e-14*b[{{i}}];
+    x[{{i}}] = (double)2*creal({%- for j in range(14//2) %}+x{{j}}[{{i}}]{%- endfor %}) + 1.83217437825404121359416895790e-14*b[{{i}}];
     {%- endfor %}
 }
 
