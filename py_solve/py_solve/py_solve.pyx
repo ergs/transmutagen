@@ -120,24 +120,6 @@ def dot(A, x):
         raise ValueError("dtype not recognized.")
     return y
 
-def add7(x0, x1, x2, x3, x4, x5, x6):
-    """Takes the dot product of Ax and returns y."""
-    if x0.dtype == np.complex128:
-        y = np.empty(c_solve.transmutagen_info.n, dtype=np.complex128)
-        c_solve.transmutagen_vector_add_7_complex(
-            <double complex*> np.PyArray_DATA(x0),
-            <double complex*> np.PyArray_DATA(x1),
-            <double complex*> np.PyArray_DATA(x2),
-            <double complex*> np.PyArray_DATA(x3),
-            <double complex*> np.PyArray_DATA(x4),
-            <double complex*> np.PyArray_DATA(x5),
-            <double complex*> np.PyArray_DATA(x6),
-            <double complex*> np.PyArray_DATA(y))
-    else:
-        raise ValueError("dtype not recognized.")
-    y.shape = x0.shape
-    return y
-
 def scalar_times_vector(alpha, v):
     """Returns alpha*v, there alpha is a scalar and v is a vector"""
     dtype = np.common_type(v, np.array(alpha))
@@ -170,14 +152,3 @@ def expm14(A, b):
         )
     x.shape = b.shape
     return x
-
-def expm(t, n0):
-    return 2*np.real(add7(
-        solve(diag_add(t, 5.62314257274597712494520326004 + (-1.19406904634396697320055795941)*1j), scalar_times_vector(27.8751619401456463960237466985 + (-102.147339990564514248579577671)*1j, n0)),
-        solve(diag_add(t, 2.26978382923111270000297467973 + (-8.46173797304022139646316695686)*1j), scalar_times_vector(-4.80711209883250887291965497626 + (-1.32097938374287242475211680928)*1j, n0)),
-        solve(diag_add(t, 3.99336971057856853025375498429 + (-6.00483164223503731596717948806)*1j), scalar_times_vector(23.4982320910827012314190795608 + (-5.80835912971420750092857584133)*1j, n0)),
-        solve(diag_add(t, 5.08934506058062450150096345613 + (-3.58882402902700651552894109753)*1j), scalar_times_vector(-46.9332744888312930359089080827 + 45.6436497688277607413919781939*1j, n0)),
-        solve(diag_add(t, -0.20875863825013012197592074913 + (-10.9912605619012609176212156940)*1j), scalar_times_vector(0.376360038782269688578990952196 + 0.335183470294501039620923752439*1j, n0)),
-        solve(diag_add(t, -8.89777318646888881871224673753 + (-16.6309826199020853044092653271)*1j), scalar_times_vector(0.0000715428806358906730643236773918 + 0.000143610433495413001443873463755*1j, n0)),
-        solve(diag_add(t, -3.70327504942344806084144231316 + (-13.6563718714832681701880222932)*1j), scalar_times_vector(-0.00943902531073616885305862658337 + (-0.0171847919584830175365187052932)*1j, n0))))\
-        + scalar_times_vector(1.83217437825404121359416895790e-14, n0)
