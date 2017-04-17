@@ -41,7 +41,7 @@ int transmutagen_ij(int i, int j) {
   }
 }
 
-{% for type, typefuncname in types %}
+{%- for type, typefuncname in types %}
 void transmutagen_solve_{{typefuncname}}({{type}}* A, {{type}}* b, {{type}}* x) {
   /* Decompose first */
   {{type}} LU [{{NIJK}}];
@@ -67,7 +67,7 @@ void transmutagen_solve_{{typefuncname}}({{type}}* A, {{type}}* b, {{type}}* x) 
   {%- endif %}
   {%- endfor %}
   /* Backward calc */
-  {% for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
+  {%- for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
   x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
   {%- endif %}
   x[{{i}}] /= LU[{{ijk[i, i]}}];
@@ -76,21 +76,21 @@ void transmutagen_solve_{{typefuncname}}({{type}}* A, {{type}}* b, {{type}}* x) 
 
 void transmutagen_diag_add_{{typefuncname}}({{type}}* A, {{type}} theta) {
   /* In-place, performs the addition A + theta I, for a scalar theta. */
-  {% for i in range(N) %}
+  {%- for i in range(N) %}
   A[{{ij[i, i]}}] += theta;
   {%- endfor %}
 }
 
 void transmutagen_dot_{{typefuncname}}({{type}}* A, {{type}}* x, {{type}}* y) {
   /* Performs the caclulation Ax = y and returns y */
-  {% for i in range(N) %}
+  {%- for i in range(N) %}
   y[{{i}}] ={% for j in range(N) %}{% if (i,j) in ij %} + A[{{ij[i, j]}}]*x[{{j}}]{% endif %}{% endfor %};
   {%- endfor %}
 }
 
 void transmutagen_scalar_times_vector_{{typefuncname}}({{type}} alpha, {{type}}* v) {
   /* In-place, performs alpha*v, for a scalar alpha and vector v. */
-  {% for i in range(N) %}
+  {%- for i in range(N) %}
   v[{{i}}] *= alpha;
   {%- endfor %}
 }
