@@ -22,4 +22,4 @@ cdef extern from "solve.h":
     void transmutagen_vector_add_7_complex(double complex*, double complex*, double complex*, double complex*, double complex*, double complex*, double complex*, double complex*)
     void transmutagen_scalar_times_vector_complex(double complex, double complex*)
 
-    void expm14(double complex*, double*, double*)
+    void expm14(double*, double*, double*)

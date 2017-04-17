@@ -30,10 +30,10 @@ transmutagen_info_t transmutagen_info = {
 };
 
 int transmutagen_ij(int i, int j) {
-  int n = (i << 12) + j;
+  int n = (i << 16) + j;
   switch (n) {
     {%- for i, j in sorted(ij) %}
-    case {{(i * 2**12) + j}}:
+    case {{(i * 2**16) + j}}:
         return {{ij[i, j]}};
     {%- endfor %}
     default:
@@ -102,16 +102,20 @@ void transmutagen_scalar_times_vector_{{typefuncname}}({{type}} alpha, {{type}}*
   {%- endfor %}
 }
 
-void transmutagen_solve_special_{{typefuncname}}({{type}}* A, {{type}} theta, {{type}} alpha, double* b, {{type}}* x) {
+void transmutagen_solve_special_{{typefuncname}}(double* A, {{type}} theta, {{type}} alpha, double* b, {{type}}* x) {
   /* Solves (A + theta*I)x = alpha*b and stores the result in x */
   {{type}} LU [{{NIJK}}];
-  memcpy(LU, A, {{NNZ}}*sizeof({{type}}));
-  memset(LU+{{NNZ}}, 0, {{NIJK-NNZ}}*sizeof({{type}}));
 
-  /* Add theta*I to A */
-  {% for i in range(N) %}
-  LU[{{ij[i, i]}}] += theta;
+  /* LU = A + theta*I */
+  {%- for i in range(NNZ) %}
+  {%- if i in diagonals %}
+  LU[{{i}}] = theta + A[{{i}}];
+  {%- else %}
+  LU[{{i}}] = A[{{i}}];
+  {%- endif %}
   {%- endfor %}
+
+  memset(LU+{{NNZ}}, 0, {{NIJK-NNZ}}*sizeof({{type}}));
 
   /* Decompose first */
   {%- for i in range(N) %}
@@ -127,18 +131,12 @@ void transmutagen_solve_special_{{typefuncname}}({{type}}* A, {{type}} theta, {{
   {%- endfor %}
   {%- endfor %}
 
-  /* Multiply x by alpha */
-  {% for i in range(N) %}
-  x[{{i}}] = alpha*b[{{i}}];
-  {%- endfor %}
-
-  /* Perform Solve */
-  {%- for i in range(N) %}{% if more_than_fore[i] %}
-  x[{{i}}] = x[{{i}}]{% for j in range(i) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
-  {%- endif %}
+  /* Multiply x by alpha and perform Solve */
+  {%- for i in range(N) %}
+  x[{{i}}] = alpha*b[{{i}}]{% for j in range(i) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
   {%- endfor %}
   /* Backward calc */
-  {% for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
+  {%- for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
   x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
   {%- endif %}
   x[{{i}}] /= LU[{{ijk[i, i]}}];
@@ -146,7 +144,7 @@ void transmutagen_solve_special_{{typefuncname}}({{type}}* A, {{type}} theta, {{
 }
 {%- endfor %}
 
-void expm14(double complex* A, double* b, double* x) {
+void expm14(double* A, double* b, double* x) {
     {%- for i in range(14//2) %}
     double complex x{{i}} [{{N}}];
     {%- endfor %}
@@ -195,6 +193,7 @@ def generate(tape9, decaylib, outfile='py_solve/py_solve/solve.c'):
     mat = mat + eye(N, format='csr')
     ij = csr_ij(mat)
     ijk = make_ijk(ij, N)
+    diagonals = {ij[i, i]: i for i in range(N)}
     more_than_fore = [len([j for j in range(i+1) if (i, j) in ijk]) > 1 for i in range(N)]
     more_than_back = [len([j for j in range(i, N) if (i, j) in ijk]) > 1 for i in range(N)]
     types = [  # C type, type function name
@@ -204,7 +203,8 @@ def generate(tape9, decaylib, outfile='py_solve/py_solve/solve.c'):
     template = env.from_string(SRC, globals=globals())
     src = template.render(N=mat.shape[0], ij=ij, ijk=ijk, nucs=nucs, sorted=sorted, len=len,
                           more_than_back=more_than_back, NNZ=len(ij), NIJK=len(ijk),
-                          more_than_fore=more_than_fore, types=types, degree=14)
+                          more_than_fore=more_than_fore, types=types, diagonals=diagonals,
+                          degree=14)
     print("Writing", outfile)
     with open(outfile, 'w') as f:
         f.write(src)

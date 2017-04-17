@@ -160,11 +160,11 @@ def scalar_times_vector(alpha, v):
     return r
 
 def expm14(A, b):
-    A = np.asarray(A, dtype=np.complex128)
+    A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
     x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
     c_solve.expm14(
-        <double complex*> np.PyArray_DATA(A),
+        <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
         <double*> np.PyArray_DATA(x)
         )
