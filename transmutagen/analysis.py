@@ -63,7 +63,7 @@ def analyze_nofission():
                 lib = f.split('_', 1)[0]
                 data = os.path.join('data', f)
                 print("analyzing", data, 'on', time_name)
-                nofission_transmutes[lib] = run_transmute_test(data, 14, 30,
+                nofission_transmutes[lib] = run_transmute_test(data, 14, 200,
                     time, run_all=True, _print=True)
 
         for lib in nofission_transmutes:
@@ -75,9 +75,9 @@ def analyze_nofission():
                 title = lib + ' ' + r + ' ' + time_name
                 plot_matrix_sum_histogram(m, title)
 
-def plot_matrix_sum_histogram(m, title='', axis=1):
+def plot_matrix_sum_histogram(m, title='', axis=0):
     plt.clf()
-    plt.hist(np.sum(m, axis=axis))
+    plt.hist(np.asarray(np.sum(m, axis=axis)).flatten())
     plt.yscale('log', nonposy='clip')
     plt.title(title)
     plt_show_in_terminal()
