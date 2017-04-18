@@ -5,8 +5,8 @@ except ImportError:
     raise ImportError("Run 'python -m transmutagen.gensolve' and 'setup.py build_ext --inplace' to generate the module")
 
 from .py_solve import (N, NNZ, IJ, NUCS, NUCS_IDX, ROWS, COLS, ones,
-    flatten_sparse_matrix, csr_from_flat, asflat, solve, diag_add, dot, add7, scalar_times_vector)
+    flatten_sparse_matrix, csr_from_flat, asflat, solve, diag_add, dot, scalar_times_vector)
 
 __all__ = ['N', 'NNZ', 'IJ', 'NUCS', 'NUCS_IDX', 'ROWS', 'COLS', 'ones',
     'flatten_sparse_matrix', 'csr_from_flat', 'asflat', 'solve', 'diag_add',
-    'dot', 'add7', 'scalar_times_vector']
+    'dot', 'scalar_times_vector']
