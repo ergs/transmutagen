@@ -24,5 +24,11 @@ void transmutagen_dot_complex(double complex* A, double complex* x, double compl
 void transmutagen_scalar_times_vector_complex(double complex, double complex*);
 
 void transmutagen_solve_special(double* A, double complex theta, double complex alpha, double* b, double complex* x);
+void expm6(double* A, double* b, double* x);
+void expm8(double* A, double* b, double* x);
+void expm10(double* A, double* b, double* x);
+void expm12(double* A, double* b, double* x);
 void expm14(double* A, double* b, double* x);
+void expm16(double* A, double* b, double* x);
+void expm18(double* A, double* b, double* x);
 #endif

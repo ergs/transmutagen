@@ -2,9 +2,12 @@ from argparse import ArgumentParser
 
 from jinja2 import Environment
 from scipy.sparse import eye
+from sympy import im
 
 from transmutagen.tape9utils import tape9_to_sparse
 
+from .cram import get_CRAM_from_cache, CRAM_exp
+from .partialfrac import thetas_alphas
 
 SRC = """/* unrolled solvers */
 #include <string.h>
@@ -138,24 +141,23 @@ void transmutagen_solve_special(double* A, double complex theta, double complex 
   {%- endfor %}
 }
 
-void expm14(double* A, double* b, double* x) {
-    {%- for i in range(14//2) %}
+{% for degree in degrees %}
+void expm{{degree}}(double* A, double* b, double* x) {
+    {%- for i in range(degree//2) %}
     double complex x{{i}} [{{N}}];
     {%- endfor %}
 
-    transmutagen_solve_special(A, 5.62314257274597712494520326004 + (-1.19406904634396697320055795941)*I, 27.8751619401456463960237466985 + (-102.147339990564514248579577671)*I, b, x0);
-    transmutagen_solve_special(A, 2.26978382923111270000297467973 + (-8.46173797304022139646316695686)*I, -4.80711209883250887291965497626 + (-1.32097938374287242475211680928)*I, b, x1);
-    transmutagen_solve_special(A, 3.99336971057856853025375498429 + (-6.00483164223503731596717948806)*I, 23.4982320910827012314190795608 + (-5.80835912971420750092857584133)*I, b, x2);
-    transmutagen_solve_special(A, 5.08934506058062450150096345613 + (-3.58882402902700651552894109753)*I, -46.9332744888312930359089080827 + 45.6436497688277607413919781939*I, b, x3);
-    transmutagen_solve_special(A, -0.20875863825013012197592074913 + (-10.9912605619012609176212156940)*I, 0.376360038782269688578990952196 + 0.335183470294501039620923752439*I, b, x4);
-    transmutagen_solve_special(A, -8.89777318646888881871224673753 + (-16.6309826199020853044092653271)*I, 0.0000715428806358906730643236773918 + 0.000143610433495413001443873463755*I, b, x5);
-    transmutagen_solve_special(A, -3.70327504942344806084144231316 + (-13.6563718714832681701880222932)*I, -0.00943902531073616885305862658337 + (-0.0171847919584830175365187052932)*I, b, x6);
+    {% set thetas, alphas, alpha0 = get_thetas_alphas(degree) -%}
+    {% for theta, alpha in zip(thetas, alphas) if im(theta) >= 0 %}
+    transmutagen_solve_special(A, {{ -theta}}, {{2*alpha}}, b, x{{loop.index0}});
+    {%- endfor %}
 
-    {%- for i in range(N) %}
-    x[{{i}}] = (double)2*creal({%- for j in range(14//2) %}+x{{j}}[{{i}}]{%- endfor %}) + 1.83217437825404121359416895790e-14*b[{{i}}];
+    {% for i in range(N) %}
+    x[{{i}}] = (double)creal({%- for j in range(degree//2) %}+x{{j}}[{{i}}]{%- endfor %}) + {{alpha0}}*b[{{i}}];
     {%- endfor %}
 }
 
+{% endfor %}
 """
 
 
@@ -181,6 +183,15 @@ def make_ijk(ij, N):
     return ijk
 
 
+def get_thetas_alphas(degree, prec=200, use_cache=True):
+    if use_cache:
+        rat_func = get_CRAM_from_cache(degree, prec)
+    else:
+        rat_func = CRAM_exp(degree, prec, plot=False)
+
+    thetas, alphas, alpha0 = thetas_alphas(rat_func, prec)
+    return thetas, alphas, alpha0
+
 def generate(tape9, decaylib, outfile='py_solve/py_solve/solve.c'):
     mat, nucs = tape9_to_sparse(tape9, phi=1.0, format='csr', decaylib=decaylib)
     N = mat.shape[0]
@@ -197,7 +208,9 @@ def generate(tape9, decaylib, outfile='py_solve/py_solve/solve.c'):
     template = env.from_string(SRC, globals=globals())
     src = template.render(N=mat.shape[0], ij=ij, ijk=ijk, nucs=nucs, sorted=sorted, len=len,
                           more_than_back=more_than_back, NNZ=len(ij), NIJK=len(ijk),
-                          more_than_fore=more_than_fore, types=types, diagonals=diagonals)
+                          more_than_fore=more_than_fore, types=types,
+                          diagonals=diagonals, degrees=[6, 8, 10, 12, 14, 16, 18],
+                          get_thetas_alphas=get_thetas_alphas, im=im, zip=zip, enumerate=enumerate)
     print("Writing", outfile)
     with open(outfile, 'w') as f:
         f.write(src)

@@ -141,11 +141,85 @@ def scalar_times_vector(alpha, v):
     r.shape = v.shape
     return r
 
+def expm6(A, b):
+    A = np.asarray(A, dtype=np.float64)
+    b = np.asarray(b, dtype=np.float64)
+    x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+    c_solve.expm6(
+        <double*> np.PyArray_DATA(A),
+        <double*> np.PyArray_DATA(b),
+        <double*> np.PyArray_DATA(x)
+        )
+    x.shape = b.shape
+    return x
+
+
+def expm8(A, b):
+    A = np.asarray(A, dtype=np.float64)
+    b = np.asarray(b, dtype=np.float64)
+    x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+    c_solve.expm8(
+        <double*> np.PyArray_DATA(A),
+        <double*> np.PyArray_DATA(b),
+        <double*> np.PyArray_DATA(x)
+        )
+    x.shape = b.shape
+    return x
+
+def expm10(A, b):
+    A = np.asarray(A, dtype=np.float64)
+    b = np.asarray(b, dtype=np.float64)
+    x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+    c_solve.expm10(
+        <double*> np.PyArray_DATA(A),
+        <double*> np.PyArray_DATA(b),
+        <double*> np.PyArray_DATA(x)
+        )
+    x.shape = b.shape
+    return x
+
+def expm12(A, b):
+    A = np.asarray(A, dtype=np.float64)
+    b = np.asarray(b, dtype=np.float64)
+    x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+    c_solve.expm12(
+        <double*> np.PyArray_DATA(A),
+        <double*> np.PyArray_DATA(b),
+        <double*> np.PyArray_DATA(x)
+        )
+    x.shape = b.shape
+    return x
+
 def expm14(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
     x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
     c_solve.expm14(
+        <double*> np.PyArray_DATA(A),
+        <double*> np.PyArray_DATA(b),
+        <double*> np.PyArray_DATA(x)
+        )
+    x.shape = b.shape
+    return x
+
+
+def expm16(A, b):
+    A = np.asarray(A, dtype=np.float64)
+    b = np.asarray(b, dtype=np.float64)
+    x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+    c_solve.expm16(
+        <double*> np.PyArray_DATA(A),
+        <double*> np.PyArray_DATA(b),
+        <double*> np.PyArray_DATA(x)
+        )
+    x.shape = b.shape
+    return x
+
+def expm18(A, b):
+    A = np.asarray(A, dtype=np.float64)
+    b = np.asarray(b, dtype=np.float64)
+    x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+    c_solve.expm18(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
         <double*> np.PyArray_DATA(x)

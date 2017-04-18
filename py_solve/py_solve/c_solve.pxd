@@ -20,4 +20,10 @@ cdef extern from "solve.h":
     void transmutagen_dot_complex(double complex*, double complex*, double complex*)
     void transmutagen_scalar_times_vector_complex(double complex, double complex*)
 
+    void expm6(double*, double*, double*)
+    void expm8(double*, double*, double*)
+    void expm10(double*, double*, double*)
+    void expm12(double*, double*, double*)
     void expm14(double*, double*, double*)
+    void expm16(double*, double*, double*)
+    void expm18(double*, double*, double*)
