@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from .tests.test_transmute import run_transmute_test
 from .origen_all import TIME_STEPS
 from .util import plt_show_in_terminal
+from .cram import get_CRAM_from_cache, CRAM_coeffs
 
 def analyze_origen(file):
     plt.clf()
@@ -82,6 +83,72 @@ def plot_matrix_sum_histogram(m, title='', axis=1):
     plt_show_in_terminal()
     plt.close()
 
+def analyze_cram_digits():
+    print("Computing coefficients (or getting from cache)")
+    exprs = defaultdict(dict)
+    # {degree: {prec: {'p': [coeffs], 'q': [coeffs]}}}
+    correct_digits = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    for degree in range(1, 21):
+        print("Degree", degree)
+        for prec in range(100, 1100, 100):
+            print("Precision", prec)
+            exprs[degree][prec] = CRAM_coeffs(get_CRAM_from_cache(degree,
+                prec), prec)
+
+        # Assume that 1000 has the most correct digits
+        coeffs1000 = exprs[degree][1000]
+        for prec in range(100, 1000, 100):
+            coeffs = exprs[degree][prec]
+            for l in 'pq':
+                for coeff, coeff1000 in zip(coeffs[l], coeffs1000[l]):
+                    correct_digits[degree][prec][l].append(len(os.path.commonprefix([coeff,
+                        coeff1000])) - 1)
+
+
+    # Plot minimum number of correct digits as a function of precision
+    plt.clf()
+    fig, ax = plt.subplots()
+
+    minvals = defaultdict(list)
+    for degree in range(1, 21):
+        print("Degree", degree)
+        for prec in range(100, 1000, 100):
+            print("  Precision", prec)
+            for l in 'pq':
+                print('    ', end='')
+                print(l, end=' ')
+                for i in correct_digits[degree][prec][l]:
+                    print(i, end=' ')
+                print()
+            minvals[degree].append(min(correct_digits[degree][prec]['p'] + correct_digits[degree][prec]['q']))
+        ax.plot(range(100, 1000, 100), minvals[degree], label=degree)
+
+    # TODO: Make window wider so the legend isn't chopped off
+    ax.legend(title="Degree", loc="upper left", bbox_to_anchor=(1,1))
+    plt.ylabel('Number of correct digits')
+    plt.xlabel('Precision')
+
+    plt_show_in_terminal()
+
+    # Plot minimum number of correct digits as a function of degree
+    plt.clf()
+    fig, ax = plt.subplots()
+
+    minvals = defaultdict(list)
+    for prec in range(100, 1000, 100):
+        for degree in range(1, 21):
+            minvals[prec].append(min(correct_digits[degree][prec]['p'] + correct_digits[degree][prec]['q']))
+        ax.plot(range(1, 21), minvals[prec], label=prec)
+
+    # TODO: Make window wider so the legend isn't chopped off
+    ax.legend(title="Precision", loc="upper left", bbox_to_anchor=(1,1))
+    plt.ylabel('Number of correct digits')
+    plt.xlabel('Degree')
+    ax.set_xticks(range(1, 21))
+
+    plt_show_in_terminal()
+
+
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
 
@@ -91,6 +158,9 @@ def analyze():
         help="""Don't run the origen analysis.""")
     parser.add_argument('--no-nofission', action='store_false',
         dest='nofission', help="""Don't run the nofission analysis.""")
+    parser.add_argument('--cram-digits', action='store_true', help="""Analyze
+        accuracy of CRAM digits. WARNING: If cache values have not been
+        precomputed, this will take a long time (> 1 day) to compute.""")
     try:
         import argcomplete
         argcomplete.autocomplete(parser)
@@ -102,6 +172,8 @@ def analyze():
         analyze_origen(args.origen_results)
     if args.nofission:
         analyze_nofission()
+    if args.cram_digits:
+        analyze_cram_digits()
 
 if __name__ == '__main__':
     analyze()
