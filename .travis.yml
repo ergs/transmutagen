@@ -14,7 +14,9 @@ install:
 
   - conda create -q -n test-environment python=3.5 pip mpmath matplotlib pytest pyflakes numpy scipy pyne
   - source activate test-environment
-  - pip install git+git://github.com/sympy/sympy.git
+  # Change to git+git://github.com/sympy/sympy.git when
+  # https://github.com/sympy/sympy/pull/12088 is merged.
+  - pip install git+git://github.com/asmeurer/sympy.git@Float-prec-fix
 
 script:
   - pyflakes transmutagen py_solve setup.py
