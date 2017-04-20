@@ -3,6 +3,7 @@ import argparse
 import os
 import logging
 import ast
+import random
 
 import mpmath
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
@@ -50,7 +51,7 @@ def general_rat_func(degree, x, chebyshev=False):
     return rat_func, num_coeffs, den_coeffs
 
 @conserve_mpmath_dps
-def nsolve_intervals(expr, bounds, division=300, solver='bisect', scale=True, prec=None, **kwargs):
+def nsolve_intervals(expr, bounds, division=10000, solver='bisect', scale=True, prec=None, **kwargs):
     """
     Divide bounds into division intervals and nsolve in each one
     """
@@ -130,9 +131,9 @@ def nsolve_points(expr, bounds, division=300, scale=True, **kwargs):
 
 @conserve_mpmath_dps
 @log_function_args
-def CRAM_exp(degree, prec=128, *, max_loops=20, c=None, maxsteps=None,
+def CRAM_exp(degree, prec=128, *, max_loops=30, c=None, maxsteps=None,
     convergence_value=None, tol=None, nsolve_type='intervals', D_scale=1,
-    plot=False, log_to_file=False, **kwargs):
+    plot=False, log_to_file=False, seed=None, initial_points=None, **kwargs):
     """
     Compute the CRAM approximation of exp(-t) from t in [0, oo) of the given degree
 
@@ -167,6 +168,14 @@ def CRAM_exp(degree, prec=128, *, max_loops=20, c=None, maxsteps=None,
 
     D_scale is a factor used to scale the derivative before root finding.
 
+    initial_points should be 'chebyshev', in which case the initial points are
+    the chebyshev nodes, 'random', in which case the points are random, or
+    None (the default), which chooses automatically ('chebyshev' for order <
+    28, 'random' for order >= 28).
+
+    seed is the random seed for initial_points='random'. The default is to
+    pick a random seed.
+
     Additional keyword arguments are passed to nsolve_intervals, such as
     division and scale.
 
@@ -182,6 +191,13 @@ def CRAM_exp(degree, prec=128, *, max_loops=20, c=None, maxsteps=None,
     # From the log_function_args decorator
     logname = kwargs['logname']
 
+    if not seed:
+        seed = random.randint(0, 2**64)
+
+    logger.info("Random seed: %s", seed)
+
+    R = random.Random(seed)
+
     epsilon, i, y = symbols("epsilon i y")
 
     if isinstance(degree, (list, tuple)):
@@ -193,7 +209,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=20, c=None, maxsteps=None,
 
     maxsteps = int(maxsteps or 1.7*prec)
     tol = tol or mpmath.mpf(10)**-(prec - 8)
-    convergence_value = convergence_value or mpmath.mpf(10)**-(prec - 2)
+    convergence_value = convergence_value or mpmath.mpf(10)**-(prec - 3)
 
     if nsolve_type == 'points':
         nsolve_func = nsolve_points
@@ -208,9 +224,17 @@ def CRAM_exp(degree, prec=128, *, max_loops=20, c=None, maxsteps=None,
     expr = expr*r.as_numer_denom()[1]
     expr = simplify(expr)
 
-    points = [chebyshevt_root((num_degree + 1) + (den_degree + 1) + 1,
-        (num_degree + 1) + (den_degree + 1) - j) for j in
-        range(1, (num_degree + 1) + (den_degree + 1) + 1)]
+    if initial_points is None:
+        initial_points = 'chebyshev' if max(num_degree, den_degree) < 28 else 'random'
+    if initial_points == 'chebyshev':
+        points = [chebyshevt_root((num_degree + 1) + (den_degree + 1) + 1,
+            (num_degree + 1) + (den_degree + 1) - j) for j in
+            range(1, (num_degree + 1) + (den_degree + 1) + 1)]
+    elif initial_points == 'random':
+        points = [Float(R.uniform(-1, 1)) for i in points]
+        points.sort(key=Rational)
+    else:
+        raise ValueError("initial_points must be 'chebyshev' or 'random'")
     points = [i.evalf(prec) for i in points]
     maxmins = []
     for iteration in range(max_loops):
@@ -369,15 +393,19 @@ def main():
     parser.add_argument('--max-loops', type=int)
     parser.add_argument('--convergence-value', type=mpmath.mpf)
     parser.add_argument('--tol', type=mpmath.mpf)
-    parser.add_argument('--nsolve-type', default=None, choices=['points',
-        'intervals'])
+    parser.add_argument('--nsolve-type', default=None,
+        choices=['points', 'intervals'])
     parser.add_argument('--solver', default=None)
     parser.add_argument('--D-scale', default=None, type=float)
     parser.add_argument('--scale', default=None, type=bool)
     parser.add_argument('--plot', default=True, type=bool)
-    parser.add_argument('--log-to-file', default=True, type=bool, help="Log output to a file (in the logs/ directory)")
-    parser.add_argument('--log-level', default='info', choices=['debug', 'info',
-        'warning', 'error', 'critical'])
+    parser.add_argument('--seed', default=None, type=int)
+    parser.add_argument('--initial-points', default=None,
+        choices=['chebyshev', 'random'])
+    parser.add_argument('--log-to-file', default=True, type=bool,
+        help="Log output to a file (in the logs/ directory)")
+    parser.add_argument('--log-level', default='info',
+        choices=['debug', 'info', 'warning', 'error', 'critical'])
     try:
         import argcomplete
         argcomplete.autocomplete(parser)
