@@ -209,7 +209,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=30, c=None, maxsteps=None,
 
     maxsteps = int(maxsteps or 1.7*prec)
     tol = tol or mpmath.mpf(10)**-(prec - 8)
-    convergence_value = convergence_value or mpmath.mpf(10)**-(prec - 3)
+    convergence_value = convergence_value or mpmath.mpf(10)**-(prec - 4)
 
     if nsolve_type == 'points':
         nsolve_func = nsolve_points
