@@ -231,7 +231,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=30, c=None, maxsteps=None,
             (num_degree + 1) + (den_degree + 1) - j) for j in
             range(1, (num_degree + 1) + (den_degree + 1) + 1)]
     elif initial_points == 'random':
-        points = [Float(R.uniform(-1, 1)) for i in points]
+        points = [Float(R.uniform(-1, 1)) for i in range(1, (num_degree + 1) + (den_degree + 1) + 1)]
         points.sort(key=Rational)
     else:
         raise ValueError("initial_points must be 'chebyshev' or 'random'")
