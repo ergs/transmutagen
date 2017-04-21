@@ -8,7 +8,7 @@ from .tape9utils import tape9_to_sparse, THRESHOLD
 
 def make_parser():
     p = argparse.ArgumentParser('tape9sparse', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    p.add_argument('tape9', help="path to the TAPE9 file.")
+    p.add_argument('tape9', nargs='+', help="path to the TAPE9 files.")
     p.add_argument('--phi', help='the neutron flux in [n/cm^2/sec]',
                    type=float, default=4e14)
     p.add_argument('-f', '--format', help='The sparse matrix format',
@@ -23,27 +23,31 @@ def make_parser():
                    help="Don't include fission reactions in the matrix.")
     p.add_argument('-t', '--threshold', default=THRESHOLD, dest='threshold',
                    help='cutoff for ignoring reactions', type=float)
-    p.add_argument('-o', '--output', dest='output', default=None,
-                   help='The filename to write the matrix to, in npz format.')
+    p.add_argument('-o', '--output-dir', dest='output', default=None,
+                   help='The directory to write the output files to, in npz format.')
     return p
 
-def save_sparse(tape9, phi=4e14, output=None, format='csr',
+def save_sparse(tape9s, phi=4e14, output_dir=None, format='csr',
     decaylib='decay.lib', include_fission=True, threshold=THRESHOLD):
-    if output is None:
-        base = os.path.basename(tape9)
-        base, _ = os.path.splitext(base)
-        os.makedirs('data', exist_ok=True)
-        fission_part = '' if include_fission else '_nofission'
-        output = os.path.join('data', base + '_' + str(phi) + fission_part + '.npz')
+    if output_dir is None:
+        output_dir = 'data'
+    os.makedirs(output_dir, exist_ok=True)
+
     if format != 'csr':
         raise ValueError('Only the CSR format is currently available from the '
                          'command line interface.')
-    mat, nucs = tape9_to_sparse(tape9, phi, format=format,
+    mats, nucs = tape9_to_sparse(tape9s, phi, format=format,
                                 decaylib=decaylib,
                                 include_fission=include_fission,
                                 threshold=threshold)
-    print("Writing file to", output)
-    save_sparse_csr(output, mat, nucs, phi)
+    for tape9, mat in zip(tape9s, mats):
+        base = os.path.basename(tape9)
+        base, _ = os.path.splitext(base)
+        fission_part = '' if include_fission else '_nofission'
+        output = os.path.join('data', base + '_' + str(phi) + fission_part + '.npz')
+
+        print("Writing file to", output)
+        save_sparse_csr(output, mat, nucs, phi)
 
 def main(args=None):
     p = make_parser()

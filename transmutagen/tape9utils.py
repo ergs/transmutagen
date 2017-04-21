@@ -326,14 +326,14 @@ SPMAT_FORMATS = {
     }
 
 
-def tape9_to_sparse(tape9, phi, format='csr', decaylib='decay.lib',
+def tape9_to_sparse(tape9s, phi, format='csr', decaylib='decay.lib',
                     include_fission=True, threshold=THRESHOLD):
     """Converts a TAPE9 file to a sparse matrix.
 
     Parameters
     ----------
-    tape9 : str
-        The filename of the tape file.
+    tape9s : str or list of str
+        The filename(s) of the tape file(s).
     phi : float
         The neutron flux in [n / cm^2 / sec]
     format : str, optional
@@ -357,29 +357,44 @@ def tape9_to_sparse(tape9, phi, format='csr', decaylib='decay.lib',
     nucs : list
         The list of nuclide names in canonical order.
     """
-    t9 = parse_tape9(tape9)
-    decay = find_decaylib(t9, tape9, decaylib)
+    if isinstance(tape9s, str):
+        tape9s = [tape9s]
+
+    all_decays_consts, all_gammas, all_sigma_ij, all_sigma_fission, all_fission_product_yields = [], [], [], [], []
+    nucs = set()
+    mats = []
     # seed initial nucs with known atomic masses
     data.atomic_mass('u235')
-    nucs = set()
-    for i in data.atomic_mass_map.keys():
-        if nucname.iselement(i):
-            continue
-        try:
-            nucs.add(nucname.name(i))
-        except RuntimeError:
-            pass
-    # get the tape 9 data
-    nucs, decays_consts, gammas = decay_data(decay, threshold=threshold, nucs=nucs)
-    nucs, sigma_ij, sigma_fission, fission_product_yields = cross_section_data(t9,
-                                                                threshold=threshold,
-                                                                nucs=nucs)
+    for tape9 in tape9s:
+        t9 = parse_tape9(tape9)
+        decay = find_decaylib(t9, tape9, decaylib)
+
+        for i in data.atomic_mass_map.keys():
+            if nucname.iselement(i):
+                continue
+            try:
+                nucs.add(nucname.name(i))
+            except RuntimeError:
+                pass
+        # get the tape 9 data
+        nucs, decays_consts, gammas = decay_data(decay, threshold=threshold, nucs=nucs)
+        nucs, sigma_ij, sigma_fission, fission_product_yields = cross_section_data(t9,
+                                                                    threshold=threshold,
+                                                                    nucs=nucs)
+        if not include_fission:
+            sigma_fission = {}
+            fission_product_yields = {}
+        all_decays_consts.append(decays_consts)
+        all_gammas.append(gammas)
+        all_sigma_ij.append(sigma_ij)
+        all_sigma_fission.append(sigma_fission)
+        all_fission_product_yields.append(fission_product_yields)
+
+
     nucs = sort_nucs(nucs)
-    if not include_fission:
-        sigma_fission = {}
-        fission_product_yields = {}
-    dok = create_dok(phi, nucs, decays_consts, gammas, sigma_ij, sigma_fission,
-                     fission_product_yields)
-    rows, cols, vals, shape = dok_to_sparse_info(nucs, dok)
-    mat = SPMAT_FORMATS[format]((vals, (rows, cols)), shape=shape)
-    return mat, nucs
+    for i in range(len(tape9s)):
+        dok = create_dok(phi, nucs, all_decays_consts[i], all_gammas[i], all_sigma_ij[i], all_sigma_fission[i],
+                     all_fission_product_yields[i])
+        rows, cols, vals, shape = dok_to_sparse_info(nucs, dok)
+        mats.append(SPMAT_FORMATS[format]((vals, (rows, cols)), shape=shape))
+    return mats, nucs
