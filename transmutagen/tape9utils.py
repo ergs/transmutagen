@@ -356,19 +356,6 @@ def tape9_to_sparse(tape9s, phi, format='csr', decaylib='decay.lib',
     nucs : list
         The list of nuclide names in canonical order.
     """
-    from .origen_all import ALL_LIBS
-
-    if isinstance(tape9s, str):
-        tape9s = [tape9s]
-
-    _tape9s = []
-    for tape9 in tape9s[:]:
-        if os.path.isdir(tape9):
-            _tape9s.extend(ALL_LIBS)
-        else:
-            _tape9s.append(tape9)
-    tape9s = _tape9s
-
     all_decays_consts, all_gammas, all_sigma_ij, all_sigma_fission, all_fission_product_yields = [], [], [], [], []
     nucs = set()
     mats = []
@@ -407,3 +394,18 @@ def tape9_to_sparse(tape9s, phi, format='csr', decaylib='decay.lib',
         rows, cols, vals, shape = dok_to_sparse_info(nucs, dok)
         mats.append(SPMAT_FORMATS[format]((vals, (rows, cols)), shape=shape))
     return mats, nucs
+
+
+def normalize_tape9s(tape9s):
+    from .origen_all import ALL_LIBS
+
+    if isinstance(tape9s, str):
+        tape9s = [tape9s]
+
+    _tape9s = []
+    for tape9 in tape9s[:]:
+        if os.path.isdir(tape9):
+            _tape9s.extend([os.path.join(tape9, i) for i in ALL_LIBS])
+        else:
+            _tape9s.append(tape9)
+    return _tape9s

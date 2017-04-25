@@ -5,7 +5,7 @@ from scipy.sparse import eye, csr_matrix
 from sympy import im
 import numpy as np
 
-from transmutagen.tape9utils import tape9_to_sparse
+from transmutagen.tape9utils import tape9_to_sparse, normalize_tape9s
 
 from .cram import get_CRAM_from_cache, CRAM_exp
 from .partialfrac import thetas_alphas
@@ -234,7 +234,8 @@ def main(args=None):
                    default='decay.lib', dest='decaylib')
 
     ns = p.parse_args(args=args)
-    generate(ns.tape9s, ns.decaylib)
+    tape9s = normalize_tape9s(ns.tape9s)
+    generate(tape9s, ns.decaylib)
 
 
 if __name__ == "__main__":

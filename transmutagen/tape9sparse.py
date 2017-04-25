@@ -3,8 +3,7 @@ import os
 import argparse
 
 from .util import save_sparse_csr
-from .tape9utils import tape9_to_sparse, THRESHOLD
-
+from .tape9utils import tape9_to_sparse, THRESHOLD, normalize_tape9s
 
 def make_parser():
     p = argparse.ArgumentParser('tape9sparse', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -38,6 +37,8 @@ def save_sparse(tape9s, phi=4e14, output_dir=None, format='csr',
     if format != 'csr':
         raise ValueError('Only the CSR format is currently available from the '
                          'command line interface.')
+
+    tape9s = normalize_tape9s(tape9s)
     mats, nucs = tape9_to_sparse(tape9s, phi, format=format,
                                 decaylib=decaylib,
                                 include_fission=include_fission,
