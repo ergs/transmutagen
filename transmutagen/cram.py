@@ -321,6 +321,9 @@ def get_CRAM_from_cache(degree, prec, expr=None, plot=False, log=False):
         if log is True:
             log = "INFO"
         logger.setLevel(getattr(logging, log.upper()))
+        log_to_file = True
+    else:
+        log_to_file = False
 
     os.makedirs('CRAM_cache', exist_ok=True)
     cache_file = os.path.join('CRAM_cache', '%s_%s' % (degree, prec))
@@ -329,7 +332,7 @@ def get_CRAM_from_cache(degree, prec, expr=None, plot=False, log=False):
         with open(cache_file) as f:
             expr = sympify(f.read(), globals())
     else:
-        expr = expr or CRAM_exp(degree, prec, plot=plot)
+        expr = expr or CRAM_exp(degree, prec, plot=plot, log_to_file=log_to_file)
         with open(cache_file, 'w') as f:
             f.write(srepr(expr))
 
