@@ -362,6 +362,7 @@ def tape9_to_sparse(tape9s, phi, format='csr', decaylib='decay.lib',
     # seed initial nucs with known atomic masses
     data.atomic_mass('u235')
     for tape9 in tape9s:
+        # print("Getting data for", tape9)
         t9 = parse_tape9(tape9)
         decay = find_decaylib(t9, tape9, decaylib)
 
@@ -372,11 +373,13 @@ def tape9_to_sparse(tape9s, phi, format='csr', decaylib='decay.lib',
                 nucs.add(nucname.name(i))
             except RuntimeError:
                 pass
+
         # get the tape 9 data
         nucs, decays_consts, gammas = decay_data(decay, threshold=threshold, nucs=nucs)
         nucs, sigma_ij, sigma_fission, fission_product_yields = cross_section_data(t9,
                                                                     threshold=threshold,
                                                                     nucs=nucs)
+
         if not include_fission:
             sigma_fission = {}
             fission_product_yields = {}

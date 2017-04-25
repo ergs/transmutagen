@@ -195,11 +195,11 @@ def get_thetas_alphas(degree, prec=200, use_cache=True):
 
 def common_mat(mats):
     assert len({i.shape for i in mats}) == 1
-    mats = [i.tocoo() for i in mats] + [eye(len(mats[0].shape[0]))]
+    mats = [i.tocoo() for i in mats] + [eye(mats[0].shape[0], format='coo')]
     rows = np.hstack([i.row for i in mats])
     cols = np.hstack([i.col for i in mats])
-    data = [1]*len(rows)
-    return csr_matrix([data, (rows, cols)])
+    data = np.ones(len(rows))
+    return csr_matrix((data, (rows, cols)))
 
 def generate(tape9s, decaylib, outfile='py_solve/py_solve/solve.c'):
     mats, nucs = tape9_to_sparse(tape9s, phi=1.0, format='csr', decaylib=decaylib)
