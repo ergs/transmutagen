@@ -8,7 +8,9 @@ from .tape9utils import tape9_to_sparse, THRESHOLD
 
 def make_parser():
     p = argparse.ArgumentParser('tape9sparse', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    p.add_argument('tape9s', nargs='+', help="paths to the TAPE9 files.")
+    p.add_argument('tape9s', nargs='+', help="""Paths to the TAPE9 files. If a
+    path is a directory, a set of default libraries will be gathered from that
+    directory (transmutagen.origen_all.ALL_LIBS)""")
     p.add_argument('--phi', help='the neutron flux in [n/cm^2/sec]',
                    type=float, default=4e14)
     p.add_argument('-f', '--format', help='The sparse matrix format',

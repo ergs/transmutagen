@@ -15,6 +15,7 @@ from pyne import rxname
 from pyne import nucname
 from pyne.origen22 import parse_tape9
 
+from .origen_all import ALL_LIBS
 
 LN2 = np.log(2.0)
 DECAY_RXS = ['bminus', 'bplus', 'ec', 'alpha', 'it', 'sf', 'bminus_n']
@@ -359,6 +360,14 @@ def tape9_to_sparse(tape9s, phi, format='csr', decaylib='decay.lib',
     """
     if isinstance(tape9s, str):
         tape9s = [tape9s]
+
+    _tape9s = []
+    for tape9 in tape9s[:]:
+        if os.path.isdir(tape9):
+            _tape9s.extend(ALL_LIBS)
+        else:
+            _tape9s.append(tape9)
+    tape9s = _tape9s
 
     all_decays_consts, all_gammas, all_sigma_ij, all_sigma_fission, all_fission_product_yields = [], [], [], [], []
     nucs = set()
