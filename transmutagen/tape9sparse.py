@@ -25,7 +25,7 @@ def make_parser():
                    help="Don't include fission reactions in the matrix.")
     p.add_argument('-t', '--threshold', default=THRESHOLD, dest='threshold',
                    help='cutoff for ignoring reactions', type=float)
-    p.add_argument('-o', '--output-dir', dest='output', default=None,
+    p.add_argument('-o', '--output-dir', default=None,
                    help='The directory to write the output files to, in npz format.')
     return p
 
