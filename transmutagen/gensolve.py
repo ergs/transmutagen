@@ -1,8 +1,9 @@
 from argparse import ArgumentParser
 
 from jinja2 import Environment
-from scipy.sparse import eye
+from scipy.sparse import eye, csr_matrix
 from sympy import im
+import numpy as np
 
 from transmutagen.tape9utils import tape9_to_sparse
 
@@ -192,10 +193,18 @@ def get_thetas_alphas(degree, prec=200, use_cache=True):
     thetas, alphas, alpha0 = thetas_alphas(rat_func, prec)
     return thetas, alphas, alpha0
 
-def generate(tape9, decaylib, outfile='py_solve/py_solve/solve.c'):
-    mat, nucs = tape9_to_sparse(tape9, phi=1.0, format='csr', decaylib=decaylib)
+def common_mat(mats):
+    assert len({i.shape for i in mats}) == 1
+    mats = [i.tocoo() for i in mats] + [eye(len(mats[0].shape[0]))]
+    rows = np.hstack([i.row for i in mats])
+    cols = np.hstack([i.col for i in mats])
+    data = [1]*len(rows)
+    return csr_matrix([data, (rows, cols)])
+
+def generate(tape9s, decaylib, outfile='py_solve/py_solve/solve.c'):
+    mats, nucs = tape9_to_sparse(tape9s, phi=1.0, format='csr', decaylib=decaylib)
+    mat = common_mat(mats)
     N = mat.shape[0]
-    mat = mat + eye(N, format='csr')
     ij = csr_ij(mat)
     ijk = make_ijk(ij, N)
     diagonals = {ij[i, i]: i for i in range(N)}
@@ -218,12 +227,14 @@ def generate(tape9, decaylib, outfile='py_solve/py_solve/solve.c'):
 
 def main(args=None):
     p = ArgumentParser('gensolver')
-    p.add_argument('tape9', help="path to the TAPE9 file.")
+    p.add_argument('tape9s', nargs='+', help="""Paths to the TAPE9 files. If a
+    path is a directory, a set of default libraries will be gathered from that
+    directory (transmutagen.origen_all.ALL_LIBS)""")
     p.add_argument('-d', '--decay', help='path to the decay file, if needed',
                    default='decay.lib', dest='decaylib')
 
     ns = p.parse_args(args=args)
-    generate(ns.tape9, ns.decaylib)
+    generate(ns.tape9s, ns.decaylib)
 
 
 if __name__ == "__main__":
