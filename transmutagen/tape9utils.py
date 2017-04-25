@@ -15,8 +15,6 @@ from pyne import rxname
 from pyne import nucname
 from pyne.origen22 import parse_tape9
 
-from .origen_all import ALL_LIBS
-
 LN2 = np.log(2.0)
 DECAY_RXS = ['bminus', 'bplus', 'ec', 'alpha', 'it', 'sf', 'bminus_n']
 PAROFF = {
@@ -358,6 +356,8 @@ def tape9_to_sparse(tape9s, phi, format='csr', decaylib='decay.lib',
     nucs : list
         The list of nuclide names in canonical order.
     """
+    from .origen_all import ALL_LIBS
+
     if isinstance(tape9s, str):
         tape9s = [tape9s]
 
