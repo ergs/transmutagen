@@ -1,4 +1,5 @@
 language: python
+sudo: false
 
 install:
   - sudo apt-get update
