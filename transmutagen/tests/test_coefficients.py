@@ -5,7 +5,7 @@ slow = pytest.mark.skipif(
     reason="need --runslow option to run"
 )
 
-TOTAL_DEGREES = 27
+TOTAL_DEGREES = 30
 
 from .crv_coeffs import coeffs as correct_coeffs
 from ..cram import get_CRAM_from_cache, CRAM_coeffs
