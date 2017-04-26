@@ -64,7 +64,7 @@ def analyze_nofission():
                 data = os.path.join('data', f)
                 print("analyzing", data, 'on', time_name)
                 nofission_transmutes[lib] = run_transmute_test(data, 14, 200,
-                    time, run_all=True, _print=True)
+                    time, run_all=False, _print=True)
 
         for lib in nofission_transmutes:
             for r in nofission_transmutes[lib]:
