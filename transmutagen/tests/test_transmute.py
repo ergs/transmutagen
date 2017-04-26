@@ -66,7 +66,7 @@ def run_transmute_test(data, degree, prec, time, expr=None, plot=True,
         e['transmutagen generated C solver'] = lambda m: py_solve.expmI14(m).T
 
     e['part_frac_complex'] = lambdify_expr(part_frac_complex)
-    e['expm'] = lambda m: expm(-m)
+    e['scipy.sparse.linalg.expm'] = lambda m: expm(-m)
     if run_all:
         e['rat_func'] = lambdify_expr(expr)
         e['rat_func_horner'] = lambdify_expr(horner(num)/horner(den))
