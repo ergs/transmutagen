@@ -1,11 +1,8 @@
 from argparse import ArgumentParser
+import json
 
 from jinja2 import Environment
-from scipy.sparse import eye, csr_matrix
 from sympy import im
-import numpy as np
-
-from transmutagen.tape9utils import tape9_to_sparse, normalize_tape9s
 
 from .cram import get_CRAM_from_cache, CRAM_exp
 from .partialfrac import thetas_alphas
@@ -162,13 +159,6 @@ void expm{{degree}}(double* A, double* b, double* x) {
 """
 
 
-def csr_ij(mat):
-    ij = {}
-    for i, l, u in zip(range(mat.shape[0]), mat.indptr[:-1], mat.indptr[1:]):
-        for p in range(l, u):
-            ij[i, mat.indices[p]] = p
-    return ij
-
 
 def make_ijk(ij, N):
     ijk = ij.copy()
@@ -193,19 +183,13 @@ def get_thetas_alphas(degree, prec=200, use_cache=True):
     thetas, alphas, alpha0 = thetas_alphas(rat_func, prec)
     return thetas, alphas, alpha0
 
-def common_mat(mats):
-    assert len({i.shape for i in mats}) == 1
-    mats = [i.tocoo() for i in mats] + [eye(mats[0].shape[0], format='coo')]
-    rows = np.hstack([i.row for i in mats])
-    cols = np.hstack([i.col for i in mats])
-    data = np.ones(len(rows))
-    return csr_matrix((data, (rows, cols)))
+def generate(file='data/gensolve.json', outfile='py_solve/py_solve/solve.c'):
+    with open(file) as f:
+        json_data = json.load(f)
 
-def generate(tape9s, decaylib, outfile='py_solve/py_solve/solve.c'):
-    mats, nucs = tape9_to_sparse(tape9s, phi=1.0, format='csr', decaylib=decaylib)
-    mat = common_mat(mats)
-    N = mat.shape[0]
-    ij = csr_ij(mat)
+    nucs = json_data['nucs']
+    N = json_data['N']
+    ij = {tuple(i): j for i, j in json_data['ij']}
     ijk = make_ijk(ij, N)
     diagonals = {ij[i, i]: i for i in range(N)}
     more_than_fore = [len([j for j in range(i+1) if (i, j) in ijk]) > 1 for i in range(N)]
@@ -215,7 +199,7 @@ def generate(tape9s, decaylib, outfile='py_solve/py_solve/solve.c'):
              ('double complex', 'complex')]
     env = Environment()
     template = env.from_string(SRC, globals=globals())
-    src = template.render(N=mat.shape[0], ij=ij, ijk=ijk, nucs=nucs, sorted=sorted, len=len,
+    src = template.render(N=N, ij=ij, ijk=ijk, nucs=nucs, sorted=sorted, len=len,
                           more_than_back=more_than_back, NNZ=len(ij), NIJK=len(ijk),
                           more_than_fore=more_than_fore, types=types,
                           diagonals=diagonals, degrees=[6, 8, 10, 12, 14, 16, 18],
@@ -227,15 +211,10 @@ def generate(tape9s, decaylib, outfile='py_solve/py_solve/solve.c'):
 
 def main(args=None):
     p = ArgumentParser('gensolver')
-    p.add_argument('tape9s', nargs='+', help="""Paths to the TAPE9 files. If a
-    path is a directory, a set of default libraries will be gathered from that
-    directory (transmutagen.origen_all.ALL_LIBS)""")
-    p.add_argument('-d', '--decay', help='path to the decay file, if needed',
-                   default='decay.lib', dest='decaylib')
+    p.add_argument('--file', default='data/gensolve.json')
 
     ns = p.parse_args(args=args)
-    tape9s = normalize_tape9s(ns.tape9s)
-    generate(tape9s, ns.decaylib)
+    generate(ns.file)
 
 
 if __name__ == "__main__":
