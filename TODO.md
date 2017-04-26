@@ -1,0 +1,8 @@
+- Convert the JSON file to string keys
+- Make it optional which orders are produced (default 14)
+- Generate header file
+- Make "TRANSMUTAGEN" namespace variable changeable
+- Make expm namespaced
+- After it runs it should print out a message with the compiler flags
+- Install the caches
+- Remove the extra solver code by default
