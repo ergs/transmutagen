@@ -66,12 +66,12 @@ def run_transmute_test(data, degree, prec, time, expr=None, plot=True,
         e['py_solve'] = py_solve.expmI14
 
     e['part_frac_complex'] = lambdify_expr(part_frac_complex)
+    e['expm'] = lambda m: expm(-m)
     if run_all:
         e['rat_func'] = lambdify_expr(expr)
         e['rat_func_horner'] = lambdify_expr(horner(num)/horner(den))
         e['part_frac'] = lambdify_expr(part_frac)
         # e['part_frac_complex2'] = lambdify_expr(part_frac_complex2)
-        e['expm'] = lambda m: expm(-m)
 
     res = {}
     for func in sorted(e):
