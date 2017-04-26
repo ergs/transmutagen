@@ -140,7 +140,8 @@ void transmutagen_solve_special(double* A, double complex theta, double complex 
 }
 
 {% for degree in degrees %}
-void expm{{degree}}(double* A, double* b, double* x) {
+void expm_multiply{{degree}}(double* A, double* b, double* x) {
+    /* Computes exp(A)*b and stores the result in x */
     {%- for i in range(degree//2) %}
     double complex x{{i}} [{{N}}];
     {%- endfor %}
