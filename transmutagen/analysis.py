@@ -69,7 +69,9 @@ def analyze_nofission():
         for lib in nofission_transmutes:
             for r in nofission_transmutes[lib]:
                 m = nofission_transmutes[lib][r]
-                if m is None or np.isnan(m.toarray()).any() or np.isinf(m.toarray()).any():
+                if not isinstance(m, np.ndarray):
+                    m = m.toarray()
+                if m is None or np.isnan(m).any() or np.isinf(m).any():
                     print("Could not compute", r, "for", lib)
                     continue
                 title = lib + ' ' + r + ' ' + time_name
