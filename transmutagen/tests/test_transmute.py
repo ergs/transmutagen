@@ -57,6 +57,14 @@ def run_transmute_test(data, degree, prec, time, expr=None, plot=True,
     # part_frac_complex2 = thetas_alphas_to_expr_complex2(thetas, alphas, alpha0)
 
     e = {}
+
+    try:
+        from py_solve import py_solve
+    except ImportError:
+        pass
+    else:
+        e['py_solve'] = py_solve.expmI14
+
     e['part_frac_complex'] = lambdify_expr(part_frac_complex)
     if run_all:
         e['rat_func'] = lambdify_expr(expr)
