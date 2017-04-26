@@ -33,7 +33,7 @@ import pprint
 import difflib
 from ..partialfrac import t
 
-# This is generated from this file. Do not edit by hand. Rather, edit the
+# This is generated. Do not edit by hand. Rather, edit the
 # transmutagen/tests/data/crv_coeffs file and generate it with
 #
 # python -m transmutagen.tests.crv_coeffs parse-coeffs
@@ -871,7 +871,7 @@ coeffs = \
             '-2.1270994500225483862e-33',
             '5.1221768334261579751e-36',
             '-9.4924644132126223194e-39',
-            '1.3124217182547875882e-41',
+            '1.3124217192547875882e-41',
             '-1.2979704782618576593e-44',
             '8.6529029938315506542e-48',
             '-3.5567748438917412531e-51',
