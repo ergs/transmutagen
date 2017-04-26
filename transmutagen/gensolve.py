@@ -146,7 +146,7 @@ void expm{{degree}}(double* A, double* b, double* x) {
     {%- endfor %}
 
     {% set thetas, alphas, alpha0 = get_thetas_alphas(degree) -%}
-    {% for theta, alpha in zip(thetas, alphas) if im(theta) >= 0 %}
+    {% for theta, alpha in sorted(zip(thetas, alphas), key=abs0) if im(theta) >= 0 %}
     transmutagen_solve_special(A, {{ -theta}}, {{2*alpha}}, b, x{{loop.index0}});
     {%- endfor %}
 
@@ -157,8 +157,6 @@ void expm{{degree}}(double* A, double* b, double* x) {
 
 {% endfor %}
 """
-
-
 
 def make_ijk(ij, N):
     ijk = ij.copy()
@@ -172,7 +170,6 @@ def make_ijk(ij, N):
                     ijk[j, k] = idx
                     idx += 1
     return ijk
-
 
 def get_thetas_alphas(degree, prec=200, use_cache=True):
     if use_cache:
@@ -203,7 +200,8 @@ def generate(file='data/gensolve.json', outfile='py_solve/py_solve/solve.c'):
                           more_than_back=more_than_back, NNZ=len(ij), NIJK=len(ijk),
                           more_than_fore=more_than_fore, types=types,
                           diagonals=diagonals, degrees=[6, 8, 10, 12, 14, 16, 18],
-                          get_thetas_alphas=get_thetas_alphas, im=im, zip=zip, enumerate=enumerate)
+                          get_thetas_alphas=get_thetas_alphas, im=im,
+                          abs0=lambda i:abs(i[0]), zip=zip, enumerate=enumerate)
     print("Writing", outfile)
     with open(outfile, 'w') as f:
         f.write(src)
