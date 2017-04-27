@@ -9,29 +9,29 @@ from .partialfrac import thetas_alphas
 
 HEADER = """\
 /* This file was generated automatically with transmutagen. */
-#ifndef TRANSMUTAGEN_SOLVE_C
-#define TRANSMUTAGEN_SOLVE_C
+#ifndef {{namespace.upper()}}_SOLVE_C
+#define {{namespace.upper()}}_SOLVE_C
 
 #include <complex.h>
 
-typedef struct transmutagen_info_tag {
+typedef struct {{namespace}}_info_tag {
   int n;
   int nnz;
   int* i;
   int* j;
   char** nucs;
-} transmutagen_info_t;
+} {{namespace}}_info_t;
 
-extern transmutagen_info_t transmutagen_info;
+extern {{namespace}}_info_t {{namespace}}_info;
 {% if py_solve %}
 {%- for type, typefuncname in types %}
-void transmutagen_solve_{{typefuncname}}({{type}}* A, {{type}}* b, {{type}}* x);
-void transmutagen_diag_add_{{typefuncname}}({{type}}* A, {{type}} alpha);
-void transmutagen_dot_{{typefuncname}}({{type}}* A, {{type}}* x, {{type}}* y);
-void transmutagen_scalar_times_vector_{{typefuncname}}({{type}}, {{type}}*);
+void {{namespace}}_solve_{{typefuncname}}({{type}}* A, {{type}}* b, {{type}}* x);
+void {{namespace}}_diag_add_{{typefuncname}}({{type}}* A, {{type}} alpha);
+void {{namespace}}_dot_{{typefuncname}}({{type}}* A, {{type}}* x, {{type}}* y);
+void {{namespace}}_scalar_times_vector_{{typefuncname}}({{type}}, {{type}}*);
 {% endfor %}
 {%- endif %}
-void transmutagen_solve_special(double* A, double complex theta, double complex alpha, double* b, double complex* x);
+void {{namespace}}_solve_special(double* A, double complex theta, double complex alpha, double* b, double complex* x);
 {%- for degree in degrees %}
 void expm_multiply{{degree}}(double* A, double* b, double* x);
 {%- endfor %}
@@ -45,24 +45,24 @@ SRC = """\
 
 #include "solve.h"
 
-const int TRANSMUTAGEN_I[{{NNZ}}] =
+const int {{namespace.upper()}}_I[{{NNZ}}] =
   { {%- for i, j in sorted(ij) %}{{i}},{% endfor -%} };
 
-const int TRANSMUTAGEN_J[{{NNZ}}] =
+const int {{namespace.upper()}}_J[{{NNZ}}] =
   { {%- for i, j in sorted(ij) %}{{j}},{% endfor -%} };
 
-const char* TRANSMUTAGEN_NUCS[{{N}}] =
+const char* {{namespace.upper()}}_NUCS[{{N}}] =
   { {%- for nuc in nucs %}"{{nuc}}",{% endfor -%} };
 
-transmutagen_info_t transmutagen_info = {
+{{namespace}}_info_t {{namespace}}_info = {
   .n = {{N}},
   .nnz = {{NNZ}},
-  .i = (int*) TRANSMUTAGEN_I,
-  .j = (int*) TRANSMUTAGEN_J,
-  .nucs = (char**) TRANSMUTAGEN_NUCS,
+  .i = (int*) {{namespace.upper()}}_I,
+  .j = (int*) {{namespace.upper()}}_J,
+  .nucs = (char**) {{namespace.upper()}}_NUCS,
 };
 
-int transmutagen_ij(int i, int j) {
+int {{namespace}}_ij(int i, int j) {
   int n = (i << 16) + j;
   switch (n) {
     {%- for i, j in sorted(ij) %}
@@ -76,7 +76,7 @@ int transmutagen_ij(int i, int j) {
 
 {%- if py_solve %}
 {%- for type, typefuncname in types %}
-void transmutagen_solve_{{typefuncname}}({{type}}* A, {{type}}* b, {{type}}* x) {
+void {{namespace}}_solve_{{typefuncname}}({{type}}* A, {{type}}* b, {{type}}* x) {
   /* Decompose first */
   {{type}} LU [{{NIJK}}];
   memcpy(LU, A, {{NNZ}}*sizeof({{type}}));
@@ -108,21 +108,21 @@ void transmutagen_solve_{{typefuncname}}({{type}}* A, {{type}}* b, {{type}}* x) 
   {%- endfor %}
 }
 
-void transmutagen_diag_add_{{typefuncname}}({{type}}* A, {{type}} theta) {
+void {{namespace}}_diag_add_{{typefuncname}}({{type}}* A, {{type}} theta) {
   /* In-place, performs the addition A + theta I, for a scalar theta. */
   {%- for i in range(N) %}
   A[{{ij[i, i]}}] += theta;
   {%- endfor %}
 }
 
-void transmutagen_dot_{{typefuncname}}({{type}}* A, {{type}}* x, {{type}}* y) {
+void {{namespace}}_dot_{{typefuncname}}({{type}}* A, {{type}}* x, {{type}}* y) {
   /* Performs the caclulation Ax = y and returns y */
   {%- for i in range(N) %}
   y[{{i}}] ={% for j in range(N) %}{% if (i,j) in ij %} + A[{{ij[i, j]}}]*x[{{j}}]{% endif %}{% endfor %};
   {%- endfor %}
 }
 
-void transmutagen_scalar_times_vector_{{typefuncname}}({{type}} alpha, {{type}}* v) {
+void {{namespace}}_scalar_times_vector_{{typefuncname}}({{type}} alpha, {{type}}* v) {
   /* In-place, performs alpha*v, for a scalar alpha and vector v. */
   {%- for i in range(N) %}
   v[{{i}}] *= alpha;
@@ -132,7 +132,7 @@ void transmutagen_scalar_times_vector_{{typefuncname}}({{type}} alpha, {{type}}*
 {%- endfor %}
 {%- endif %}
 
-void transmutagen_solve_special(double* A, double complex theta, double complex alpha, double* b, double complex* x) {
+void {{namespace}}_solve_special(double* A, double complex theta, double complex alpha, double* b, double complex* x) {
   /* Solves (A + theta*I)x = alpha*b and stores the result in x */
   double complex LU [{{NIJK}}];
 
@@ -182,7 +182,7 @@ void expm_multiply{{degree}}(double* A, double* b, double* x) {
 
     {% set thetas, alphas, alpha0 = get_thetas_alphas(degree) -%}
     {% for theta, alpha in sorted(zip(thetas, alphas), key=abs0) if im(theta) >= 0 %}
-    transmutagen_solve_special(A, {{ -theta}}, {{2*alpha}}, b, x{{loop.index0}});
+    {{namespace}}_solve_special(A, {{ -theta}}, {{2*alpha}}, b, x{{loop.index0}});
     {%- endfor %}
 
     {% for i in range(N) %}
@@ -216,7 +216,7 @@ def get_thetas_alphas(degree, prec=200, use_cache=True):
     return thetas, alphas, alpha0
 
 def generate(json_file='data/gensolve.json',
-    outfile=None, degrees=None, py_solve=False):
+    outfile=None, degrees=None, py_solve=False, namespace='transmutagen'):
 
     if degrees is None:
         degrees = [6, 8, 10, 12, 14, 16, 18] if py_solve else [14]
@@ -241,14 +241,15 @@ def generate(json_file='data/gensolve.json',
              ('double complex', 'complex')]
     env = Environment()
     src_template = env.from_string(SRC, globals=globals())
-    src = src_template.render(N=N, ij=ij, ijk=ijk, nucs=nucs, sorted=sorted, len=len,
-                          more_than_back=more_than_back, NNZ=len(ij), NIJK=len(ijk),
-                          more_than_fore=more_than_fore, types=types,
-                          diagonals=diagonals, degrees=degrees, py_solve=py_solve,
-                          get_thetas_alphas=get_thetas_alphas, im=im,
-                          abs0=lambda i:abs(i[0]), zip=zip, enumerate=enumerate)
+    src = src_template.render(N=N, ij=ij, ijk=ijk, nucs=nucs, sorted=sorted,
+        len=len, more_than_back=more_than_back, NNZ=len(ij), NIJK=len(ijk),
+        more_than_fore=more_than_fore, types=types, namespace=namespace,
+        diagonals=diagonals, degrees=degrees, py_solve=py_solve,
+        get_thetas_alphas=get_thetas_alphas, im=im, abs0=lambda i:abs(i[0]),
+        zip=zip, enumerate=enumerate)
     header_template = env.from_string(HEADER, globals=globals())
-    header = header_template.render(types=types, degrees=degrees, py_solve=py_solve)
+    header = header_template.render(types=types, degrees=degrees,
+        py_solve=py_solve, namespace=namespace)
     print("Writing", outfile)
     with open(outfile, 'w') as f:
         f.write(src)
@@ -272,6 +273,8 @@ def main(args=None):
         Should end in '.c'. The default is 'solve.c', unless --py-solve is
         specified, in which case the default is 'py_solve/py_solve/solve.c'.
         The header file will be generated alongside it.""")
+    p.add_argument('--namespace', default='transmutagen', help="""Namespace
+        for the generated solver. The default is %(default)r.""")
 
     ns = p.parse_args(args=args)
     if ns.outfile and not ns.outfile.endswith('.c'):
