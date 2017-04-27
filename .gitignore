@@ -6,7 +6,7 @@ docker/ORIGEN.zip
 docker/o2prec
 TAPE*
 log
-data/
+/data/
 docker/data/
 py_solve/py_solve/*.c
 py_solve/py_solve/*.h

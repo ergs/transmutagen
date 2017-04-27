@@ -30,7 +30,7 @@ def common_mat(mats):
     return csr_matrix((data, (rows, cols)))
 
 
-def generate_json(tape9s, decaylib, outfile='data/gensolve.json'):
+def generate_json(tape9s, decaylib, outfile='transmutagen/data/gensolve.json'):
     mats, nucs = tape9_to_sparse(tape9s, phi=1.0, format='csr', decaylib=decaylib)
     mat = common_mat(mats)
     ij = csr_ij(mat)
@@ -47,13 +47,14 @@ def generate_json(tape9s, decaylib, outfile='data/gensolve.json'):
 
 def main(args=None):
     p = ArgumentParser('generate_json', description="""Generate the JSON input
-    file for gensolve from TAPE 9 files.""")
+        file for gensolve from TAPE 9 files.""")
     p.add_argument('tape9s', nargs='+', help="""Paths to the TAPE9 files. If a
-    path is a directory, a set of default libraries will be gathered from that
-    directory (transmutagen.origen_all.ALL_LIBS)""")
+        path is a directory, a set of default libraries will be gathered from
+        that directory (transmutagen.origen_all.ALL_LIBS)""")
     p.add_argument('-d', '--decay', help='path to the decay file, if needed',
                    default='decay.lib', dest='decaylib')
-    p.add_argument('--outfile', default='data/gensolve.json')
+    p.add_argument('--outfile', default='transmutagen/data/gensolve.json',
+        help="""File to save the JSON file to. The default is %(default)r.""")
 
     ns = p.parse_args(args=args)
     tape9s = normalize_tape9s(ns.tape9s)

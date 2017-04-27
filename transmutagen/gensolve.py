@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 import json
+import os
 
 from jinja2 import Environment
 from sympy import im
@@ -215,7 +216,7 @@ def get_thetas_alphas(degree, prec=200, use_cache=True):
     thetas, alphas, alpha0 = thetas_alphas(rat_func, prec)
     return thetas, alphas, alpha0
 
-def generate(json_file='data/gensolve.json',
+def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.json'),
     outfile=None, degrees=None, py_solve=False, namespace='transmutagen'):
 
     if degrees is None:
