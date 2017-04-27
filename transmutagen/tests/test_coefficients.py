@@ -10,7 +10,7 @@ TOTAL_DEGREES = 30
 from .crv_coeffs import coeffs as correct_coeffs
 from ..cram import get_CRAM_from_cache, CRAM_coeffs
 
-@slow
+# @slow
 @pytest.mark.parametrize('degree', range(1, TOTAL_DEGREES+1))
 def test_coefficients(degree):
     generated_coeffs = {}
