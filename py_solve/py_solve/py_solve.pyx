@@ -145,7 +145,7 @@ def expm_multiply6(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
     x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
-    c_solve.expm_multiply6(
+    c_solve.transmutagen_expm_multiply6(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
         <double*> np.PyArray_DATA(x)
@@ -158,7 +158,7 @@ def expm_multiply8(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
     x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
-    c_solve.expm_multiply8(
+    c_solve.transmutagen_expm_multiply8(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
         <double*> np.PyArray_DATA(x)
@@ -170,7 +170,7 @@ def expm_multiply10(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
     x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
-    c_solve.expm_multiply10(
+    c_solve.transmutagen_expm_multiply10(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
         <double*> np.PyArray_DATA(x)
@@ -182,7 +182,7 @@ def expm_multiply12(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
     x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
-    c_solve.expm_multiply12(
+    c_solve.transmutagen_expm_multiply12(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
         <double*> np.PyArray_DATA(x)
@@ -194,7 +194,7 @@ def expm_multiply14(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
     x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
-    c_solve.expm_multiply14(
+    c_solve.transmutagen_expm_multiply14(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
         <double*> np.PyArray_DATA(x)
@@ -207,7 +207,7 @@ def expm_multiply16(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
     x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
-    c_solve.expm_multiply16(
+    c_solve.transmutagen_expm_multiply16(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
         <double*> np.PyArray_DATA(x)
@@ -219,7 +219,7 @@ def expm_multiply18(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
     x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
-    c_solve.expm_multiply18(
+    c_solve.transmutagen_expm_multiply18(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
         <double*> np.PyArray_DATA(x)
@@ -240,7 +240,7 @@ def expmI14(A):
         b = np.zeros(c_solve.transmutagen_info.n, dtype=np.float64)
         b[i] = 1.0
         offset = i*c_solve.transmutagen_info.n*sizeof(double)
-        c_solve.expm_multiply14(
+        c_solve.transmutagen_expm_multiply14(
             <double*> np.PyArray_DATA(A),
             <double*> np.PyArray_DATA(b),
             <double*> (np.PyArray_DATA(x) + offset),

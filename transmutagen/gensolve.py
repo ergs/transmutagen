@@ -33,7 +33,7 @@ void {{namespace}}_scalar_times_vector_{{typefuncname}}({{type}}, {{type}}*);
 {%- endif %}
 void {{namespace}}_solve_special(double* A, double complex theta, double complex alpha, double* b, double complex* x);
 {%- for degree in degrees %}
-void expm_multiply{{degree}}(double* A, double* b, double* x);
+void {{namespace}}_expm_multiply{{degree}}(double* A, double* b, double* x);
 {%- endfor %}
 #endif
 
@@ -174,7 +174,7 @@ void {{namespace}}_solve_special(double* A, double complex theta, double complex
 }
 
 {% for degree in degrees %}
-void expm_multiply{{degree}}(double* A, double* b, double* x) {
+void {{namespace}}_expm_multiply{{degree}}(double* A, double* b, double* x) {
     /* Computes exp(A)*b and stores the result in x */
     {%- for i in range(degree//2) %}
     double complex x{{i}} [{{N}}];
