@@ -3,7 +3,7 @@
 """
 This is a dummy module, for testing. To generate it, run
 
-   python -m transmutagen.gensolve
+   python -m transmutagen.gensolve --py-solve
 
 """
 import os
@@ -38,7 +38,7 @@ setup_kwargs = {
 
 # Cython parts
 if not os.path.exists('py_solve/solve.c'):
-    sys.exit("py_solve/solve.c not found. Run python -m transmutagen.gensolve to generate the solver")
+    sys.exit("py_solve/solve.c not found. Run python -m transmutagen.gensolve --py-solve to generate the solver")
 
 from Cython.Build import cythonize
 from distutils.extension import Extension
