@@ -1,7 +1,6 @@
 # transmutagen stuff
 plots/
 logs/
-CRAM_cache/
 docker/ORIGEN.zip
 docker/o2prec
 TAPE*

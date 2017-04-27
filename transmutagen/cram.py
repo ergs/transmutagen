@@ -327,7 +327,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=30, c=None, maxsteps=None,
 
     return ret
 
-def get_CRAM_from_cache(degree, prec, expr=None, plot=False, log=False):
+def get_CRAM_from_cache(degree, prec, expr=None, plot=False, log=False, use_cache=True):
     if log:
         if log is True:
             log = "INFO"
@@ -336,15 +336,26 @@ def get_CRAM_from_cache(degree, prec, expr=None, plot=False, log=False):
     else:
         log_to_file = False
 
-    os.makedirs('CRAM_cache', exist_ok=True)
-    cache_file = os.path.join('CRAM_cache', '%s_%s' % (degree, prec))
+    if use_cache:
+        installed_cache = os.path.join(os.path.dirname(__file__), 'data', 'CRAM_cache')
+        local_cache = os.path.expanduser('~/.transmutagen/CRAM_cache')
+        os.makedirs(local_cache, exist_ok=True)
+        installed_cache_file = os.path.join(installed_cache, '%s_%s' % (degree, prec))
+        local_cache_file = os.path.join(local_cache, '%s_%s' % (degree, prec))
 
-    if not expr and os.path.exists(cache_file):
-        with open(cache_file) as f:
-            expr = sympify(f.read(), globals())
-    else:
-        expr = expr or CRAM_exp(degree, prec, plot=plot, log_to_file=log_to_file)
-        with open(cache_file, 'w') as f:
+    if use_cache and not expr:
+        if os.path.exists(installed_cache_file):
+            with open(installed_cache_file) as f:
+                expr = sympify(f.read(), globals())
+        elif os.path.exists(local_cache_file):
+            with open(local_cache_file) as f:
+                expr = sympify(f.read(), globals())
+        else:
+            expr = None
+
+    expr = expr or CRAM_exp(degree, prec, plot=plot, log_to_file=log_to_file)
+    if use_cache:
+        with open(local_cache_file, 'w') as f:
             f.write(srepr(expr))
 
     return expr
