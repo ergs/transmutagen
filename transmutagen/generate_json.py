@@ -35,10 +35,10 @@ def generate_json(tape9s, decaylib, outfile='data/gensolve.json'):
     mat = common_mat(mats)
     ij = csr_ij(mat)
     tofrom = [(nucs[j], nucs[i]) for i, j in sorted(ij, key=itemgetter(1))]
-    os.makedirs(os.path.dirname(file), exist_ok=True)
+    os.makedirs(os.path.dirname(outfile), exist_ok=True)
 
-    with open(file, 'w') as f:
-        print("Writing", file)
+    with open(outfile, 'w') as f:
+        print("Writing", outfile)
         json.dump({
             'nucs': list(nucs),
             # JSON associative arrays can only have string keys
