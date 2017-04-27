@@ -8,6 +8,7 @@ from .cram import get_CRAM_from_cache, CRAM_exp
 from .partialfrac import thetas_alphas
 
 HEADER = """\
+/* This file was generated automatically with transmutagen. */
 #ifndef TRANSMUTAGEN_SOLVE_C
 #define TRANSMUTAGEN_SOLVE_C
 
@@ -38,7 +39,8 @@ void expm_multiply{{degree}}(double* A, double* b, double* x);
 
 """
 
-SRC = """/* unrolled solvers */
+SRC = """\
+/* This file was generated automatically with transmutagen. */
 #include <string.h>
 
 #include "solve.h"
