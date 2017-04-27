@@ -1,4 +1,3 @@
-- Convert the JSON file to string keys
 - Make it optional which orders are produced (default 14)
 - Generate header file
 - Make "TRANSMUTAGEN" namespace variable changeable

@@ -186,8 +186,9 @@ def generate(file='data/gensolve.json', outfile='py_solve/py_solve/solve.c'):
         json_data = json.load(f)
 
     nucs = json_data['nucs']
-    N = json_data['N']
-    ij = {tuple(i): j for i, j in json_data['ij']}
+    N = len(nucs)
+    ijkeys = [(nucs.index(j), nucs.index(i)) for i, j in json_data['tofrom']]
+    ij = {k: l for l, k in enumerate(sorted(ijkeys))}
     ijk = make_ijk(ij, N)
     diagonals = {ij[i, i]: i for i in range(N)}
     more_than_fore = [len([j for j in range(i+1) if (i, j) in ijk]) > 1 for i in range(N)]

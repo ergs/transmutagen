@@ -7,6 +7,7 @@ Regenerate the gensolve_json from ORIGEN with
 import os
 import json
 from argparse import ArgumentParser
+from operator import itemgetter
 
 from scipy.sparse import eye, csr_matrix
 import numpy as np
@@ -32,18 +33,17 @@ def common_mat(mats):
 def generate_json(tape9s, decaylib, file='data/gensolve.json'):
     mats, nucs = tape9_to_sparse(tape9s, phi=1.0, format='csr', decaylib=decaylib)
     mat = common_mat(mats)
-    N = mat.shape[0]
     ij = csr_ij(mat)
+    tofrom = [(nucs[j], nucs[i]) for i, j in sorted(ij, key=itemgetter(1))]
     os.makedirs(os.path.dirname(file), exist_ok=True)
 
     with open(file, 'w') as f:
         print("Writing", file)
         json.dump({
             'nucs': list(nucs),
-            'N': N,
             # JSON associative arrays can only have string keys
-            'ij': sorted(ij.items()),
-            }, f, sort_keys=True)
+            'tofrom': tofrom,
+            }, f, sort_keys=True, indent=4)
 
 def main(args=None):
     p = ArgumentParser('generate_json', description="""Generate the JSON input
