@@ -38,7 +38,7 @@ def time_and_run(f, *args, _print=False):
     return res
 
 def run_transmute_test(data, degree, prec, time, expr=None, plot=True,
-    _print=False, run_all=True):
+    _print=False, run_all=True, use_cache=True):
     """
     Run transmute test on the data
 
@@ -47,7 +47,7 @@ def run_transmute_test(data, degree, prec, time, expr=None, plot=True,
     """
     nucs, matrix = load_sparse_csr(data)
 
-    expr = get_CRAM_from_cache(degree, prec, expr=expr, plot=plot)
+    expr = get_CRAM_from_cache(degree, prec, expr=expr, plot=plot, use_cache=use_cache)
 
     num, den = fraction(expr)
 
@@ -85,7 +85,7 @@ def run_transmute_test(data, degree, prec, time, expr=None, plot=True,
 def test_transmute():
     data = os.path.join(os.path.dirname(__file__), 'data', 'transmute.npz')
     month = 2.6e6
-    run_transmute_test(data, 6, 30, month, plot=False)
+    run_transmute_test(data, 6, 30, month, plot=False, use_cache=False)
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
