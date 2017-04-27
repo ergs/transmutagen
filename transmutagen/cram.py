@@ -160,7 +160,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=30, c=None, maxsteps=None,
 
     convergence_value is the value where the algorithm converges if the
     maximum absolute error minus the minimum absolute error is below this
-    value. The default is 10**-(prec - 2).
+    value. The default is 10**-(prec - 5).
 
     tol is the tolerance passed to nsolve. The default is 10**-(prec - 7).
 
@@ -209,7 +209,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=30, c=None, maxsteps=None,
 
     maxsteps = int(maxsteps or 1.7*prec)
     tol = tol or mpmath.mpf(10)**-(prec - 8)
-    convergence_value = convergence_value or mpmath.mpf(10)**-(prec - 4)
+    convergence_value = convergence_value or mpmath.mpf(10)**-(prec - 5)
 
     if nsolve_type == 'points':
         nsolve_func = nsolve_points
