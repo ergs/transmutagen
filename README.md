@@ -35,6 +35,49 @@ the terminal.
 
 Note: all output and plots are logged to the `logs` and `plots` directories.
 
+## Generating solver code
+
+To generate solver code, use
+
+    python -m transmutagen.gensolve
+
+This will generate ``solve.c`` and ``solve.h``. Use
+
+    python -m transmutagen.gensolve --help
+
+to see various options, such as how to change the degrees that are generated,
+and the namespace of the generated functions.
+
+This will use a default list of nuclides and sparsity pattern. To add or
+remove nuclides, modify the JSON file, and pass it in with
+
+    python -m transmutagen.gensolve --json-file gensolve.json
+
+The format of the JSON file is
+
+    {
+    "nucs", ["H1", "H2", ...]
+    "tofrom": [["H1", "H1"], ["H1", "H2"], ...],
+    }
+
+Where ``"nucs"`` is a list of nuclides and ``"tofrom"`` is a list of lists of
+every possible reaction product pair.
+
+To generate a JSON file from ORIGEN libraries, run
+
+    python -m transmutagen.generate_json /path/to/origen/libs/ --outfile gensolve.json
+
+This will save the JSON to ``gensolve.json``.
+
+The resulting solve.c will have functions
+``{namespace}_expm_multiply{N}(doubled* A, double* b, double* x)``, where
+``{namespace}`` is the namespace specified by the ``-namespace`` flag to
+``python -m transmutagen.gensolve`` (the default is ``transmutagen``), and
+``{N}`` is the degree of the approximation used in the solve, specified by the
+``--degree`` flag (the default is ``14``). The function computes ``exp(A)*b``
+and stores the result in ``x``.  ``A`` should be in a flattened format,
+according to the sparsity pattern the solver was generated from.
+
 ## Converting ORIGEN libraries to a sparse matrix representation
 
 If you'd like to convert an origen file to a matrix representation, please
