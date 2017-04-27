@@ -265,10 +265,11 @@ def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.js
 
 def main(args=None):
     p = ArgumentParser('gensolver')
-    p.add_argument('--json-file', default='data/gensolve.json',
-        help="""Location of the json input file. An input file can be generated
-        from ORIGEN libraries with python -m transmutagen.generate_json. The default is
-        %(default)r.""")
+    p.add_argument('--json-file',
+        default=os.path.join(os.path.dirname(__file__), 'data/gensolve.json'),
+        help="""Location of the json input file. An input file can be
+        generated from ORIGEN libraries with python -m
+        transmutagen.generate_json. The default is %(default)r.""")
     p.add_argument('--py-solve', action='store_true', help="""Generate code for
         py_solve.""")
     p.add_argument('--degrees', nargs='+', default=None, help="""expm_multiply
