@@ -10,11 +10,6 @@ import pytest
 this_dir = os.path.dirname(__file__)
 sys.path.insert(0, os.path.join(this_dir, os.pardir))
 
-try:
-    import py_solve as solver
-except ImportError:
-    pytestmark = pytest.mark.skipif(True, reason='transmutagen.py_solve not found')
-
 DTYPES = ['f8', np.complex128]
 
 
