@@ -7,6 +7,37 @@ from sympy import im
 from .cram import get_CRAM_from_cache, CRAM_exp
 from .partialfrac import thetas_alphas
 
+HEADER = """\
+#ifndef TRANSMUTAGEN_SOLVE_C
+#define TRANSMUTAGEN_SOLVE_C
+
+#include <complex.h>
+
+typedef struct transmutagen_info_tag {
+  int n;
+  int nnz;
+  int* i;
+  int* j;
+  char** nucs;
+} transmutagen_info_t;
+
+extern transmutagen_info_t transmutagen_info;
+{% if py_solve %}
+{%- for type, typefuncname in types %}
+void transmutagen_solve_{{typefuncname}}({{type}}* A, {{type}}* b, {{type}}* x);
+void transmutagen_diag_add_{{typefuncname}}({{type}}* A, {{type}} alpha);
+void transmutagen_dot_{{typefuncname}}({{type}}* A, {{type}}* x, {{type}}* y);
+void transmutagen_scalar_times_vector_{{typefuncname}}({{type}}, {{type}}*);
+{% endfor %}
+{%- endif %}
+void transmutagen_solve_special(double* A, double complex theta, double complex alpha, double* b, double complex* x);
+{%- for degree in degrees %}
+void expm_multiply{{degree}}(double* A, double* b, double* x);
+{%- endfor %}
+#endif
+
+"""
+
 SRC = """/* unrolled solvers */
 #include <string.h>
 
@@ -183,10 +214,14 @@ def get_thetas_alphas(degree, prec=200, use_cache=True):
     return thetas, alphas, alpha0
 
 def generate(json_file='data/gensolve.json',
-    outfile='py_solve/py_solve/solve.c', degrees=None, py_solve=False):
+    outfile=None, degrees=None, py_solve=False):
 
     if degrees is None:
         degrees = [6, 8, 10, 12, 14, 16, 18] if py_solve else [14]
+    if not outfile:
+        outfile='py_solve/py_solve/solve.c' if py_solve else 'solve.c'
+    # outfile should always end in .c
+    headerfile = outfile[:-2] + '.h'
 
     with open(json_file) as f:
         json_data = json.load(f)
@@ -203,17 +238,21 @@ def generate(json_file='data/gensolve.json',
              ('double', 'double'),
              ('double complex', 'complex')]
     env = Environment()
-    template = env.from_string(SRC, globals=globals())
-    src = template.render(N=N, ij=ij, ijk=ijk, nucs=nucs, sorted=sorted, len=len,
+    src_template = env.from_string(SRC, globals=globals())
+    src = src_template.render(N=N, ij=ij, ijk=ijk, nucs=nucs, sorted=sorted, len=len,
                           more_than_back=more_than_back, NNZ=len(ij), NIJK=len(ijk),
                           more_than_fore=more_than_fore, types=types,
                           diagonals=diagonals, degrees=degrees, py_solve=py_solve,
                           get_thetas_alphas=get_thetas_alphas, im=im,
                           abs0=lambda i:abs(i[0]), zip=zip, enumerate=enumerate)
+    header_template = env.from_string(HEADER, globals=globals())
+    header = header_template.render(types=types, degrees=degrees, py_solve=py_solve)
     print("Writing", outfile)
     with open(outfile, 'w') as f:
         f.write(src)
-
+    print("Writing", headerfile)
+    with open(headerfile, 'w') as f:
+        f.write(header)
 
 def main(args=None):
     p = ArgumentParser('gensolver')
@@ -227,11 +266,14 @@ def main(args=None):
         degrees to generate. The default is 14, unless --py-solve is
         specified, in which case the default is '6 8 10 12 14 16 18'. The
         orders should be even integers only.""", metavar="DEGREE")
-    p.add_argument('--outfile', help="""Location to write the file to. The
-        default is 'solve.c', unless --py-solve is specified, in which case
-        the default is 'py_solve/py_solve/solve.c'.""")
+    p.add_argument('--outfile', help="""Location to write the C file to.
+        Should end in '.c'. The default is 'solve.c', unless --py-solve is
+        specified, in which case the default is 'py_solve/py_solve/solve.c'.
+        The header file will be generated alongside it.""")
 
     ns = p.parse_args(args=args)
+    if ns.outfile and not ns.outfile.endswith('.c'):
+        p.error("--outfile should end with '.c'")
     arguments = ns.__dict__.copy()
     generate(**arguments)
 

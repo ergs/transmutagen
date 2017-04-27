@@ -1,4 +1,3 @@
-- Generate header file
 - Make "TRANSMUTAGEN" namespace variable changeable
 - Make expm namespaced
 - After it runs it should print out a message with the compiler flags
