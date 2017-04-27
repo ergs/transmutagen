@@ -30,7 +30,7 @@ def common_mat(mats):
     return csr_matrix((data, (rows, cols)))
 
 
-def generate_json(tape9s, decaylib, file='data/gensolve.json'):
+def generate_json(tape9s, decaylib, outfile='data/gensolve.json'):
     mats, nucs = tape9_to_sparse(tape9s, phi=1.0, format='csr', decaylib=decaylib)
     mat = common_mat(mats)
     ij = csr_ij(mat)
@@ -53,11 +53,11 @@ def main(args=None):
     directory (transmutagen.origen_all.ALL_LIBS)""")
     p.add_argument('-d', '--decay', help='path to the decay file, if needed',
                    default='decay.lib', dest='decaylib')
-    p.add_argument('--file', default='data/gensolve.json')
+    p.add_argument('--outfile', default='data/gensolve.json')
 
     ns = p.parse_args(args=args)
     tape9s = normalize_tape9s(ns.tape9s)
-    generate_json(tape9s, ns.decaylib, file=ns.file)
+    generate_json(tape9s, ns.decaylib, outfile=ns.outfile)
 
 
 if __name__ == "__main__":
