@@ -8,7 +8,7 @@ import random
 import mpmath
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
     chebyshevt_root, Tuple, diff, N, solve, Poly, lambdify, sign, fraction,
-    sympify, Float, srepr, Rational)
+    sympify, Float, srepr, Rational, log)
 
 from sympy.utilities.decorator import conserve_mpmath_dps
 
@@ -160,7 +160,9 @@ def CRAM_exp(degree, prec=128, *, max_loops=30, c=None, maxsteps=None,
 
     convergence_value is the value where the algorithm converges if the
     maximum absolute error minus the minimum absolute error is below this
-    value. The default is 10**-(prec - 5).
+    value. The default is to converge automatically (when the max - min values
+    are within 10 orders of magnitude of the precision, and become
+    log-convex).
 
     tol is the tolerance passed to nsolve. The default is 10**-(prec - 7).
 
@@ -209,7 +211,6 @@ def CRAM_exp(degree, prec=128, *, max_loops=30, c=None, maxsteps=None,
 
     maxsteps = int(maxsteps or 1.7*prec)
     tol = tol or mpmath.mpf(10)**-(prec - 8)
-    convergence_value = convergence_value or mpmath.mpf(10)**-(prec - 5)
 
     if nsolve_type == 'points':
         nsolve_func = nsolve_points
@@ -284,7 +285,17 @@ def CRAM_exp(degree, prec=128, *, max_loops=30, c=None, maxsteps=None,
             plt.title("Convergence")
             plt_show_in_terminal(logname=log_to_file and logname + ' iteration=%s convergence' % iteration)
 
-        if maxmin < convergence_value:
+        converged = False
+        if convergence_value:
+            if maxmin < convergence_value:
+                converged = True
+        else:
+            # Once max - min is sufficiently close to the precision, converge
+            # when the max - min values become log-convex.
+            if (iteration >= 2 and maxmin < mpmath.mpf(10)**-(prec - 10) and
+               log(maxmins[-2]) - log(maxmins[-3]) < log(maxmins[-1]) - log(maxmins[-2])):
+                converged = True
+        if converged:
             logger.info("Converged in %d iterations.", iteration + 1)
             break
     else:
