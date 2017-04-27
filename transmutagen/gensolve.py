@@ -21,7 +21,6 @@ const int TRANSMUTAGEN_J[{{NNZ}}] =
 const char* TRANSMUTAGEN_NUCS[{{N}}] =
   { {%- for nuc in nucs %}"{{nuc}}",{% endfor -%} };
 
-
 transmutagen_info_t transmutagen_info = {
   .n = {{N}},
   .nnz = {{NNZ}},
@@ -42,6 +41,7 @@ int transmutagen_ij(int i, int j) {
   }
 }
 
+{%- if py_solve %}
 {%- for type, typefuncname in types %}
 void transmutagen_solve_{{typefuncname}}({{type}}* A, {{type}}* b, {{type}}* x) {
   /* Decompose first */
@@ -97,6 +97,7 @@ void transmutagen_scalar_times_vector_{{typefuncname}}({{type}} alpha, {{type}}*
 }
 
 {%- endfor %}
+{%- endif %}
 
 void transmutagen_solve_special(double* A, double complex theta, double complex alpha, double* b, double complex* x) {
   /* Solves (A + theta*I)x = alpha*b and stores the result in x */
@@ -181,8 +182,13 @@ def get_thetas_alphas(degree, prec=200, use_cache=True):
     thetas, alphas, alpha0 = thetas_alphas(rat_func, prec)
     return thetas, alphas, alpha0
 
-def generate(file='data/gensolve.json', outfile='py_solve/py_solve/solve.c'):
-    with open(file) as f:
+def generate(json_file='data/gensolve.json',
+    outfile='py_solve/py_solve/solve.c', degrees=None, py_solve=False):
+
+    if degrees is None:
+        degrees = [6, 8, 10, 12, 14, 16, 18] if py_solve else [14]
+
+    with open(json_file) as f:
         json_data = json.load(f)
 
     nucs = json_data['nucs']
@@ -201,7 +207,7 @@ def generate(file='data/gensolve.json', outfile='py_solve/py_solve/solve.c'):
     src = template.render(N=N, ij=ij, ijk=ijk, nucs=nucs, sorted=sorted, len=len,
                           more_than_back=more_than_back, NNZ=len(ij), NIJK=len(ijk),
                           more_than_fore=more_than_fore, types=types,
-                          diagonals=diagonals, degrees=[6, 8, 10, 12, 14, 16, 18],
+                          diagonals=diagonals, degrees=degrees, py_solve=py_solve,
                           get_thetas_alphas=get_thetas_alphas, im=im,
                           abs0=lambda i:abs(i[0]), zip=zip, enumerate=enumerate)
     print("Writing", outfile)
@@ -211,10 +217,23 @@ def generate(file='data/gensolve.json', outfile='py_solve/py_solve/solve.c'):
 
 def main(args=None):
     p = ArgumentParser('gensolver')
-    p.add_argument('--file', default='data/gensolve.json')
+    p.add_argument('--json-file', default='data/gensolve.json',
+        help="""Location of the json input file. An input file can be generated
+        from ORIGEN libraries with python -m transmutagen.generate_json. The default is
+        %(default)r.""")
+    p.add_argument('--py-solve', action='store_true', help="""Generate code for
+        py_solve.""")
+    p.add_argument('--degrees', nargs='+', default=None, help="""expm_multiply
+        degrees to generate. The default is 14, unless --py-solve is
+        specified, in which case the default is '6 8 10 12 14 16 18'. The
+        orders should be even integers only.""", metavar="DEGREE")
+    p.add_argument('--outfile', help="""Location to write the file to. The
+        default is 'solve.c', unless --py-solve is specified, in which case
+        the default is 'py_solve/py_solve/solve.c'.""")
 
     ns = p.parse_args(args=args)
-    generate(ns.file)
+    arguments = ns.__dict__.copy()
+    generate(**arguments)
 
 
 if __name__ == "__main__":
