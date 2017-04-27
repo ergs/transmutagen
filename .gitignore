@@ -9,6 +9,7 @@ log
 data/
 docker/data/
 py_solve/py_solve/*.c
+py_solve/py_solve/*.h
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
