@@ -18,7 +18,6 @@ install:
   # https://github.com/sympy/sympy/pull/12088 is merged.
   - pip install git+git://github.com/asmeurer/sympy.git@Float-prec-fix
 
-  - python -m transmutagen.generate_json
   - python -m transmutagen.gensolve --py-solve
   - cd py_solve
   - python setup.py build_ext --inplace
