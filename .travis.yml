@@ -12,11 +12,16 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
 
-  - conda create -q -n test-environment python=3.5 pip mpmath matplotlib pytest pyflakes numpy scipy pyne
+  - conda create -q -n test-environment python=3.5 pip mpmath matplotlib pytest pyflakes numpy scipy pyne gcc
   - source activate test-environment
   # Change to git+git://github.com/sympy/sympy.git when
   # https://github.com/sympy/sympy/pull/12088 is merged.
   - pip install git+git://github.com/asmeurer/sympy.git@Float-prec-fix
+
+  - python -m transmutagen.generate_json
+  - python -m transmutagen.gensolve --py-solve
+  - cd py_solve
+  - python setup.py build_ext --inplace
 
 script:
   - pyflakes transmutagen py_solve setup.py
