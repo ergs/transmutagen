@@ -44,8 +44,9 @@ from Cython.Build import cythonize
 from distutils.extension import Extension
 
 sourcefiles = ['py_solve/py_solve.pyx', 'py_solve/solve.c']
-extensions = [Extension("py_solve.py_solve", sourcefiles, extra_compile_args=[
-    '-O0', '-fcx-fortran-rules', '-fcx-limited-range', '-ftree-sra', '-ftree-ter', '-fexpensive-optimizations',])]
+extensions = [Extension("py_solve.py_solve", sourcefiles,
+    # If this changes, also modify the list in transmutagen/gensolve.py
+    extra_compile_args=['-O0', '-fcx-fortran-rules', '-fcx-limited-range', '-ftree-sra', '-ftree-ter', '-fexpensive-optimizations',])]
 setup_kwargs['ext_modules'] = cythonize(extensions)
 
 

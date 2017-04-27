@@ -256,6 +256,11 @@ def generate(json_file='data/gensolve.json',
     print("Writing", headerfile)
     with open(headerfile, 'w') as f:
         f.write(header)
+    # If this changes, also update py_solve/setup.py
+    compiler_flags = ['-O0', '-fcx-fortran-rules', '-fcx-limited-range',
+        '-ftree-sra', '-ftree-ter', '-fexpensive-optimizations']
+
+    print("With gcc, it is recommended to compile the following flags:", ' '.join(compiler_flags))
 
 def main(args=None):
     p = ArgumentParser('gensolver')
