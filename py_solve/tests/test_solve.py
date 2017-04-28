@@ -5,6 +5,8 @@ import numpy as np
 import scipy.sparse as sp
 import scipy.sparse.linalg as spla
 
+import py_solve as solver
+
 import pytest
 
 this_dir = os.path.dirname(__file__)
