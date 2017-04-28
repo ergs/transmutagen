@@ -284,6 +284,13 @@ def main(args=None):
     if ns.outfile and not ns.outfile.endswith('.c'):
         p.error("--outfile should end with '.c'")
     arguments = ns.__dict__.copy()
+
+    # DEBUGGING
+    import signal
+    def handler(signum, frame):
+        raise Exception("TIMEOUT")
+    signal.signal(signal.SIGALRM, handler)
+    signal.alarm(550)
     generate(**arguments)
 
 
