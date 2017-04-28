@@ -18,7 +18,7 @@ install:
   # https://github.com/sympy/sympy/pull/12088 is merged.
   - pip install git+git://github.com/asmeurer/sympy.git@Float-prec-fix
 
-  - python -m transmutagen.gensolve --py-solve
+  - (python -m transmutagen.gensolve --py-solve) & sleep 550 ; kill -2 $!
   - cd py_solve
   - python setup.py build_ext --inplace
 
