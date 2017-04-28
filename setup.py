@@ -24,6 +24,7 @@ setup_kwargs = {
         ],
     "zip_safe": False,
     "data_files": [("", ['LICENSE', 'README.md']),],
+    "package_data": {'transmutagen': ['data/gensolve.json', 'data/CRAM_cache/*']},
     }
 
 
