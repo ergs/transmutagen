@@ -5,7 +5,7 @@ import os
 from jinja2 import Environment
 from sympy import im
 
-from .cram import get_CRAM_from_cache, CRAM_exp
+from .cram import get_CRAM_from_cache
 from .partialfrac import thetas_alphas
 
 HEADER = """\
