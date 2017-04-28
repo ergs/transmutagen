@@ -21,6 +21,7 @@ install:
   - python -m transmutagen.gensolve --py-solve
   - cd py_solve
   - python setup.py build_ext --inplace
+  - cd ..
 
 script:
   - pyflakes transmutagen py_solve setup.py
