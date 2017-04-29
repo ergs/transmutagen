@@ -285,12 +285,6 @@ def main(args=None):
         p.error("--outfile should end with '.c'")
     arguments = ns.__dict__.copy()
 
-    # DEBUGGING
-    import signal
-    def handler(signum, frame):
-        raise Exception("TIMEOUT")
-    signal.signal(signal.SIGALRM, handler)
-    signal.alarm(550)
     generate(**arguments)
 
 
