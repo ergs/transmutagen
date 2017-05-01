@@ -325,7 +325,7 @@ def compute_mismatch(ORIGEN_data, CRAM_lambdify_res, CRAM_py_solve_res, nucs, rt
         for a_desc, b_desc in (['CRAM lambdify', 'CRAM py_solve'], ['CRAM lambdify', 'ORIGEN'], ['CRAM py_solve', 'ORIGEN']):
             a, b = d[a_desc], d[b_desc]
             try:
-                np.testing.assert_allclose(Cl, O, rtol=rtol, atol=atol)
+                np.testing.assert_allclose(a, b, rtol=rtol, atol=atol)
             except AssertionError as e:
                 logger.info(e)
                 logger.info("Mismatching elements sorted by error (%s, %s, symmetric relative error)", a_desc, b_desc)
