@@ -394,7 +394,7 @@ def execute(xs_tape9, time, phi, nuclide, hdf5_file='data/results.hdf5',
         )
 
     if run_cram_py_solve:
-        CRAM_py_solve_time, CRAM_py_solve_res = test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi)
+        CRAM_py_solve_time, CRAM_py_solve_res = test_origen_against_CRAM_py_solve(xs_tape9, time, nuclide, phi)
         save_file_cram_py_solve(hdf5_file,
             CRAM_py_solve_res=CRAM_py_solve_res,
             lib=lib,
