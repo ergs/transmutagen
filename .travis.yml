@@ -31,4 +31,4 @@ script:
   - python setup.py sdist
   - pip install dist/*
   - cd /
-  - python -m 'import transmutagen'
+  - python -c 'import transmutagen'
