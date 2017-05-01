@@ -72,7 +72,7 @@ def execute_origen(xs_tape9, time, nuclide, phi, origen, decay_tape9):
 
     data = parse_tape6()
 
-    logger.info("ORIGEN time: %s", origen_time)
+    logger.info("ORIGEN runtime: %s", origen_time)
     return origen_time, data
 
 def load_data(datafile):
@@ -268,7 +268,7 @@ def test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi):
     CRAM_lambdify_time, CRAM_lambdify_res = time_func(e_complex, -mat*float(time), b)
     CRAM_lambdify_res = np.asarray(CRAM_lambdify_res)
 
-    logger.info("CRAM lambdify time: %s", CRAM_lambdify_time)
+    logger.info("CRAM lambdify runtime: %s", CRAM_lambdify_time)
 
     return CRAM_lambdify_time, CRAM_lambdify_res
 
@@ -290,7 +290,7 @@ def test_origen_against_CRAM_py_solve(xs_tape9, time, nuclide, phi):
     CRAM_py_solve_time, CRAM_py_solve_res = time_func(expm_multiply14, -A*float(time), b)
     CRAM_py_solve_res = np.asarray(CRAM_py_solve_res)
 
-    logger.info("CRAM py_solve time: %s", CRAM_py_solve_time)
+    logger.info("CRAM py_solve runtime: %s", CRAM_py_solve_time)
 
     return CRAM_py_solve_time, CRAM_py_solve_res
 
