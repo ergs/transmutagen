@@ -1,3 +1,4 @@
+import warnings
 import random
 
 from sympy import (symbols, fraction, nsimplify, intervals, div, LC, Add,
@@ -118,6 +119,10 @@ def allroots(expr, degree, prec, chop=True):
     # complex part. Assume that the roots with the smallest complex parts are
     # real. We could also check which roots are conjugate pairs.
     if chop:
+        from sympy.core.compatibility import GROUND_TYPES
+        if GROUND_TYPES == 'python':
+            warnings.simplefilter('default')
+            warnings.warn("It is recommended to install gmpy2 to speed up transmutagen")
         n_real_roots = count_roots(nsimplify(expr))
         roots = sorted(roots, key=lambda i:abs(im(i)))
         real_roots, complex_roots = roots[:n_real_roots], roots[n_real_roots:]
