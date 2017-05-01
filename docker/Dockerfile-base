@@ -17,7 +17,7 @@ RUN tar -xf /home/C371ALLCP03/C371ALLCP.03/CCC371.03/c371tar3.gz
 COPY decay.lib.patch decay.lib.patch
 RUN patch -u origen22/libs/decay.lib -i decay.lib.patch
 
-RUN conda install -y numpy scipy sympy matplotlib pyne mpmath xonsh gcc scikit-umfpack
+RUN conda install -y numpy scipy sympy matplotlib pyne mpmath xonsh gcc scikit-umfpack jinja2 gmpy2
 RUN conda remove -y sympy
 RUN conda clean --all
 
@@ -34,3 +34,6 @@ RUN git clone https://github.com/ergs/transmutagen.git
 RUN cd sympy && git remote add asmeurer https://github.com/asmeurer/sympy
 RUN cd sympy && git fetch asmeurer
 RUN cd sympy && git checkout -t asmeurer/Float-prec-fix
+
+RUN cd transmutagen && python -m transmutagen.gensolve --py-solve
+RUN cd transmutagen/py_solve && python setup.py build_ext --inplace
