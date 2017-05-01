@@ -55,10 +55,12 @@ remove nuclides, modify the JSON file, and pass it in with
 
 The format of the JSON file is
 
-    {
-    "nucs", ["H1", "H2", ...]
-    "tofrom": [["H1", "H1"], ["H1", "H2"], ...],
-    }
+``` json
+{
+"nucs", ["H1", "H2", ...]
+"tofrom": [["H1", "H1"], ["H1", "H2"], ...],
+}
+```
 
 Where ``"nucs"`` is a list of nuclides and ``"tofrom"`` is a list of lists of
 every possible reaction product pair.
