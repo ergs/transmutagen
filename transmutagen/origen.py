@@ -166,16 +166,22 @@ def create_hdf5_table(file, lib, nucs):
         ('ORIGEN atom fraction', np.float64, (nucs_size, 1)),
         ('ORIGEN mass fraction', np.float64, (nucs_size, 1)),
         ]
-    desc_cram = [
-        ('execution time CRAM', np.float64),
-        ('CRAM atom fraction', np.float64, (nucs_size, 1)),
-        ('CRAM mass fraction', np.float64, (nucs_size, 1)),
+    desc_cram_lambdify = [
+        ('execution time CRAM lambdify', np.float64),
+        ('CRAM lambdify atom fraction', np.float64, (nucs_size, 1)),
+        ('CRAM lambdify mass fraction', np.float64, (nucs_size, 1)),
+        ]
+    desc_cram_py_solve = [
+        ('execution time CRAM py_solve', np.float64),
+        ('CRAM py_solve atom fraction', np.float64, (nucs_size, 1)),
+        ('CRAM py_solve mass fraction', np.float64, (nucs_size, 1)),
         ]
 
     h5file = tables.open_file(file, mode="a", title="CRAM/ORIGEN test run data", filters=tables.Filters(complevel=1))
     h5file.create_group('/', lib, '%s data' % lib)
     h5file.create_table('/' + lib, 'origen', np.dtype(desc_common + desc_origen))
-    h5file.create_table('/' + lib, 'cram', np.dtype(desc_common + desc_cram))
+    h5file.create_table('/' + lib, 'cram-lambdify', np.dtype(desc_common + desc_cram_lambdify))
+    h5file.create_table('/' + lib, 'cram-py_solve', np.dtype(desc_common + desc_cram_py_solve))
     h5file.create_array('/' + lib, 'nucs', np.array(nucs, 'S6'))
 
 def save_file_origen(file, *, ORIGEN_data, lib, nucs, start_nuclide, time,
