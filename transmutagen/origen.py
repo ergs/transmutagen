@@ -336,7 +336,7 @@ def compute_mismatch(ORIGEN_data, CRAM_lambdify_res, CRAM_py_solve_res, nucs, rt
                         continue
                     logger.info("%s %s %s %s", nucs[i], a[i], b[i], rel_error[i])
             else:
-                logger.info("%s and %s arrays match with rtol=%s atol=%s", _a, _b, rtol, atol)
+                logger.info("%s and %s arrays match with rtol=%s atol=%s", a, b, rtol, atol)
 
         logger.info('')
 
