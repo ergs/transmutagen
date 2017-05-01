@@ -72,7 +72,7 @@ To generate a JSON file from ORIGEN libraries, run
 This will save the JSON to ``gensolve.json``.
 
 The resulting solve.c will have functions
-``{namespace}_expm_multiply{N}(doubled* A, double* b, double* x)``, where
+``{namespace}_expm_multiply{N}(double* A, double* b, double* x)``, where
 ``{namespace}`` is the namespace specified by the ``-namespace`` flag to
 ``python -m transmutagen.gensolve`` (the default is ``transmutagen``), and
 ``{N}`` is the degree of the approximation used in the solve, specified by the
