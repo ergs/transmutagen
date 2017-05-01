@@ -26,6 +26,9 @@ install:
 script:
   - pyflakes transmutagen py_solve setup.py
   - PYTHONPATH=py_solve py.test transmutagen
+
   # See if it installs
   - python setup.py sdist
   - pip install dist/*
+  - cd /
+  - python -m 'import transmutagen'
