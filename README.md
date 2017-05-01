@@ -58,7 +58,7 @@ The format of the JSON file is
 ``` json
 {
 "nucs": ["H1", "H2", ...],
-"tofrom": [["H1", "H1"], ["H1", "H2"], ...],
+"tofrom": [["H1", "H1"], ["H1", "H2"], ...]
 }
 ```
 
