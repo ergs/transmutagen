@@ -236,12 +236,12 @@ def test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi):
     assert mat.shape[1] == len(nucs)
     b = initial_vector(nuclide, nucs)
 
-    CRAM_time, CRAM_res = time_func(e_complex, -mat*float(time), b)
-    CRAM_res = np.asarray(CRAM_res)
+    CRAM_lambdify_time, CRAM_lambdify_res = time_func(e_complex, -mat*float(time), b)
+    CRAM_lambdify_res = np.asarray(CRAM_lambdify_res)
 
-    logger.info("CRAM time: %s", CRAM_time)
+    logger.info("CRAM lambdify time: %s", CRAM_lambdify_time)
 
-    return CRAM_time, CRAM_res
+    return CRAM_lambdify_time, CRAM_lambdify_res
 
 def compute_mismatch(ORIGEN_data, CRAM_lambdify_res, nucs, rtol=1e-3, atol=1e-5):
     """
