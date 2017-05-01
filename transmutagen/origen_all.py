@@ -119,6 +119,7 @@ def main():
     logger.info("Start time: %s", starttime)
 
     try:
+        npzfilenames = []
         for tape9 in ALL_LIBS:
             logger.info("Computing library %s", tape9)
             xs_tape9 = os.path.join(args.libs_dir, tape9)
@@ -127,11 +128,17 @@ def main():
             base, _ = os.path.splitext(base)
             os.makedirs('data', exist_ok=True)
             npzfilename = os.path.join('data', base + '_' + str(PHI) + '.npz')
+            npzfilenames.append(npzfilename)
 
-            if args.recompute_matrices or not os.path.exists(npzfilename):
-                logger.info("Saving matrix for %s to %s", xs_tape9, npzfilename)
-                save_sparse(xs_tape9, phi=PHI, output=npzfilename,
-                    decaylib=args.decay_tape9)
+        if args.recompute_matrices or not any(os.path.exists(npzfilename) for
+            npzfilename in npzfilenames):
+            logger.info("Saving matrices")
+            save_sparse(args.libs_dir, phi=PHI, output=npzfilename,
+                decaylib=args.decay_tape9)
+
+        for tape9, npzfilename in zip(ALL_LIBS, npzfilenames):
+            logger.info("Computing library %s", tape9)
+            xs_tape9 = os.path.join(args.libs_dir, tape9)
 
             for initial_nuclide in INITIAL_NUCS:
                 logger.info("Using initial nuclide %s", initial_nuclide)
