@@ -223,10 +223,33 @@ def save_file_cram_lambdify(file, *, CRAM_lambdify_res, lib, nucs, start_nuclide
         table.row.append()
         table.flush()
 
+def save_file_cram_py_solve(file, *, CRAM_py_solve_res, lib, nucs, start_nuclide, time,
+    phi, CRAM_py_solve_time, n_fission_fragments=2.004):
+    assert len(CRAM_py_solve_res) == len(nucs)
+    with tables.open_file(file, mode="a", title="ORIGEN and CRAM data",
+        filters=tables.Filters(complevel=1)) as h5file:
+
+        if lib not in h5file.root:
+            create_hdf5_table(file, lib, nucs)
+
+        table = h5file.get_node(h5file.root, lib + '/cram-py_solve')
+        table.row['initial vector'] = vec = initial_vector(start_nuclide, nucs).toarray()
+        table.row['library'] = lib
+        table.row['hash'] = hash_data(vec, lib, time, phi, n_fission_fragments)
+        table.row['time'] = time
+        table.row['phi'] = phi
+        table.row['n_fission_fragments'] = n_fission_fragments
+        table.row['execution time CRAM py_solve'] = CRAM_py_solve_time
+        table.row['CRAM py_solve atom fraction'] = CRAM_py_solve_res
+        CRAM_py_solve_res_normalized = CRAM_py_solve_res/np.sum(CRAM_py_solve_res)
+        table.row['CRAM py_solve mass fraction'] = CRAM_py_solve_res_normalized
+        table.row.append()
+        table.flush()
+
 def test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi):
     e_complex = CRAM_matrix_exp_lambdify()
 
-    logger.info("Running CRAM %s at time=%s, nuclide=%s, phi=%s", xs_tape9, time, nuclide, phi)
+    logger.info("Running CRAM lambdify %s at time=%s, nuclide=%s, phi=%s", xs_tape9, time, nuclide, phi)
     logger.info('-'*80)
 
     npzfilename = os.path.join('data', os.path.splitext(os.path.basename(xs_tape9))[0] + '_' +
@@ -242,6 +265,28 @@ def test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi):
     logger.info("CRAM lambdify time: %s", CRAM_lambdify_time)
 
     return CRAM_lambdify_time, CRAM_lambdify_res
+
+def test_origen_against_CRAM_py_solve(xs_tape9, time, nuclide, phi, nucs):
+    from py_solve.py_solve import expm_multiply14, asflat, N
+
+    logger.info("Running CRAM pysolve %s at time=%s, nuclide=%s, phi=%s", xs_tape9, time, nuclide, phi)
+    logger.info('-'*80)
+
+    npzfilename = os.path.join('data', os.path.splitext(os.path.basename(xs_tape9))[0] + '_' +
+    str(phi) + '.npz')
+
+    nucs, mat = load_sparse_csr(npzfilename)
+    assert mat.shape[1] == len(nucs) == N
+    A = asflat(mat)
+    b = initial_vector(nuclide, nucs)
+    b = np.asarray(b, dtype='float64')
+
+    CRAM_py_solve_time, CRAM_py_solve_res = time_func(expm_multiply14, -A*float(time), b)
+    CRAM_py_solve_res = np.asarray(CRAM_py_solve_res)
+
+    logger.info("CRAM py_solve time: %s", CRAM_py_solve_time)
+
+    return CRAM_py_solve_time, CRAM_py_solve_res
 
 def compute_mismatch(ORIGEN_data, CRAM_lambdify_res, nucs, rtol=1e-3, atol=1e-5):
     """
@@ -309,7 +354,8 @@ def make_parser():
     return p
 
 def execute(xs_tape9, time, phi, nuclide, hdf5_file='data/results.hdf5',
-    decay_tape9=decay_TAPE9, origen=ORIGEN, run_origen=True, run_cram_lambdify=True):
+    decay_tape9=decay_TAPE9, origen=ORIGEN, run_origen=True,
+    run_cram_lambdify=True, run_cram_py_solve=True):
     lib = os.path.splitext(os.path.basename(xs_tape9))[0]
 
     npzfilename = os.path.join('data', lib + '_' + str(phi) + '.npz')
@@ -339,6 +385,18 @@ def execute(xs_tape9, time, phi, nuclide, hdf5_file='data/results.hdf5',
             time=time,
             phi=phi,
             CRAM_lambdify_time=CRAM_lambdify_time,
+        )
+
+    if run_cram_py_solve:
+        CRAM_py_solve_time, CRAM_py_solve_res = test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi)
+        save_file_cram_py_solve(hdf5_file,
+            CRAM_py_solve_res=CRAM_py_solve_res,
+            lib=lib,
+            nucs=nucs,
+            start_nuclide=nuclide,
+            time=time,
+            phi=phi,
+            CRAM_py_solve_time=CRAM_py_solve_time,
         )
 
     if run_origen and run_cram_lambdify:

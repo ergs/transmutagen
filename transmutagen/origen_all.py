@@ -104,6 +104,8 @@ def main():
         help="Don't run origen")
     p.add_argument('--no-run-cram-lambdify', action='store_false', dest='run_cram_lambdify',
         help="Don't run cram lambdify")
+    p.add_argument('--no-run-cram-py-solve', action='store_false', dest='run_cram_py_solve',
+        help="Don't run cram py_solve")
     p.add_argument('--hdf5-file', default='data/results.hdf5', help="""hdf5 file
     to write results to""")
 
@@ -140,6 +142,7 @@ def main():
                         execute(xs_tape9, time, PHI, initial_nuclide,
                             decay_tape9=args.decay_tape9, origen=args.origen,
                             run_cram_lambdify=args.run_cram_lambdify,
+                            run_cram_py_solve=args.run_cram_py_solve,
                             run_origen=args.run_origen,
                             hdf5_file=args.hdf5_file)
                     except AssertionError as e:
