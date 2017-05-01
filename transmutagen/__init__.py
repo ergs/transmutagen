@@ -1,3 +1,5 @@
+__version__ = '1.0'
+
 from .cram import (general_rat_func, nsolve_intervals, nsolve_points,
     CRAM_exp, get_CRAM_from_cache)
 
