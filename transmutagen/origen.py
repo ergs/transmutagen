@@ -188,7 +188,7 @@ def save_file_origen(file, *, ORIGEN_data, lib, nucs, start_nuclide, time,
             create_hdf5_table(file, lib, nucs)
 
         table = h5file.get_node(h5file.root, lib + '/origen')
-        table.row['initial vector'] = vec = initial_vector(start_nuclide, nucs).toarray()
+        table.row['initial vector'] = vec = initial_vector(start_nuclide, nucs)
         table.row['library'] = lib
         table.row['hash'] = hash_data(vec, lib, time, phi, n_fission_fragments)
         table.row['time'] = time
@@ -210,7 +210,7 @@ def save_file_cram_lambdify(file, *, CRAM_lambdify_res, lib, nucs, start_nuclide
             create_hdf5_table(file, lib, nucs)
 
         table = h5file.get_node(h5file.root, lib + '/cram-lambdify')
-        table.row['initial vector'] = vec = initial_vector(start_nuclide, nucs).toarray()
+        table.row['initial vector'] = vec = initial_vector(start_nuclide, nucs)
         table.row['library'] = lib
         table.row['hash'] = hash_data(vec, lib, time, phi, n_fission_fragments)
         table.row['time'] = time
@@ -233,7 +233,7 @@ def save_file_cram_py_solve(file, *, CRAM_py_solve_res, lib, nucs, start_nuclide
             create_hdf5_table(file, lib, nucs)
 
         table = h5file.get_node(h5file.root, lib + '/cram-py_solve')
-        table.row['initial vector'] = vec = initial_vector(start_nuclide, nucs).toarray()
+        table.row['initial vector'] = vec = initial_vector(start_nuclide, nucs)
         table.row['library'] = lib
         table.row['hash'] = hash_data(vec, lib, time, phi, n_fission_fragments)
         table.row['time'] = time
