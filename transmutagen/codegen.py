@@ -252,7 +252,7 @@ scipy_translations_autoeye = {
     }
 
 @memoize
-def CRAM_matrix_exp_lambdify(degree=14, prec=30, use_cache=True,
+def CRAM_matrix_exp_lambdify(degree=14, prec=200, use_cache=True,
     form='complex partial fraction', py_solve=False):
     """
     Return a lambdified function for the CRAM approximation to exp(-x)
