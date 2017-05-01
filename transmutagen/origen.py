@@ -327,8 +327,8 @@ def compute_mismatch(ORIGEN_data, CRAM_lambdify_res, CRAM_py_solve_res, nucs, rt
             try:
                 np.testing.assert_allclose(a, b, rtol=rtol, atol=atol)
             except AssertionError as e:
-                logger.info(e)
-                logger.info("Mismatching elements sorted by error (%s, %s, symmetric relative error)", a_desc, b_desc)
+                logger.info("%s and %s: %s", a_desc, b_desc, e)
+                logger.info("Mismatching elements sorted by error (%s, %s, symmetric relative error):", a_desc, b_desc)
                 D = np.isclose(a, b, rtol=rtol, atol=atol)
                 rel_error = abs(a - b)/(a + b)
                 for i, in np.argsort(rel_error, axis=0)[::-1]:
