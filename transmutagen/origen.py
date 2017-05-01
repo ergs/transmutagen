@@ -272,7 +272,7 @@ def test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi):
 
     return CRAM_lambdify_time, CRAM_lambdify_res
 
-def test_origen_against_CRAM_py_solve(xs_tape9, time, nuclide, phi, nucs):
+def test_origen_against_CRAM_py_solve(xs_tape9, time, nuclide, phi):
     from py_solve.py_solve import expm_multiply14, asflat, N
 
     logger.info("Running CRAM pysolve %s at time=%s, nuclide=%s, phi=%s", xs_tape9, time, nuclide, phi)
