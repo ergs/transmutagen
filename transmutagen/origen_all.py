@@ -143,7 +143,7 @@ def main():
             for initial_nuclide in INITIAL_NUCS:
                 logger.info("Using initial nuclide %s", initial_nuclide)
                 for time in TIME_STEPS:
-                    logger.info("Using time %s", time)
+                    logger.info("Using time %s (%s s)", TIME_STEPS[time], time)
                     logger.info("Run: %s %s %s", tape9, initial_nuclide, time)
                     try:
                         execute(xs_tape9, time, PHI, initial_nuclide,
