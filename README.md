@@ -9,6 +9,18 @@ Transmutation SymPy Code Generator
 First, get the git master version of SymPy and set `PYTHONPATH` to point to
 it.
 
+Transmutagen also depends on
+
+ - mpmath
+ - sympy (git master)
+ - matplotlib
+ - numpy
+ - scipy
+ - pyne
+ - jinja2
+ - gmpy2
+ - Cython
+
 ## Generating the CRAM approximation to exp(-x) on [0, oo)
 
 Run
