@@ -200,30 +200,30 @@ def save_file_origen(file, *, ORIGEN_data, lib, nucs, start_nuclide, time,
         table.row.append()
         table.flush()
 
-def save_file_cram(file, *, CRAM_res, lib, nucs, start_nuclide, time,
-    phi, CRAM_time, n_fission_fragments=2.004):
-    assert len(CRAM_res) == len(nucs)
+def save_file_cram_lambdify(file, *, CRAM_lambdify_res, lib, nucs, start_nuclide, time,
+    phi, CRAM_lambdify_time, n_fission_fragments=2.004):
+    assert len(CRAM_lambdify_res) == len(nucs)
     with tables.open_file(file, mode="a", title="ORIGEN and CRAM data",
         filters=tables.Filters(complevel=1)) as h5file:
 
         if lib not in h5file.root:
             create_hdf5_table(file, lib, nucs)
 
-        table = h5file.get_node(h5file.root, lib + '/cram')
+        table = h5file.get_node(h5file.root, lib + '/cram-lambdify')
         table.row['initial vector'] = vec = initial_vector(start_nuclide, nucs).toarray()
         table.row['library'] = lib
         table.row['hash'] = hash_data(vec, lib, time, phi, n_fission_fragments)
         table.row['time'] = time
         table.row['phi'] = phi
         table.row['n_fission_fragments'] = n_fission_fragments
-        table.row['execution time CRAM'] = CRAM_time
-        table.row['CRAM atom fraction'] = CRAM_res
-        CRAM_res_normalized = CRAM_res/np.sum(CRAM_res)
-        table.row['CRAM mass fraction'] = CRAM_res_normalized
+        table.row['execution time CRAM lambdify'] = CRAM_lambdify_time
+        table.row['CRAM lambdify atom fraction'] = CRAM_lambdify_res
+        CRAM_lambdify_res_normalized = CRAM_lambdify_res/np.sum(CRAM_lambdify_res)
+        table.row['CRAM lambdify mass fraction'] = CRAM_lambdify_res_normalized
         table.row.append()
         table.flush()
 
-def test_origen_against_CRAM(xs_tape9, time, nuclide, phi):
+def test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi):
     e_complex = CRAM_matrix_exp_lambdify()
 
     logger.info("Running CRAM %s at time=%s, nuclide=%s, phi=%s", xs_tape9, time, nuclide, phi)
@@ -243,7 +243,7 @@ def test_origen_against_CRAM(xs_tape9, time, nuclide, phi):
 
     return CRAM_time, CRAM_res
 
-def compute_mismatch(ORIGEN_data, CRAM_res, nucs, rtol=1e-3, atol=1e-5):
+def compute_mismatch(ORIGEN_data, CRAM_lambdify_res, nucs, rtol=1e-3, atol=1e-5):
     """
     Computes a mismatch analysis for an ORIGEN run vs. CRAM
 
@@ -256,15 +256,15 @@ def compute_mismatch(ORIGEN_data, CRAM_res, nucs, rtol=1e-3, atol=1e-5):
     5075-5100)
 
     """
-    CRAM_res_normalized = CRAM_res/np.sum(CRAM_res)
+    CRAM_lambdify_res_normalized = CRAM_lambdify_res/np.sum(CRAM_lambdify_res)
 
     ORIGEN_res_weighted = origen_data_to_array_weighted(ORIGEN_data, nucs,)
     ORIGEN_res_materials = origen_data_to_array_materials(ORIGEN_data, nucs)
     # ORIGEN_res_atom_fraction = origen_data_to_array_atom_fraction(origen_data, nucs)
 
     for C, O, units in [
-        (CRAM_res, ORIGEN_res_weighted, 'atom fractions'),
-        (CRAM_res_normalized, ORIGEN_res_materials, 'mass fractions'),
+        (CRAM_lambdify_res, ORIGEN_res_weighted, 'atom fractions'),
+        (CRAM_lambdify_res_normalized, ORIGEN_res_materials, 'mass fractions'),
         # (CRAM_res_normalized, ORIGEN_res_atom_fraction, 'atom fraction'),
         ]:
 
@@ -309,7 +309,7 @@ def make_parser():
     return p
 
 def execute(xs_tape9, time, phi, nuclide, hdf5_file='data/results.hdf5',
-    decay_tape9=decay_TAPE9, origen=ORIGEN, run_origen=True, run_cram=True):
+    decay_tape9=decay_TAPE9, origen=ORIGEN, run_origen=True, run_cram_lambdify=True):
     lib = os.path.splitext(os.path.basename(xs_tape9))[0]
 
     npzfilename = os.path.join('data', lib + '_' + str(phi) + '.npz')
@@ -329,20 +329,20 @@ def execute(xs_tape9, time, phi, nuclide, hdf5_file='data/results.hdf5',
             ORIGEN_time=ORIGEN_time,
         )
 
-    if run_cram:
-        CRAM_time, CRAM_res = test_origen_against_CRAM(xs_tape9, time, nuclide, phi)
-        save_file_cram(hdf5_file,
-            CRAM_res=CRAM_res,
+    if run_cram_lambdify:
+        CRAM_lambdify_time, CRAM_lambdify_res = test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi)
+        save_file_cram_lambdify(hdf5_file,
+            CRAM_lambdify_res=CRAM_lambdify_res,
             lib=lib,
             nucs=nucs,
             start_nuclide=nuclide,
             time=time,
             phi=phi,
-            CRAM_time=CRAM_time,
+            CRAM_lambdify_time=CRAM_lambdify_time,
         )
 
-    if run_origen and run_cram:
-        compute_mismatch(ORIGEN_data, CRAM_res, nucs)
+    if run_origen and run_cram_lambdify:
+        compute_mismatch(ORIGEN_data, CRAM_lambdify_res, nucs)
 
 def main():
     p = make_parser()
