@@ -73,7 +73,7 @@ This will save the JSON to ``gensolve.json``.
 
 The resulting solve.c will have functions
 ``{namespace}_expm_multiply{N}(double* A, double* b, double* x)``, where
-``{namespace}`` is the namespace specified by the ``-namespace`` flag to
+``{namespace}`` is the namespace specified by the ``--namespace`` flag to
 ``python -m transmutagen.gensolve`` (the default is ``transmutagen``), and
 ``{N}`` is the degree of the approximation used in the solve, specified by the
 ``--degree`` flag (the default is ``14``). The function computes ``exp(A)*b``
