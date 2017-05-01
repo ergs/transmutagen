@@ -322,21 +322,21 @@ def compute_mismatch(ORIGEN_data, CRAM_lambdify_res, CRAM_py_solve_res, nucs, rt
 
         logger.info("Units: %s", units)
         d = {'CRAM lambdify': Cl, 'CRAM py_solve': Cpy, 'ORIGEN': O}
-        for a, b in (['CRAM lambdify', 'CRAM py_solve'], ['CRAM lambdify', 'ORIGEN'], ['CRAM py_solve', 'ORIGEN']):
-            _a, _b = d[a], d[b]
+        for a_desc, b_desc in (['CRAM lambdify', 'CRAM py_solve'], ['CRAM lambdify', 'ORIGEN'], ['CRAM py_solve', 'ORIGEN']):
+            a, b = d[a_desc], d[b_desc]
             try:
                 np.testing.assert_allclose(Cl, O, rtol=rtol, atol=atol)
             except AssertionError as e:
                 logger.info(e)
-                logger.info("Mismatching elements sorted by error (%s, %s, symmetric relative error)", a, b)
-                A = np.isclose(_a, _b, rtol=rtol, atol=atol)
-                rel_error = abs(_a - _b)/(_a + _b)
+                logger.info("Mismatching elements sorted by error (%s, %s, symmetric relative error)", a_desc, b_desc)
+                D = np.isclose(a, b, rtol=rtol, atol=atol)
+                rel_error = abs(a - b)/(a + b)
                 for i, in np.argsort(rel_error, axis=0)[::-1]:
-                    if A[i]:
+                    if D[i]:
                         continue
                     logger.info("%s %s %s %s", nucs[i], a[i], b[i], rel_error[i])
             else:
-                logger.info("%s and %s arrays match with rtol=%s atol=%s", a, b, rtol, atol)
+                logger.info("%s and %s arrays match with rtol=%s atol=%s", a_desc, b_desc, rtol, atol)
 
         logger.info('')
 
