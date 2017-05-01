@@ -294,7 +294,7 @@ def test_origen_against_CRAM_py_solve(xs_tape9, time, nuclide, phi):
 
     return CRAM_py_solve_time, CRAM_py_solve_res
 
-def compute_mismatch(ORIGEN_data, CRAM_lambdify_res, nucs, rtol=1e-3, atol=1e-5):
+def compute_mismatch(ORIGEN_data, CRAM_lambdify_res, CRAM_py_solve_res, nucs, rtol=1e-3, atol=1e-5):
     """
     Computes a mismatch analysis for an ORIGEN run vs. CRAM
 
@@ -308,31 +308,35 @@ def compute_mismatch(ORIGEN_data, CRAM_lambdify_res, nucs, rtol=1e-3, atol=1e-5)
 
     """
     CRAM_lambdify_res_normalized = CRAM_lambdify_res/np.sum(CRAM_lambdify_res)
+    CRAM_py_solve_res_normalized = CRAM_py_solve_res/np.sum(CRAM_py_solve_res)
 
     ORIGEN_res_weighted = origen_data_to_array_weighted(ORIGEN_data, nucs,)
     ORIGEN_res_materials = origen_data_to_array_materials(ORIGEN_data, nucs)
     # ORIGEN_res_atom_fraction = origen_data_to_array_atom_fraction(origen_data, nucs)
 
-    for C, O, units in [
-        (CRAM_lambdify_res, ORIGEN_res_weighted, 'atom fractions'),
-        (CRAM_lambdify_res_normalized, ORIGEN_res_materials, 'mass fractions'),
+    for Cl, Cpy, O, units in [
+        (CRAM_lambdify_res, CRAM_py_solve_res, ORIGEN_res_weighted, 'atom fractions'),
+        (CRAM_lambdify_res_normalized, CRAM_py_solve_res_normalized, ORIGEN_res_materials, 'mass fractions'),
         # (CRAM_res_normalized, ORIGEN_res_atom_fraction, 'atom fraction'),
         ]:
 
         logger.info("Units: %s", units)
-        try:
-            np.testing.assert_allclose(C, O, rtol=rtol, atol=atol)
-        except AssertionError as e:
-            logger.info(e)
-            logger.info("Mismatching elements sorted by error (CRAM, ORIGEN, symmetric relative error)")
-            A = np.isclose(C, O, rtol=rtol, atol=atol)
-            rel_error = abs(C - O)/(C + O)
-            for i, in np.argsort(rel_error, axis=0)[::-1]:
-                if A[i]:
-                    continue
-                logger.info("%s %s %s %s", nucs[i], C[i], O[i], rel_error[i])
-        else:
-            logger.info("Arrays match with rtol=%s atol=%s", rtol, atol)
+        d = {'CRAM lambdify': Cl, 'CRAM py_solve': Cpy, 'ORIGEN': O}
+        for a, b in (['CRAM lambdify', 'CRAM py_solve'], ['CRAM lambdify', 'ORIGEN'], ['CRAM py_solve', 'ORIGEN']):
+            _a, _b = d[a], d[b]
+            try:
+                np.testing.assert_allclose(Cl, O, rtol=rtol, atol=atol)
+            except AssertionError as e:
+                logger.info(e)
+                logger.info("Mismatching elements sorted by error (%s, %s, symmetric relative error)", a, b)
+                A = np.isclose(_a, _b, rtol=rtol, atol=atol)
+                rel_error = abs(_a - _b)/(_a + _b)
+                for i, in np.argsort(rel_error, axis=0)[::-1]:
+                    if A[i]:
+                        continue
+                    logger.info("%s %s %s %s", nucs[i], a[i], b[i], rel_error[i])
+            else:
+                logger.info("Arrays match with rtol=%s atol=%s", rtol, atol)
 
         logger.info('')
 
@@ -405,8 +409,8 @@ def execute(xs_tape9, time, phi, nuclide, hdf5_file='data/results.hdf5',
             CRAM_py_solve_time=CRAM_py_solve_time,
         )
 
-    if run_origen and run_cram_lambdify:
-        compute_mismatch(ORIGEN_data, CRAM_lambdify_res, nucs)
+    if run_origen and run_cram_lambdify and run_cram_py_solve:
+        compute_mismatch(ORIGEN_data, CRAM_lambdify_res, CRAM_py_solve_res, nucs)
 
 def main():
     p = make_parser()
