@@ -27,6 +27,18 @@ setup_kwargs = {
     "package_data": {'transmutagen': ['data/gensolve.json', 'data/CRAM_cache/*']},
     }
 
+if HAVE_SETUPTOOLS:
+    setup_kwargs['install_requires'] = [
+        'mpmath',
+        'sympy',
+        'matplotlib',
+        'numpy',
+        'scipy',
+        'pyne',
+        'jinja2',
+        'gmpy2',
+        'Cython'
+        ]
 
 if __name__ == '__main__':
     setup(
