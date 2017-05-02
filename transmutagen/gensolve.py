@@ -44,7 +44,7 @@ SRC = """\
 /* This file was generated automatically with transmutagen. */
 #include <string.h>
 
-#include "solve.h"
+#include "{{headerfilename}}"
 
 const int {{namespace.upper()}}_I[{{NNZ}}] =
   { {%- for i, j in sorted(ij) %}{{i}},{% endfor -%} };
@@ -222,6 +222,7 @@ def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.js
         outfile='py_solve/py_solve/solve.c' if py_solve else 'solve.c'
     # outfile should always end in .c
     headerfile = outfile[:-2] + '.h'
+    headerfilename = os.path.basename(headerfile)
 
     with open(json_file) as f:
         json_data = json.load(f)
@@ -244,7 +245,7 @@ def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.js
         more_than_fore=more_than_fore, types=types, namespace=namespace,
         diagonals=diagonals, degrees=degrees, py_solve=py_solve,
         get_thetas_alphas=get_thetas_alphas, im=im, abs0=lambda i:abs(i[0]),
-        zip=zip, enumerate=enumerate)
+        zip=zip, enumerate=enumerate, headerfilename=headerfilename)
     header_template = env.from_string(HEADER, globals=globals())
     header = header_template.render(types=types, degrees=degrees,
         py_solve=py_solve, namespace=namespace)
