@@ -1,15 +1,18 @@
 from argparse import ArgumentParser
 import json
 import os
+import sys
 
 from jinja2 import Environment
 from sympy import im
 
 from .cram import get_CRAM_from_cache
 from .partialfrac import thetas_alphas
+from . import __version__
 
 HEADER = """\
-/* This file was generated automatically with transmutagen. */
+/* This file was generated automatically with transmutagen version {{__version__}}. */
+/* The command used to generate this file was: python -m transmutagen.gensolve {{' '.join(sys.argv[1:])}}*/
 #ifndef {{namespace.upper()}}_SOLVE_C
 #define {{namespace.upper()}}_SOLVE_C
 
@@ -45,7 +48,8 @@ void {{namespace}}_expm_multiply{{degree}}(double* A, double* b, double* x);
 """
 
 SRC = """\
-/* This file was generated automatically with transmutagen. */
+/* This file was generated automatically with transmutagen version {{__version__}}. */
+/* The command used to generate this file was: python -m transmutagen.gensolve {{' '.join(sys.argv[1:])}}*/
 #include <string.h>
 
 #include <complex.h>
@@ -251,7 +255,8 @@ def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.js
         more_than_fore=more_than_fore, types=types, namespace=namespace,
         diagonals=diagonals, degrees=degrees, py_solve=py_solve,
         get_thetas_alphas=get_thetas_alphas, im=im, abs0=lambda i:abs(i[0]),
-        zip=zip, enumerate=enumerate, headerfilename=headerfilename)
+        zip=zip, enumerate=enumerate, headerfilename=headerfilename,
+        __version__=__version__, sys=sys)
     header_template = env.from_string(HEADER, globals=globals())
     header = header_template.render(types=types, degrees=degrees,
         py_solve=py_solve, namespace=namespace)
