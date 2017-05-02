@@ -8,7 +8,7 @@ except ImportError:
 
 import numpy as np
 
-VERSION = '1.0' # Also update __init__.py
+VERSION = '1.0.1' # Also update __init__.py
 
 setup_kwargs = {
     "version": VERSION,

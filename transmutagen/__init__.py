@@ -1,4 +1,4 @@
-__version__ = '1.1.dev' # Also update setup.py
+__version__ = '1.0.1' # Also update setup.py
 
 from .cram import (general_rat_func, nsolve_intervals, nsolve_points,
     CRAM_exp, get_CRAM_from_cache, CRAM_coeffs)
