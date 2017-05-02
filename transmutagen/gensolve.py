@@ -13,17 +13,22 @@ HEADER = """\
 #ifndef {{namespace.upper()}}_SOLVE_C
 #define {{namespace.upper()}}_SOLVE_C
 
+{% if py_solve %}
 #include <complex.h>
+{%- endif %}
 
-typedef struct {{namespace}}_info_tag {
+typedef struct {{namespace}}_transmute_info_tag {
   int n;
   int nnz;
   int* i;
   int* j;
   char** nucs;
-} {{namespace}}_info_t;
+} {{namespace}}_transmute_info_t;
 
-extern {{namespace}}_info_t {{namespace}}_info;
+extern {{namespace}}_transmute_info_t {{namespace}}_transmute_info;
+
+int {{namespace}}_transmute_ij(int i, int j);
+
 {% if py_solve %}
 {%- for type, typefuncname in types %}
 void {{namespace}}_solve_{{typefuncname}}({{type}}* A, {{type}}* b, {{type}}* x);
@@ -32,7 +37,6 @@ void {{namespace}}_dot_{{typefuncname}}({{type}}* A, {{type}}* x, {{type}}* y);
 void {{namespace}}_scalar_times_vector_{{typefuncname}}({{type}}, {{type}}*);
 {% endfor %}
 {%- endif %}
-void {{namespace}}_solve_special(double* A, double complex theta, double complex alpha, double* b, double complex* x);
 {%- for degree in degrees %}
 void {{namespace}}_expm_multiply{{degree}}(double* A, double* b, double* x);
 {%- endfor %}
@@ -43,6 +47,8 @@ void {{namespace}}_expm_multiply{{degree}}(double* A, double* b, double* x);
 SRC = """\
 /* This file was generated automatically with transmutagen. */
 #include <string.h>
+
+#include <complex.h>
 
 #include "{{headerfilename}}"
 
@@ -55,7 +61,7 @@ const int {{namespace.upper()}}_J[{{NNZ}}] =
 const char* {{namespace.upper()}}_NUCS[{{N}}] =
   { {%- for nuc in nucs %}"{{nuc}}",{% endfor -%} };
 
-{{namespace}}_info_t {{namespace}}_info = {
+{{namespace}}_transmute_info_t {{namespace}}_transmute_info = {
   .n = {{N}},
   .nnz = {{NNZ}},
   .i = (int*) {{namespace.upper()}}_I,
@@ -63,7 +69,7 @@ const char* {{namespace.upper()}}_NUCS[{{N}}] =
   .nucs = (char**) {{namespace.upper()}}_NUCS,
 };
 
-int {{namespace}}_ij(int i, int j) {
+int {{namespace}}_transmute_ij(int i, int j) {
   int n = (i << 16) + j;
   switch (n) {
     {%- for i, j in sorted(ij) %}

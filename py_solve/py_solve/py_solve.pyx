@@ -12,28 +12,28 @@ np.import_ufunc()
 
 # some info translations
 cdef int i, j, idx
-N = c_solve.transmutagen_info.n
-NNZ = c_solve.transmutagen_info.nnz
+N = c_solve.transmutagen_transmute_info.n
+NNZ = c_solve.transmutagen_transmute_info.nnz
 cpdef dict C_IJ = {}
-for idx in range(c_solve.transmutagen_info.nnz):
-    C_IJ[c_solve.transmutagen_info.i[idx], c_solve.transmutagen_info.j[idx]] = idx
+for idx in range(c_solve.transmutagen_transmute_info.nnz):
+    C_IJ[c_solve.transmutagen_transmute_info.i[idx], c_solve.transmutagen_transmute_info.j[idx]] = idx
 IJ = C_IJ
 cpdef list C_NUCS = []
-for idx in range(c_solve.transmutagen_info.n):
-    b = c_solve.transmutagen_info.nucs[idx]
+for idx in range(c_solve.transmutagen_transmute_info.n):
+    b = c_solve.transmutagen_transmute_info.nucs[idx]
     s = b.decode()
     C_NUCS.append(s)
 NUCS= C_NUCS
 NUCS_IDX = {nuc: idx for idx, nuc in enumerate(NUCS)}
 
-cdef np.npy_intp npy_nnz = c_solve.transmutagen_info.nnz
-ROWS = np.PyArray_SimpleNewFromData(1, &npy_nnz, np.NPY_INT, c_solve.transmutagen_info.i)
-COLS = np.PyArray_SimpleNewFromData(1, &npy_nnz, np.NPY_INT, c_solve.transmutagen_info.j)
+cdef np.npy_intp npy_nnz = c_solve.transmutagen_transmute_info.nnz
+ROWS = np.PyArray_SimpleNewFromData(1, &npy_nnz, np.NPY_INT, c_solve.transmutagen_transmute_info.i)
+COLS = np.PyArray_SimpleNewFromData(1, &npy_nnz, np.NPY_INT, c_solve.transmutagen_transmute_info.j)
 
 
 def ones(dtype='f8'):
     """Returns a CSR matrix of ones with the given sparsity pattern."""
-    data = np.ones(c_solve.transmutagen_info.nnz, dtype=dtype)
+    data = np.ones(c_solve.transmutagen_transmute_info.nnz, dtype=dtype)
     mat = sp.csr_matrix((data, (ROWS, COLS)))
     return mat
 
@@ -42,7 +42,7 @@ def flatten_sparse_matrix(mat):
     """Flattens a sparse matrix to a solvable form."""
     rows, cols, vals = sp.find(mat)
     cdef int nmat = len(rows)
-    cdef np.ndarray A = np.zeros(c_solve.transmutagen_info.nnz, dtype=mat.dtype)
+    cdef np.ndarray A = np.zeros(c_solve.transmutagen_transmute_info.nnz, dtype=mat.dtype)
     cdef int n
     for n in range(nmat):
         idx = C_IJ.get((rows[n], cols[n]), None)
@@ -60,7 +60,7 @@ def asflat(A):
     """Returns a flat version of the matrix. Does nothing if the matrix is already flat."""
     if not sp.issparse(A):
         pass
-    elif A.nnz != c_solve.transmutagen_info.nnz or not sp.isspmatrix_csr(A):
+    elif A.nnz != c_solve.transmutagen_transmute_info.nnz or not sp.isspmatrix_csr(A):
         A = flatten_sparse_matrix(A)
     else:
         # is CSR with right shape
@@ -74,12 +74,12 @@ def solve(A, b):
     b_flat = b.flatten()
     # solve for type
     if A.dtype == np.complex128:
-        x = np.empty(c_solve.transmutagen_info.n, dtype=np.complex128)
+        x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.complex128)
         c_solve.transmutagen_solve_complex(<double complex*> np.PyArray_DATA(A),
                                            <double complex*> np.PyArray_DATA(b),
                                            <double complex*> np.PyArray_DATA(x))
     elif A.dtype == np.float64:
-        x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+        x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
         c_solve.transmutagen_solve_double(<double*> np.PyArray_DATA(A),
                                           <double*> np.PyArray_DATA(b),
                                           <double*> np.PyArray_DATA(x))
@@ -107,12 +107,12 @@ def dot(A, x):
     A = asflat(A)
     # solve for type
     if A.dtype == np.complex128:
-        y = np.empty(c_solve.transmutagen_info.n, dtype=np.complex128)
+        y = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.complex128)
         c_solve.transmutagen_dot_complex(<double complex*> np.PyArray_DATA(A),
                                          <double complex*> np.PyArray_DATA(x),
                                          <double complex*> np.PyArray_DATA(y))
     elif A.dtype == np.float64:
-        y = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+        y = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
         c_solve.transmutagen_dot_double(<double*> np.PyArray_DATA(A),
                                         <double*> np.PyArray_DATA(x),
                                         <double*> np.PyArray_DATA(y))
@@ -125,13 +125,13 @@ def scalar_times_vector(alpha, v):
     dtype = np.common_type(v, np.array(alpha))
     r = np.array(asflat(v), dtype=dtype)
     if dtype == np.complex128:
-        y = np.empty(c_solve.transmutagen_info.n, dtype=np.complex128)
+        y = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.complex128)
         c_solve.transmutagen_scalar_times_vector_complex(
             alpha,
             <double complex*> np.PyArray_DATA(r)
             )
     elif dtype == np.float64:
-        y = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+        y = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
         c_solve.transmutagen_scalar_times_vector_double(
             alpha,
             <double*> np.PyArray_DATA(r)
@@ -144,7 +144,7 @@ def scalar_times_vector(alpha, v):
 def expm_multiply6(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
-    x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+    x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
     c_solve.transmutagen_expm_multiply6(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
@@ -157,7 +157,7 @@ def expm_multiply6(A, b):
 def expm_multiply8(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
-    x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+    x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
     c_solve.transmutagen_expm_multiply8(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
@@ -169,7 +169,7 @@ def expm_multiply8(A, b):
 def expm_multiply10(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
-    x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+    x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
     c_solve.transmutagen_expm_multiply10(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
@@ -181,7 +181,7 @@ def expm_multiply10(A, b):
 def expm_multiply12(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
-    x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+    x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
     c_solve.transmutagen_expm_multiply12(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
@@ -193,7 +193,7 @@ def expm_multiply12(A, b):
 def expm_multiply14(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
-    x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+    x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
     c_solve.transmutagen_expm_multiply14(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
@@ -206,7 +206,7 @@ def expm_multiply14(A, b):
 def expm_multiply16(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
-    x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+    x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
     c_solve.transmutagen_expm_multiply16(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
@@ -218,7 +218,7 @@ def expm_multiply16(A, b):
 def expm_multiply18(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
-    x = np.empty(c_solve.transmutagen_info.n, dtype=np.float64)
+    x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
     c_solve.transmutagen_expm_multiply18(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
@@ -236,10 +236,10 @@ def expmI14(A):
     A = asflat(A)
     x = np.empty((N, N), dtype=np.float64)
 
-    for i in range(c_solve.transmutagen_info.n):
-        b = np.zeros(c_solve.transmutagen_info.n, dtype=np.float64)
+    for i in range(c_solve.transmutagen_transmute_info.n):
+        b = np.zeros(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
         b[i] = 1.0
-        offset = i*c_solve.transmutagen_info.n*sizeof(double)
+        offset = i*c_solve.transmutagen_transmute_info.n*sizeof(double)
         c_solve.transmutagen_expm_multiply14(
             <double*> np.PyArray_DATA(A),
             <double*> np.PyArray_DATA(b),

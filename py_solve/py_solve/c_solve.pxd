@@ -1,14 +1,14 @@
 cdef extern from "solve.h":
 
-    cdef struct transmutagen_info_tag:
+    cdef struct transmutagen_transmute_info_tag:
         int n
         int nnz
         int* i
         int* j
         char** nucs
 
-    ctypedef transmutagen_info_tag transmutagen_info_t
-    cdef transmutagen_info_t transmutagen_info
+    ctypedef transmutagen_transmute_info_tag transmutagen_transmute_info_t
+    cdef transmutagen_transmute_info_t transmutagen_transmute_info
 
     void transmutagen_solve_double(double*, double*, double*)
     void transmutagen_diag_add_double(double*, double)
