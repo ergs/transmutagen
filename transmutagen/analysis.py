@@ -36,7 +36,7 @@ def analyze_origen(file):
             print("Longest", run, "runtime", max(y), "seconds")
             print("Shortest", run, "runtime", min(y), "seconds")
 
-            ax.plot(x, y, 'o', label=run)
+            ax.plot(x, y, '.', label=run)
 
     # Tweak spacing to prevent clipping of tick-labels
     plt.subplots_adjust(bottom=0.15)
