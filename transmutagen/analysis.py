@@ -17,9 +17,9 @@ def analyze_origen(file):
 
     times = {'ORIGEN': defaultdict(list), 'CRAM': defaultdict(list)}
     with tables.open_file(file, mode='r') as h5file:
-        for run in 'ORIGEN', 'CRAM':
+        for run in 'ORIGEN', 'CRAM lambdify', 'CRAM py_solve':
             for lib in h5file.root:
-                table = h5file.get_node(lib, run.lower())
+                table = h5file.get_node(lib, run.lower().replace(' ', '-'))
                 for row in table:
                     times[run][row['time']].append(row['execution time ' + run])
 
@@ -40,7 +40,7 @@ def analyze_origen(file):
     # Tweak spacing to prevent clipping of tick-labels
     plt.subplots_adjust(bottom=0.15)
     plt.title("""\
-Runtimes for ORIGEN and CRAM computing transmutation
+Runtimes for ORIGEN, CRAM lambdify, and CRAM py_solve computing transmutation
 over several starting libraries, nuclides, and timesteps.""")
 
     ax.set_xscale('log')
