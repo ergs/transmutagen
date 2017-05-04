@@ -15,7 +15,8 @@ def analyze_origen(file):
     plt.clf()
     fig, ax = plt.subplots()
 
-    times = {'ORIGEN': defaultdict(list), 'CRAM': defaultdict(list)}
+    times = {'ORIGEN': defaultdict(list), 'CRAM lambdify': defaultdict(list),
+        'CRAM py_solve': defaultdict(list)}
     with tables.open_file(file, mode='r') as h5file:
         for run in 'ORIGEN', 'CRAM lambdify', 'CRAM py_solve':
             for lib in h5file.root:
@@ -28,20 +29,21 @@ def analyze_origen(file):
             x = []
             y = []
             for i, t in enumerate(xvals):
+                y.append([])
                 itimes = times[run][sorted(times[run])[i]]
-                x += [t]*len(itimes)
-                y += itimes
+                x += [t]
+                y[i] += itimes
 
-            print("Longest", run, "runtime", max(y), "seconds")
-            print("Shortest", run, "runtime", min(y), "seconds")
+            print("Longest", run, "runtime", max(map(max,y)), "seconds")
+            print("Shortest", run, "runtime", min(map(min,y)), "seconds")
 
-            ax.plot(x, y, 'o', label=run)
+            ax.boxplot(y,'.',  positions=x, whis=[0, 100], showmeans=True)
 
     # Tweak spacing to prevent clipping of tick-labels
     plt.subplots_adjust(bottom=0.15)
     plt.title("""\
-Runtimes for ORIGEN, CRAM lambdify, and CRAM py_solve computing transmutation
-over several starting libraries, nuclides, and timesteps.""")
+Runtimes for ORIGEN, CRAM lambdify, and CRAM py_solve computing
+transmutation over several starting libraries, nuclides, and timesteps.""")
 
     ax.set_xscale('log')
     ax.set_xticks(sorted(TIME_STEPS))
