@@ -17,6 +17,7 @@ def analyze_origen(file):
 
     times = {'ORIGEN': defaultdict(list), 'CRAM lambdify': defaultdict(list),
         'CRAM py_solve': defaultdict(list)}
+    formats = {'ORIGEN': '+', 'CRAM lambdify': 'x', 'CRAM py_solve': '.'}
     with tables.open_file(file, mode='r') as h5file:
         for run in 'ORIGEN', 'CRAM lambdify', 'CRAM py_solve':
             for lib in h5file.root:
@@ -36,7 +37,7 @@ def analyze_origen(file):
             print("Longest", run, "runtime", max(y), "seconds")
             print("Shortest", run, "runtime", min(y), "seconds")
 
-            ax.plot(x, y, '.', label=run)
+            ax.plot(x, y, formats[run], label=run)
 
     # Tweak spacing to prevent clipping of tick-labels
     plt.subplots_adjust(bottom=0.15)
