@@ -31,14 +31,15 @@ def analyze_origen(file):
             x = []
             y = []
             for i, t in enumerate(xvals):
+                y.append([])
                 itimes = times[run][sorted(times[run])[i]]
-                x += [t + offsets[run]*t]*len(itimes)
-                y += itimes
+                x += [t + offsets[run]*t]
+                y[i] += itimes
 
-            print("Longest", run, "runtime", max(y), "seconds")
-            print("Shortest", run, "runtime", min(y), "seconds")
+            print("Longest", run, "runtime", max(map(max, y)), "seconds")
+            print("Shortest", run, "runtime", min(map(min, y)), "seconds")
 
-            ax.plot(x, y, formats[run], label=run)
+            ax.boxplot(y, formats[run], positions=x, whis=[0, 100], showmeans=True)#label=run)
 
     # Tweak spacing to prevent clipping of tick-labels
     plt.subplots_adjust(bottom=0.15)
