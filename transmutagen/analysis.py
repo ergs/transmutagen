@@ -15,7 +15,8 @@ def analyze_origen(file):
     plt.clf()
     fig, ax = plt.subplots()
 
-    times = {'ORIGEN': defaultdict(list), 'CRAM': defaultdict(list)}
+    times = {'ORIGEN': defaultdict(list), 'CRAM lambdify': defaultdict(list),
+        'CRAM py_solve': defaultdict(list)}
     with tables.open_file(file, mode='r') as h5file:
         for run in 'ORIGEN', 'CRAM lambdify', 'CRAM py_solve':
             for lib in h5file.root:
