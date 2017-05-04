@@ -18,6 +18,7 @@ def analyze_origen(file):
     times = {'ORIGEN': defaultdict(list), 'CRAM lambdify': defaultdict(list),
         'CRAM py_solve': defaultdict(list)}
     formats = {'ORIGEN': '+', 'CRAM lambdify': 'x', 'CRAM py_solve': '.'}
+    offsets = {'ORIGEN': -0.6, 'CRAM lambdify': 0, 'CRAM py_solve': 0.6}
     with tables.open_file(file, mode='r') as h5file:
         for run in 'ORIGEN', 'CRAM lambdify', 'CRAM py_solve':
             for lib in h5file.root:
@@ -31,7 +32,7 @@ def analyze_origen(file):
             y = []
             for i, t in enumerate(xvals):
                 itimes = times[run][sorted(times[run])[i]]
-                x += [t]*len(itimes)
+                x += [t + offsets[run]*t]*len(itimes)
                 y += itimes
 
             print("Longest", run, "runtime", max(y), "seconds")
