@@ -7,7 +7,7 @@ WORKDIR /home
 
 COPY ORIGEN.zip /home/ORIGEN.zip
 
-RUN apt-get update && apt-get install -y unzip glibc-devel
+RUN apt-get update && apt-get install -y unzip libc6-i386 libc6
 RUN apt-get -y clean
 
 RUN unzip /home/ORIGEN.zip
