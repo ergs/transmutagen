@@ -30,8 +30,8 @@ logger.addHandler(logging.StreamHandler())
 # Change to WARN for less output
 logger.setLevel(logging.INFO)
 
-# ORIGEN = '/home/origen22/code/o2_therm_linux.exe'
-ORIGEN = '/home/o2prec/o2prec'
+ORIGEN = '/home/origen22/code/o2_therm_linux.exe'
+# ORIGEN = '/home/o2prec/o2prec'
 decay_TAPE9 = "/home/origen22/libs/decay.lib"
 LIBS_DIR = "/home/origen22/libs"
 DATA_DIR = os.path.abspath(os.path.join(__file__, os.path.pardir,

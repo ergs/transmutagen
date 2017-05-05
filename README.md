@@ -103,8 +103,7 @@ See `--help` and the `transmutagen.tape9utils` docs for more details.
 
 ## Running tests against ORIGEN
 
-Put `ORIGEN.zip` in the `docker/` directory. Also clone `o2prec` to in the
-`docker/` directory. Then run
+Put `ORIGEN.zip` in the `docker/` directory. Then run
 
     ./docker/build_and_run.sh
 
