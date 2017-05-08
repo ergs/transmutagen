@@ -15,13 +15,32 @@ def analyze_origen(file):
     plt.clf()
     fig, ax = plt.subplots()
 
-    times = {'ORIGEN': defaultdict(list), 'CRAM lambdify': defaultdict(list),
-        'CRAM py_solve': defaultdict(list)}
-    label = {'ORIGEN': 'ORIGEN', 'CRAM lambdify': 'CRAM SciPy solver', 'CRAM py_solve': 'CRAM C generated solver'}
-    formats = {'ORIGEN': '+', 'CRAM lambdify': 'x', 'CRAM py_solve': '.'}
-    offsets = {'ORIGEN': -0.6, 'CRAM lambdify': 0, 'CRAM py_solve': 0.6}
+    times = {
+        'ORIGEN': defaultdict(list),
+        'CRAM lambdify UMFPACK': defaultdict(list),
+        'CRAM lambdify SuperLU': defaultdict(list),
+        'CRAM py_solve': defaultdict(list),
+    }
+    label = {
+        'ORIGEN': 'ORIGEN',
+        'CRAM lambdify UMFPACK': 'CRAM SciPy solver (UMFPACK)',
+        'CRAM lambdify SuperLU': 'CRAM SciPy solver (SuperLU)',
+        'CRAM py_solve': 'CRAM C generated solver',
+    }
+    formats = {
+        'ORIGEN': '+',
+        'CRAM lambdify UMFPACK': 'x',
+        'CRAM lambdify SuperLU': 'o',
+        'CRAM py_solve': '.'
+    }
+    offsets = {
+        'ORIGEN': -0.6,
+        'CRAM lambdify UMFPACK': 0,
+        'CRAM lambdify SuperLU': 0.6,
+        'CRAM py_solve': 1.2
+    }
     with tables.open_file(file, mode='r') as h5file:
-        for run in 'ORIGEN', 'CRAM lambdify', 'CRAM py_solve':
+        for run in 'ORIGEN', 'CRAM lambdify UMFPACK', 'CRAM lambdify SuperLU', 'CRAM py_solve':
             for lib in h5file.root:
                 table = h5file.get_node(lib, run.lower().replace(' ', '-'))
                 for row in table:

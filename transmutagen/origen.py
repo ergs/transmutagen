@@ -8,6 +8,7 @@ from itertools import combinations
 
 import numpy as np
 from scipy.sparse import csr_matrix
+from scipy.sparse.linalg import use_solver
 import tables
 
 from pyne.utils import toggle_warnings
@@ -209,7 +210,7 @@ def save_file_origen(file, *, ORIGEN_data, lib, nucs, start_nuclide, time,
         table.flush()
 
 def save_file_cram_lambdify(file, *, CRAM_lambdify_res, lib, nucs, start_nuclide, time,
-    phi, CRAM_lambdify_time, n_fission_fragments=2.004):
+    phi, CRAM_lambdify_time, umfpack, n_fission_fragments=2.004):
     assert len(CRAM_lambdify_res) == len(nucs)
     with tables.open_file(file, mode="a", title="ORIGEN and CRAM data",
         filters=tables.Filters(complevel=1)) as h5file:
@@ -217,7 +218,8 @@ def save_file_cram_lambdify(file, *, CRAM_lambdify_res, lib, nucs, start_nuclide
         if lib not in h5file.root:
             create_hdf5_table(file, lib, nucs)
 
-        table = h5file.get_node(h5file.root, lib + '/cram-lambdify')
+        nodename = '/cram-lambdify-umfpack' if umfpack else '/cram-lambdify-superlu'
+        table = h5file.get_node(h5file.root, lib + nodename)
         table.row['initial vector'] = vec = initial_vector(start_nuclide, nucs)
         table.row['library'] = lib
         table.row['hash'] = hash_data(vec, lib, time, phi, n_fission_fragments)
@@ -254,7 +256,7 @@ def save_file_cram_py_solve(file, *, CRAM_py_solve_res, lib, nucs, start_nuclide
         table.row.append()
         table.flush()
 
-def test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi):
+def test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi, umfpack=True):
     e_complex = CRAM_matrix_exp_lambdify()
 
     logger.info("Running CRAM lambdify %s at time=%s, nuclide=%s, phi=%s", xs_tape9, time, nuclide, phi)
@@ -266,6 +268,8 @@ def test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi):
     nucs, mat = load_sparse_csr(npzfilename)
     assert mat.shape[1] == len(nucs)
     b = initial_vector(nuclide, nucs)
+
+    use_solver(useUmfpack=umfpack)
 
     CRAM_lambdify_time, CRAM_lambdify_res = time_func(e_complex, -mat*float(time), b)
     CRAM_lambdify_res = np.asarray(CRAM_lambdify_res)
@@ -388,16 +392,24 @@ def execute(xs_tape9, time, phi, nuclide, hdf5_file='data/results.hdf5',
         )
 
     if run_cram_lambdify:
-        CRAM_lambdify_time, CRAM_lambdify_res = test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi)
-        save_file_cram_lambdify(hdf5_file,
-            CRAM_lambdify_res=CRAM_lambdify_res,
-            lib=lib,
-            nucs=nucs,
-            start_nuclide=nuclide,
-            time=time,
-            phi=phi,
-            CRAM_lambdify_time=CRAM_lambdify_time,
-        )
+        try:
+            import scikits.umfpack
+            scikits.umfpack
+        except ImportError:
+            raise ImportError("scikits.umfpack is required. conda install scikit-umfpack")
+
+        for umfpack in [True, False]:
+            CRAM_lambdify_time, CRAM_lambdify_res = test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi, umfpack)
+            save_file_cram_lambdify(hdf5_file,
+                CRAM_lambdify_res=CRAM_lambdify_res,
+                lib=lib,
+                nucs=nucs,
+                start_nuclide=nuclide,
+                time=time,
+                phi=phi,
+                CRAM_lambdify_time=CRAM_lambdify_time,
+                umfpack=umfpack,
+            )
 
     if run_cram_py_solve:
         CRAM_py_solve_time, CRAM_py_solve_res = test_origen_against_CRAM_py_solve(xs_tape9, time, nuclide, phi)
