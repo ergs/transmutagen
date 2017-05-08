@@ -325,7 +325,7 @@ def compute_mismatch(ORIGEN_data, CRAM_lambdify_umfpack_res, CRAM_lambdify_super
     # ORIGEN_res_atom_fraction = origen_data_to_array_atom_fraction(origen_data, nucs)
 
     for Clumf, Clsuper, Cpy, O, units in [
-        (CRAM_lambdify_umfpack_res, CRAM_lambdify_superlu_res, ORIGEN_res_weighted, 'atom fractions'),
+        (CRAM_lambdify_umfpack_res, CRAM_lambdify_superlu_res, CRAM_py_solve_res, ORIGEN_res_weighted, 'atom fractions'),
         (CRAM_lambdify_umfpack_res_normalized, CRAM_lambdify_superlu_res_normalized, CRAM_py_solve_res_normalized, ORIGEN_res_materials, 'mass fractions'),
         # (CRAM_res_normalized, ORIGEN_res_atom_fraction, 'atom fraction'),
         ]:
