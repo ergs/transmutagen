@@ -303,7 +303,7 @@ def test_origen_against_CRAM_py_solve(xs_tape9, time, nuclide, phi):
 
     return CRAM_py_solve_time, CRAM_py_solve_res
 
-def compute_mismatch(ORIGEN_data, CRAM_lambdify_res, CRAM_py_solve_res, nucs, rtol=1e-3, atol=1e-5):
+def compute_mismatch(ORIGEN_data, CRAM_lambdify_umfpack_res, CRAM_lambdify_superlu_res, CRAM_py_solve_res, nucs, rtol=1e-3, atol=1e-5):
     """
     Computes a mismatch analysis for an ORIGEN run vs. CRAM
 
@@ -316,22 +316,30 @@ def compute_mismatch(ORIGEN_data, CRAM_lambdify_res, CRAM_py_solve_res, nucs, rt
     5075-5100)
 
     """
-    CRAM_lambdify_res_normalized = CRAM_lambdify_res/np.sum(CRAM_lambdify_res)
+    CRAM_lambdify_umfpack_res_normalized = CRAM_lambdify_umfpack_res/np.sum(CRAM_lambdify_umfpack_res)
+    CRAM_lambdify_superlu_res_normalized = CRAM_lambdify_superlu_res/np.sum(CRAM_lambdify_superlu_res)
     CRAM_py_solve_res_normalized = CRAM_py_solve_res/np.sum(CRAM_py_solve_res)
 
     ORIGEN_res_weighted = origen_data_to_array_weighted(ORIGEN_data, nucs,)
     ORIGEN_res_materials = origen_data_to_array_materials(ORIGEN_data, nucs)
     # ORIGEN_res_atom_fraction = origen_data_to_array_atom_fraction(origen_data, nucs)
 
-    for Cl, Cpy, O, units in [
-        (CRAM_lambdify_res, CRAM_py_solve_res, ORIGEN_res_weighted, 'atom fractions'),
-        (CRAM_lambdify_res_normalized, CRAM_py_solve_res_normalized, ORIGEN_res_materials, 'mass fractions'),
+    for Clumf, Clsuper, Cpy, O, units in [
+        (CRAM_lambdify_umfpack_res, CRAM_lambdify_superlu_res, ORIGEN_res_weighted, 'atom fractions'),
+        (CRAM_lambdify_umfpack_res_normalized, CRAM_lambdify_superlu_res_normalized, CRAM_py_solve_res_normalized, ORIGEN_res_materials, 'mass fractions'),
         # (CRAM_res_normalized, ORIGEN_res_atom_fraction, 'atom fraction'),
         ]:
 
         logger.info("Units: %s", units)
-        d = {'CRAM lambdify': Cl, 'CRAM py_solve': Cpy, 'ORIGEN': O}
-        for a_desc, b_desc in (['CRAM lambdify', 'CRAM py_solve'], ['CRAM lambdify', 'ORIGEN'], ['CRAM py_solve', 'ORIGEN']):
+        d = {'CRAM lambdify UMFPACK': Clumf, 'CRAM lambdify SuperLU': Clsuper, 'CRAM py_solve': Cpy, 'ORIGEN': O}
+        for a_desc, b_desc in (
+            ['CRAM lambdify UMFPACK', 'CRAM lambdify SuperLU'],
+            ['CRAM lambdify UMFPACK', 'CRAM py_solve'],
+            ['CRAM lambdify SuperLU', 'CRAM py_solve'],
+            ['CRAM lambdify UMFPACK', 'ORIGEN'],
+            ['CRAM lambdify SuperLU', 'ORIGEN'],
+            ['CRAM py_solve', 'ORIGEN'],
+        ):
             a, b = d[a_desc], d[b_desc]
             try:
                 np.testing.assert_allclose(a, b, rtol=rtol, atol=atol)
@@ -441,7 +449,7 @@ def execute(xs_tape9, time, phi, nuclide, hdf5_file='data/results.hdf5',
         )
 
     if run_origen and run_cram_lambdify and run_cram_py_solve:
-        compute_mismatch(ORIGEN_data, CRAM_lambdify_res, CRAM_py_solve_res, nucs)
+        compute_mismatch(ORIGEN_data, CRAM_lambdify_umfpack_res, CRAM_lambdify_superlu_res, CRAM_py_solve_res, nucs)
 
 def main():
     p = make_parser()
