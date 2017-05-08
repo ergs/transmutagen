@@ -32,7 +32,6 @@ setup_kwargs = {
         "Programming Language :: Python",
         ],
     "zip_safe": False,
-    "data_files": [("", ['LICENSE', 'README.md']),],
     }
 
 
