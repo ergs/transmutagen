@@ -39,6 +39,10 @@ DATA_DIR = os.path.abspath(os.path.join(__file__, os.path.pardir,
 
 NUCLIDE_KEYS = ['activation_products', 'actinides', 'fission_products']
 
+def run_origen(origen):
+    run(origen)
+    return parse_tape6()
+
 def execute_origen(xs_tape9, time, nuclide, phi, origen, decay_tape9):
     xs_tape9 = xs_tape9
     if not os.path.isabs(xs_tape9):
