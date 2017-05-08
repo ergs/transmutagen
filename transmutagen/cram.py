@@ -327,7 +327,8 @@ def CRAM_exp(degree, prec=128, *, max_loops=30, c=None, maxsteps=None,
 
     return ret
 
-def get_CRAM_from_cache(degree, prec, expr=None, plot=False, log=False, use_cache=True):
+def get_CRAM_from_cache(degree, prec, expr=None, plot=False, log=False,
+    use_cache=True, **kwargs):
     if log:
         if log is True:
             log = "INFO"
@@ -353,7 +354,7 @@ def get_CRAM_from_cache(degree, prec, expr=None, plot=False, log=False, use_cach
         else:
             expr = None
 
-    expr = expr or CRAM_exp(degree, prec, plot=plot, log_to_file=log_to_file)
+    expr = expr or CRAM_exp(degree, prec, plot=plot, log_to_file=log_to_file, **kwargs)
     if use_cache:
         with open(local_cache_file, 'w') as f:
             f.write(srepr(expr))
