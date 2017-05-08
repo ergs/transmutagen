@@ -68,13 +68,11 @@ def execute_origen(xs_tape9, time, nuclide, phi, origen, decay_tape9):
 
     write_tape4(M)
 
-    origen_time, data = time_func(run, origen)
-
     # Make pyne use naive atomic mass numbers to match ORIGEN
     for i in pyne.data.atomic_mass_map:
         pyne.data.atomic_mass_map[i] = float(pyne.nucname.anum(i))
 
-    data = parse_tape6()
+    origen_time, data = time_func(run_origen, origen)
 
     logger.info("ORIGEN runtime: %s", origen_time)
     return origen_time, data
