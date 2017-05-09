@@ -44,7 +44,8 @@ def analyze_origen(file):
             for lib in h5file.root:
                 table = h5file.get_node(lib, run.lower().replace(' ', '-'))
                 for row in table:
-                    times[run][row['time']].append(row['execution time ' + run])
+                    exec_time = 'execution time CRAM lambdify' if run.startswith("CRAM lambdify") else 'execution time ' + run
+                    times[run][row['time']].append(row[exec_time])
 
             xvals = sorted(TIME_STEPS)
 
