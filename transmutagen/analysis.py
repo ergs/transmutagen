@@ -30,7 +30,7 @@ def analyze_origen(file):
     formats = {
         'ORIGEN': '+',
         'CRAM lambdify UMFPACK': 'x',
-        'CRAM lambdify SuperLU': 'D',
+        'CRAM lambdify SuperLU': '<',
         'CRAM py_solve': '.',
     }
     offsets = {
