@@ -18,29 +18,29 @@ def analyze_origen(file):
     times = {
         'ORIGEN': defaultdict(list),
         'CRAM lambdify UMFPACK': defaultdict(list),
-        'CRAM py_solve': defaultdict(list),
         'CRAM lambdify SuperLU': defaultdict(list),
+        'CRAM py_solve': defaultdict(list),
     }
     label = {
         'ORIGEN': 'ORIGEN',
         'CRAM lambdify UMFPACK': 'CRAM SciPy solver (UMFPACK)',
-        'CRAM py_solve': 'CRAM C generated solver',
         'CRAM lambdify SuperLU': 'CRAM SciPy solver (SuperLU)',
+        'CRAM py_solve': 'CRAM C generated solver',
     }
     formats = {
         'ORIGEN': '+',
         'CRAM lambdify UMFPACK': 'x',
-        'CRAM py_solve': '.',
         'CRAM lambdify SuperLU': 'D',
+        'CRAM py_solve': '.',
     }
     offsets = {
-        'ORIGEN': -0.6,
-        'CRAM lambdify UMFPACK': 0,
-        'CRAM py_solve': 0.6,
-        'CRAM lambdify SuperLU': 1.2,
+        'ORIGEN': 0,
+        'CRAM lambdify UMFPACK': -0.25,
+        'CRAM lambdify SuperLU': 0.25,
+        'CRAM py_solve': 0,
     }
     with tables.open_file(file, mode='r') as h5file:
-        for run in 'ORIGEN', 'CRAM lambdify UMFPACK', 'CRAM py_solve', 'CRAM lambdify SuperLU':
+        for run in 'ORIGEN', 'CRAM lambdify UMFPACK', 'CRAM lambdify SuperLU', 'CRAM py_solve':
             for lib in h5file.root:
                 table = h5file.get_node(lib, run.lower().replace(' ', '-'))
                 for row in table:
@@ -53,7 +53,7 @@ def analyze_origen(file):
             y = []
             for i, t in enumerate(xvals):
                 itimes = times[run][sorted(times[run])[i]]
-                x += [t + offsets[run]*t]*len(itimes)
+                x += [10**offsets[run]*t]*len(itimes)
                 y += itimes
 
             print("Longest", run, "runtime", max(y), "seconds")
