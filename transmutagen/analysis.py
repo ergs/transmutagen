@@ -18,20 +18,20 @@ def analyze_origen(file):
     times = {
         'ORIGEN': defaultdict(list),
         'CRAM lambdify UMFPACK': defaultdict(list),
-        'CRAM lambdify SuperLU': defaultdict(list),
         'CRAM py_solve': defaultdict(list),
+        'CRAM lambdify SuperLU': defaultdict(list),
     }
     label = {
         'ORIGEN': 'ORIGEN',
         'CRAM lambdify UMFPACK': 'CRAM SciPy solver (UMFPACK)',
-        'CRAM lambdify SuperLU': 'CRAM SciPy solver (SuperLU)',
         'CRAM py_solve': 'CRAM C generated solver',
+        'CRAM lambdify SuperLU': 'CRAM SciPy solver (SuperLU)',
     }
     formats = {
         'ORIGEN': '+',
         'CRAM lambdify UMFPACK': 'x',
-        'CRAM lambdify SuperLU': 'o',
-        'CRAM py_solve': '.'
+        'CRAM py_solve': '.',
+        'CRAM lambdify SuperLU': 'D',
     }
     offsets = {
         'ORIGEN': -0.6,
