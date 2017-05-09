@@ -36,8 +36,8 @@ def analyze_origen(file):
     offsets = {
         'ORIGEN': -0.6,
         'CRAM lambdify UMFPACK': 0,
-        'CRAM lambdify SuperLU': 0.6,
-        'CRAM py_solve': 1.2
+        'CRAM lambdify SuperLU': 1.2,
+        'CRAM py_solve': 0.6
     }
     with tables.open_file(file, mode='r') as h5file:
         for run in 'ORIGEN', 'CRAM lambdify UMFPACK', 'CRAM lambdify SuperLU', 'CRAM py_solve':
