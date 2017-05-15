@@ -228,7 +228,7 @@ def CRAM_exp(degree, prec=128, *, max_loops=30, c=None, maxsteps=None,
     if initial_points is None:
         initial_points = 'chebyshev' if max(num_degree, den_degree) < 28 else 'random'
     if initial_points == 'chebyshev':
-        points = [chebyshevt_root((num_degree + 1) + (den_degree + 1) + 1,
+        points = [chebyshevt_root((num_degree + 1) + (den_degree + 1),
             (num_degree + 1) + (den_degree + 1) - j) for j in
             range(1, (num_degree + 1) + (den_degree + 1) + 1)]
     elif initial_points == 'random':
