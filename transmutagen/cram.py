@@ -133,7 +133,7 @@ def nsolve_points(expr, bounds, division=300, scale=True, **kwargs):
 @log_function_args
 def CRAM_exp(degree, prec=200, *, max_loops=30, c=None, maxsteps=None,
     convergence_value=None, tol=None, nsolve_type='intervals', D_scale=1,
-    plot=False, log_to_file=False, seed=None, initial_points=None, **kwargs):
+    plot=False, log_to_file=False, seed=None, initial_points='chebyshev', **kwargs):
     """
     Compute the CRAM approximation of exp(-t) from t in [0, oo) of the given degree
 
@@ -225,8 +225,8 @@ def CRAM_exp(degree, prec=200, *, max_loops=30, c=None, maxsteps=None,
     expr = expr*r.as_numer_denom()[1]
     expr = simplify(expr)
 
-    if initial_points is None:
-        initial_points = 'chebyshev' if max(num_degree, den_degree) < 28 else 'random'
+    # if initial_points is None:
+    #     initial_points = 'chebyshev' if max(num_degree, den_degree) < 28 else 'random'
     if initial_points == 'chebyshev':
         points = [chebyshevt_root((num_degree + 1) + (den_degree + 1),
             (num_degree + 1) + (den_degree + 1) - j) for j in
