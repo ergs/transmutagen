@@ -282,7 +282,7 @@ def CRAM_exp(degree, prec=200, *, max_loops=30, c=None, maxsteps=None,
             ax.set_xticks(range(iteration+1))
             plt.xlabel("Iteration")
             plt.ylabel("max - min")
-            plt.title("Convergence")
+            plt.title("Convergence for degree %s, %s digits precision" % (degree, prec))
             plt_show_in_terminal(logname=log_to_file and logname + ' iteration=%s convergence' % iteration)
 
         converged = False
