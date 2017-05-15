@@ -131,7 +131,7 @@ def nsolve_points(expr, bounds, division=300, scale=True, **kwargs):
 
 @conserve_mpmath_dps
 @log_function_args
-def CRAM_exp(degree, prec=128, *, max_loops=30, c=None, maxsteps=None,
+def CRAM_exp(degree, prec=200, *, max_loops=30, c=None, maxsteps=None,
     convergence_value=None, tol=None, nsolve_type='intervals', D_scale=1,
     plot=False, log_to_file=False, seed=None, initial_points=None, **kwargs):
     """
