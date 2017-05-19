@@ -239,7 +239,7 @@ def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.js
 
     nucs = json_data['nucs']
     N = len(nucs)
-    ijkeys = [(nucs.index(j), nucs.index(i)) for i, j in json_data['tofrom']]
+    ijkeys = [(nucs.index(j), nucs.index(i)) for i, j in json_data['fromto']]
     ij = {k: l for l, k in enumerate(sorted(ijkeys))}
     ijk = make_ijk(ij, N)
     diagonals = {ij[i, i]: i for i in range(N)}
