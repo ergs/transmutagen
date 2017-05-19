@@ -35,12 +35,15 @@ typedef struct {{namespace}}_transmute_info_tag {
   int* i;
   int* j;
   char** nucs;
+  int* nucids;
   double* decay_matrix;
 } {{namespace}}_transmute_info_t;
 
 extern {{namespace}}_transmute_info_t {{namespace}}_transmute_info;
 
 int {{namespace}}_transmute_ij(int i, int j);
+
+int {{namespace}}_transmute_nucid_to_i(int nucid);
 
 {% if py_solve %}
 {%- for type, typefuncname in types %}
@@ -75,6 +78,9 @@ const int {{namespace.upper()}}_J[{{NNZ}}] =
 const char* {{namespace.upper()}}_NUCS[{{N}}] =
   { {%- for nuc in nucs %}"{{nuc}}",{% endfor -%} };
 
+const int* {{namespace.upper()}}_NUCIDS[{{N}}] =
+  { {%- for nuc in nucs %}{{nucname.id(nuc)}},{% endfor -%} };
+
 const double {{namespace.upper()}}_DECAY_MATRIX[{{NNZ}}] =
   {%- if len(decay_matrix) > 0 %}
   { {%- for x in decay_matrix %}{{x.hex()}},{% endfor -%} };
@@ -88,6 +94,7 @@ const double {{namespace.upper()}}_DECAY_MATRIX[{{NNZ}}] =
   .i = (int*) {{namespace.upper()}}_I,
   .j = (int*) {{namespace.upper()}}_J,
   .nucs = (char**) {{namespace.upper()}}_NUCS,
+  .nucids = (int*) {{namespace.upper()}}_NUCIDS,
   .decay_matrix = (double*) {{namespace.upper()}}_DECAY_MATRIX,
 };
 
@@ -102,6 +109,18 @@ int {{namespace}}_transmute_ij(int i, int j) {
         return -1;
   }
 }
+
+int {{namespace}}_transmute_nucid_to_i(int nucid) {
+  switch (nucid) {
+    {%- for i, nuc in enumerate(nucs) %}
+    case {{nucname.id(nuc)}}:
+        return {{i}};
+    {%- endfor %}
+    default:
+        return -1;
+  }
+}
+
 
 {%- if py_solve %}
 {%- for type, typefuncname in types %}
@@ -311,7 +330,7 @@ def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.js
         diagonals=diagonals, degrees=degrees, py_solve=py_solve,
         get_thetas_alphas=get_thetas_alphas, im=im, abs0=lambda i:abs(i[0]),
         zip=zip, enumerate=enumerate, headerfilename=headerfilename,
-        __version__=__version__, sys=sys, decay_matrix=decay_matrix)
+        __version__=__version__, sys=sys, decay_matrix=decay_matrix, nucname=nucname)
     header_template = env.from_string(HEADER, globals=globals())
     header = header_template.render(types=types, degrees=degrees,
         py_solve=py_solve, namespace=namespace)
