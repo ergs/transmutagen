@@ -5,6 +5,15 @@ import sys
 
 from jinja2 import Environment
 from sympy import im
+import numpy as np
+
+try:
+    import pyne.utils
+    import pyne.data
+    from pyne import nucname
+    HAVE_PYNE = True
+except ImportError:
+    HAVE_PYNE = False
 
 from .cram import get_CRAM_from_cache
 from .partialfrac import thetas_alphas
@@ -26,6 +35,7 @@ typedef struct {{namespace}}_transmute_info_tag {
   int* i;
   int* j;
   char** nucs;
+  double* decay_matrix;
 } {{namespace}}_transmute_info_t;
 
 extern {{namespace}}_transmute_info_t {{namespace}}_transmute_info;
@@ -65,12 +75,20 @@ const int {{namespace.upper()}}_J[{{NNZ}}] =
 const char* {{namespace.upper()}}_NUCS[{{N}}] =
   { {%- for nuc in nucs %}"{{nuc}}",{% endfor -%} };
 
+const double {{namespace.upper()}}_DECAY_MATRIX[{{NNZ}}] =
+  {%- if len(decay_matrix) > 0 %}
+  { {%- for x in decay_matrix %}{{x.hex()}},{% endfor -%} };
+  {%- else -%}
+  { {%- for i in range(NNZ) %}0,{% endfor -%} };
+  {% endif %}
+
 {{namespace}}_transmute_info_t {{namespace}}_transmute_info = {
   .n = {{N}},
   .nnz = {{NNZ}},
   .i = (int*) {{namespace.upper()}}_I,
   .j = (int*) {{namespace.upper()}}_J,
   .nucs = (char**) {{namespace.upper()}}_NUCS,
+  .decay_matrix = (double*) {{namespace.upper()}}_DECAY_MATRIX,
 };
 
 int {{namespace}}_transmute_ij(int i, int j) {
@@ -217,14 +235,50 @@ def make_ijk(ij, N):
                     idx += 1
     return ijk
 
+
 def get_thetas_alphas(degree, prec=200, use_cache=True):
     rat_func = get_CRAM_from_cache(degree, prec, log=True, plot=False, use_cache=use_cache)
 
     thetas, alphas, alpha0 = thetas_alphas(rat_func, prec)
     return thetas, alphas, alpha0
 
+
+def pyne_decay_matrix(fromto):
+    if not HAVE_PYNE:
+        raise RuntimeError('Must have PyNE installed to generate decay matrix from '
+                           'PyNE data. Please either install PyNE or generate with '
+                           'decay_matrix_kind="none", or --decay-matrix=none from the '
+                           'command line.')
+    if pyne.utils.use_warnings():
+        pyne.utils.toggle_warnings()
+    dm = np.zeros(len(fromto), dtype='f8')
+    for i, (f, t) in enumerate(fromto):
+        decay_const = pyne.data.decay_const(f)
+        if decay_const <= 0.0 or np.isnan(decay_const):
+            continue
+        elif f == t:
+            dm[i] = -decay_const
+        else:
+            br = pyne.data.branch_ratio(f, t)
+            dm[i] = decay_const * br
+    return dm
+
+
+def make_decay_matrix(kind, fromto):
+    """makes a decay matrix, if it can, for a given set of allowable fromto reactions."""
+    kind = kind.lower()
+    if kind == 'none':
+        return None
+    elif kind == 'pyne':
+        return pyne_decay_matrix(fromto)
+    else:
+        raise ValueError('method for generating decay matrix not understood. Must be '
+                         'either "pyne" or "none", got ' + str(kind))
+
+
 def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.json'),
-    outfile=None, degrees=None, py_solve=False, namespace='transmutagen'):
+    outfile=None, degrees=None, py_solve=False, namespace='transmutagen',
+    decay_matrix_kind='pyne'):
 
     if degrees is None:
         degrees = [6, 8, 10, 12, 14, 16, 18] if py_solve else [14]
@@ -245,6 +299,7 @@ def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.js
     diagonals = {ij[i, i]: i for i in range(N)}
     more_than_fore = [len([j for j in range(i+1) if (i, j) in ijk]) > 1 for i in range(N)]
     more_than_back = [len([j for j in range(i, N) if (i, j) in ijk]) > 1 for i in range(N)]
+    decay_matrix = make_decay_matrix(decay_matrix_kind, json_data['fromto'])
     types = [  # C type, type function name
              ('double', 'double'),
              ('double complex', 'complex')]
@@ -256,7 +311,7 @@ def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.js
         diagonals=diagonals, degrees=degrees, py_solve=py_solve,
         get_thetas_alphas=get_thetas_alphas, im=im, abs0=lambda i:abs(i[0]),
         zip=zip, enumerate=enumerate, headerfilename=headerfilename,
-        __version__=__version__, sys=sys)
+        __version__=__version__, sys=sys, decay_matrix=decay_matrix)
     header_template = env.from_string(HEADER, globals=globals())
     header = header_template.render(types=types, degrees=degrees,
         py_solve=py_solve, namespace=namespace)
@@ -291,6 +346,9 @@ def main(args=None):
         The header file will be generated alongside it.""")
     p.add_argument('--namespace', default='transmutagen', help="""Namespace
         for the generated solver. The default is %(default)r.""")
+    p.add_argument('--decay-matrix', default='pyne', dest='decay_matrix_kind',
+                   choices={'none', 'None', 'NONE', 'pyne', 'Pyne', 'PyNE', 'PYNE'},
+                   help='method for generating included decay matrix, default "pyne".')
 
     ns = p.parse_args(args=args)
     if ns.outfile and not ns.outfile.endswith('.c'):
