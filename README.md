@@ -70,11 +70,11 @@ The format of the JSON file is
 ``` json
 {
     "nucs": ["H1", "H2", ...],
-    "tofrom": [["H1", "H1"], ["H1", "H2"], ...]
+    "fromto": [["H1", "H1"], ["H1", "H2"], ...]
 }
 ```
 
-Where ``"nucs"`` is a list of nuclides and ``"tofrom"`` is a list of lists of
+Where ``"nucs"`` is a list of nuclides and ``"fromto"`` is a list of lists of
 every possible reaction product pair.
 
 To generate a JSON file from ORIGEN libraries, run
