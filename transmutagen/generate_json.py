@@ -42,7 +42,7 @@ def generate_json(tape9s, decaylib, outfile='transmutagen/data/gensolve.json'):
         json.dump({
             'nucs': list(nucs),
             # JSON associative arrays can only have string keys
-            'fromto': tofrom,
+            'fromto': fromto,
             }, f, sort_keys=True, indent=4)
 
 def main(args=None):
