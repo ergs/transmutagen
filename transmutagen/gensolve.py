@@ -7,13 +7,9 @@ from jinja2 import Environment
 from sympy import im
 import numpy as np
 
-try:
-    import pyne.utils
-    import pyne.data
-    from pyne import nucname
-    HAVE_PYNE = True
-except ImportError:
-    HAVE_PYNE = False
+import pyne.utils
+import pyne.data
+from pyne import nucname
 
 from .cram import get_CRAM_from_cache
 from .partialfrac import thetas_alphas
@@ -263,11 +259,6 @@ def get_thetas_alphas(degree, prec=200, use_cache=True):
 
 
 def pyne_decay_matrix(fromto):
-    if not HAVE_PYNE:
-        raise RuntimeError('Must have PyNE installed to generate decay matrix from '
-                           'PyNE data. Please either install PyNE or generate with '
-                           'decay_matrix_kind="none", or --decay-matrix=none from the '
-                           'command line.')
     if pyne.utils.use_warnings():
         pyne.utils.toggle_warnings()
     dm = np.zeros(len(fromto), dtype='f8')
