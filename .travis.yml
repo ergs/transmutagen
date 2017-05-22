@@ -24,6 +24,7 @@ install:
   - cd ..
 
 script:
+  - set -e
   - pyflakes transmutagen py_solve setup.py
   - PYTHONPATH=py_solve py.test transmutagen
 

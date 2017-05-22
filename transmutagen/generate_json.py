@@ -34,7 +34,7 @@ def generate_json(tape9s, decaylib, outfile='transmutagen/data/gensolve.json'):
     mats, nucs = tape9_to_sparse(tape9s, phi=1.0, format='csr', decaylib=decaylib)
     mat = common_mat(mats)
     ij = csr_ij(mat)
-    tofrom = [(nucs[j], nucs[i]) for i, j in sorted(ij, key=itemgetter(1))]
+    fromto = [(nucs[j], nucs[i]) for i, j in sorted(ij, key=itemgetter(1))]
     os.makedirs(os.path.dirname(outfile), exist_ok=True)
 
     with open(outfile, 'w') as f:
@@ -42,7 +42,7 @@ def generate_json(tape9s, decaylib, outfile='transmutagen/data/gensolve.json'):
         json.dump({
             'nucs': list(nucs),
             # JSON associative arrays can only have string keys
-            'tofrom': tofrom,
+            'fromto': fromto,
             }, f, sort_keys=True, indent=4)
 
 def main(args=None):
