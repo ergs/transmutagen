@@ -74,7 +74,7 @@ const int {{namespace.upper()}}_J[{{NNZ}}] =
 const char* {{namespace.upper()}}_NUCS[{{N}}] =
   { {%- for nuc in nucs %}"{{nuc}}",{% endfor -%} };
 
-const int* {{namespace.upper()}}_NUCIDS[{{N}}] =
+const int {{namespace.upper()}}_NUCIDS[{{N}}] =
   { {%- for nuc in nucs %}{{nucname.id(nuc)}},{% endfor -%} };
 
 const double {{namespace.upper()}}_DECAY_MATRIX[{{NNZ}}] =
