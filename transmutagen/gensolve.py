@@ -258,15 +258,16 @@ def get_thetas_alphas(degree, prec=200, use_cache=True):
     return thetas, alphas, alpha0
 
 
-def pyne_decay_matrix(fromto):
+def pyne_decay_matrix(fromto, ijnucs):
     if pyne.utils.use_warnings():
         pyne.utils.toggle_warnings()
     dm = np.zeros(len(fromto), dtype='f8')
-    for i, (f, t) in enumerate(fromto):
+    for f, t in fromto:
         decay_const = pyne.data.decay_const(f)
         if decay_const <= 0.0 or np.isnan(decay_const):
             continue
-        elif f == t:
+        i = ijnucs[t, f]
+        if f == t:
             dm[i] = -decay_const
         else:
             br = pyne.data.branch_ratio(f, t)
@@ -274,13 +275,13 @@ def pyne_decay_matrix(fromto):
     return dm
 
 
-def make_decay_matrix(kind, fromto):
+def make_decay_matrix(kind, fromto, ijnucs):
     """makes a decay matrix, if it can, for a given set of allowable fromto reactions."""
     kind = kind.lower()
     if kind == 'none':
         return None
     elif kind == 'pyne':
-        return pyne_decay_matrix(fromto)
+        return pyne_decay_matrix(fromto, ijnucs)
     else:
         raise ValueError('method for generating decay matrix not understood. Must be '
                          'either "pyne" or "none", got ' + str(kind))
@@ -306,10 +307,11 @@ def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.js
     ijkeys = [(nucs.index(j), nucs.index(i)) for i, j in json_data['fromto']]
     ij = {k: l for l, k in enumerate(sorted(ijkeys))}
     ijk = make_ijk(ij, N)
+    ijnucs = {(nucs[i], nucs[j]): k for (i, j), k in ijk.items()}
     diagonals = {ij[i, i]: i for i in range(N)}
     more_than_fore = [len([j for j in range(i+1) if (i, j) in ijk]) > 1 for i in range(N)]
     more_than_back = [len([j for j in range(i, N) if (i, j) in ijk]) > 1 for i in range(N)]
-    decay_matrix = make_decay_matrix(decay_matrix_kind, json_data['fromto'])
+    decay_matrix = make_decay_matrix(decay_matrix_kind, json_data['fromto'], ijnucs)
     types = [  # C type, type function name
              ('double', 'double'),
              ('double complex', 'complex')]
