@@ -29,6 +29,7 @@ NUCS_IDX = {nuc: idx for idx, nuc in enumerate(NUCS)}
 cdef np.npy_intp npy_nnz = c_solve.transmutagen_transmute_info.nnz
 ROWS = np.PyArray_SimpleNewFromData(1, &npy_nnz, np.NPY_INT, c_solve.transmutagen_transmute_info.i)
 COLS = np.PyArray_SimpleNewFromData(1, &npy_nnz, np.NPY_INT, c_solve.transmutagen_transmute_info.j)
+DECAY_MATRIX = np.PyArray_SimpleNewFromData(1, &npy_nnz, np.NPY_DOUBLE, c_solve.transmutagen_transmute_info.decay_matrix)
 
 
 def ones(dtype='f8'):

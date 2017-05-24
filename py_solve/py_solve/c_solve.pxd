@@ -6,6 +6,8 @@ cdef extern from "solve.h":
         int* i
         int* j
         char** nucs
+        int* nucids
+        double* decay_matrix
 
     ctypedef transmutagen_transmute_info_tag transmutagen_transmute_info_t
     cdef transmutagen_transmute_info_t transmutagen_transmute_info
