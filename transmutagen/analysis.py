@@ -5,10 +5,11 @@ import argparse
 import tables
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.sparse
 
 from .tests.test_transmute import run_transmute_test
 from .origen_all import TIME_STEPS
-from .util import plt_show_in_terminal
+from .util import plt_show_in_terminal, load_sparse_csr
 from .cram import get_CRAM_from_cache, CRAM_coeffs
 
 def analyze_origen(file):
@@ -173,6 +174,21 @@ def analyze_cram_digits():
 
     plt_show_in_terminal()
 
+def analyze_eigenvals():
+    from py_solve.py_solve import DECAY_MATRIX, csr_from_flat
+    nucs, matpwru50 = load_sparse_csr('data/pwru50_400000000000000.0.npz')
+    matdecay = csr_from_flat(DECAY_MATRIX)
+    for desc, mat in {'pwru50': matpwru50, 'decay': matdecay}.items():
+        plt.clf()
+        print("analyzing eigenvalues of", desc)
+        eigvals, eigvects = scipy.sparse.linalg.eigen.eigs(mat, 3507)
+        plt.scatter(np.real(eigvals), np.imag(eigvals))
+        plt.yscale('symlog', linthreshy=1e-20)
+        plt.xscale('symlog')
+        plt.xlim([np.min(np.real(eigvals))*2, 1])
+        plt.ylim([np.min(np.imag(eigvals))*10, np.max(np.imag(eigvals))*10])
+        plt.title("Eigenvalues of transmutation matrix for " + desc)
+        plt_show_in_terminal()
 
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -183,6 +199,8 @@ def analyze():
         help="""Don't run the origen analysis.""")
     parser.add_argument('--no-nofission', action='store_false',
         dest='nofission', help="""Don't run the nofission analysis.""")
+    parser.add_argument('--no-eigenvals', action='store_false',
+        dest='eigenvals', help="""Don't run the eigenvalue analysis.""")
     parser.add_argument('--cram-digits', action='store_true', help="""Analyze
         accuracy of CRAM digits. WARNING: If cache values have not been
         precomputed, this will take a long time (> 1 day) to compute.""")
@@ -197,6 +215,8 @@ def analyze():
         analyze_origen(args.origen_results)
     if args.nofission:
         analyze_nofission()
+    if args.eigenvals:
+        analyze_eigenvals()
     if args.cram_digits:
         analyze_cram_digits()
 
