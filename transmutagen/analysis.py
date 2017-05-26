@@ -109,6 +109,23 @@ def plot_matrix_sum_histogram(m, title='', axis=0):
     plt_show_in_terminal()
     plt.close()
 
+
+def analyze_eigenvals():
+    from py_solve.py_solve import DECAY_MATRIX, csr_from_flat
+    nucs, matpwru50 = load_sparse_csr('data/pwru50_400000000000000.0.npz')
+    matdecay = csr_from_flat(DECAY_MATRIX)
+    for desc, mat in {'pwru50': matpwru50, 'decay': matdecay}.items():
+        plt.clf()
+        print("analyzing eigenvalues of", desc)
+        eigvals, eigvects = scipy.sparse.linalg.eigen.eigs(mat, 3507)
+        plt.scatter(np.real(eigvals), np.imag(eigvals))
+        plt.yscale('symlog', linthreshy=1e-20)
+        plt.xscale('symlog')
+        plt.xlim([np.min(np.real(eigvals))*2, 1])
+        plt.ylim([np.min(np.imag(eigvals))*10, np.max(np.imag(eigvals))*10])
+        plt.title("Eigenvalues of transmutation matrix for " + desc)
+        plt_show_in_terminal()
+
 def analyze_cram_digits():
     print("Computing coefficients (or getting from cache)")
     exprs = defaultdict(dict)
@@ -173,22 +190,6 @@ def analyze_cram_digits():
     ax.set_xticks(range(1, 21))
 
     plt_show_in_terminal()
-
-def analyze_eigenvals():
-    from py_solve.py_solve import DECAY_MATRIX, csr_from_flat
-    nucs, matpwru50 = load_sparse_csr('data/pwru50_400000000000000.0.npz')
-    matdecay = csr_from_flat(DECAY_MATRIX)
-    for desc, mat in {'pwru50': matpwru50, 'decay': matdecay}.items():
-        plt.clf()
-        print("analyzing eigenvalues of", desc)
-        eigvals, eigvects = scipy.sparse.linalg.eigen.eigs(mat, 3507)
-        plt.scatter(np.real(eigvals), np.imag(eigvals))
-        plt.yscale('symlog', linthreshy=1e-20)
-        plt.xscale('symlog')
-        plt.xlim([np.min(np.real(eigvals))*2, 1])
-        plt.ylim([np.min(np.imag(eigvals))*10, np.max(np.imag(eigvals))*10])
-        plt.title("Eigenvalues of transmutation matrix for " + desc)
-        plt_show_in_terminal()
 
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
