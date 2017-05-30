@@ -11,6 +11,7 @@ from .tests.test_transmute import run_transmute_test
 from .origen_all import TIME_STEPS
 from .util import plt_show_in_terminal, load_sparse_csr
 from .cram import get_CRAM_from_cache, CRAM_coeffs
+from .partialfrac import thetas_alphas
 
 def analyze_origen(file):
     plt.clf()
@@ -129,17 +130,22 @@ def analyze_eigenvals():
 def analyze_cram_digits():
     print("Computing coefficients (or getting from cache)")
     exprs = defaultdict(dict)
+    part_frac_coeffs = defaultdict(dict)
     # {degree: {prec: {'p': [coeffs], 'q': [coeffs]}}}
     correct_digits = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    # {degree: {prec: {'thetas': [coeffs], 'alphas': [coeffs], 'alpha0', [coeff]}}}
+    correct_part_frac_digits = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     for degree in range(1, 21):
         print("Degree", degree)
         for prec in range(100, 1100, 100):
             print("Precision", prec)
             exprs[degree][prec] = CRAM_coeffs(get_CRAM_from_cache(degree,
-                prec), prec)
+                prec), prec, log=True, plot=True)
+            part_frac_coeffs[degree][prec] = thetas_alphas(exprs[degree][prec], prec)
 
         # Assume that 1000 has the most correct digits
         coeffs1000 = exprs[degree][1000]
+        part_frac_coeffs1000 = part_frac_coeffs[degree][1000]
         for prec in range(100, 1000, 100):
             coeffs = exprs[degree][prec]
             for l in 'pq':
@@ -147,6 +153,11 @@ def analyze_cram_digits():
                     correct_digits[degree][prec][l].append(len(os.path.commonprefix([coeff,
                         coeff1000])) - 1)
 
+            these_part_frac_coeffs = part_frac_coeffs[degree][prec]
+            for l in ['thetas', 'alphas', 'alpha0']:
+                for coeff, coeff1000 in zip(these_part_frac_coeffs, part_frac_coeffs1000):
+                    correct_part_frac_digits[degree][prec][l].append(len(os.path.commonprefix([coeff,
+                        coeff1000])) - 1)
 
     # Plot minimum number of correct digits as a function of precision
     plt.clf()
