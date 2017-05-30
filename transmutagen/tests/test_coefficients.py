@@ -1,7 +1,7 @@
 import decimal
 
 import pytest
-from sympy import re
+from sympy import im
 
 slow = pytest.mark.skipif(
     not pytest.config.getoption("--runslow"),
@@ -33,11 +33,13 @@ def test_partial_fraction_coefficients(degree):
     thetas, alphas, alpha0 = thetas_alphas(expr, 200)
     format_str = '{:.19e}'
     correct_coeffs = part_frac_coeffs[degree]
-    # Thetas in the paper are negative what we have
-    thetas = [-i for i in thetas]
-    for theta, real_theta, imag_theta in zip(sorted(thetas, key=re),
-        correct_coeffs['thetas']['real'],
-        correct_coeffs['thetas']['imaginary']):
+    # Thetas in the paper are negative what we have, and are only counted once
+    # per conjugate.
+    thetas = [-i for i in thetas if im(-i) >= 0]
+    for theta, (real_theta, imag_theta) in zip(sorted(thetas, key=im),
+        sorted(zip(correct_coeffs['thetas']['real'],
+            correct_coeffs['thetas']['imaginary']), key=lambda i: float(i[1]))):
+
         real, imag = theta.as_real_imag()
         assert format_str.format(decimal.Decimal(repr(real))) == real_theta
         assert format_str.format(decimal.Decimal(repr(imag))) == imag_theta
