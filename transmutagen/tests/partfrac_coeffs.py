@@ -114,3 +114,54 @@ part_frac_coeffs = {
             },
         },
 }
+
+def get_paper_part_frac(degree):
+    from ..partialfrac import thetas_alphas_to_expr_complex, customre
+    from sympy import Float, I, re
+    # Values above are negative what we expect. It also only includes one of
+    # each complex conjugate, which is fine so long as we pass in the positive
+    # imaginary parts for the thetas.
+    thetas = [-Float(r) + Float(i)*I for r, i in
+        zip(part_frac_coeffs[degree]['thetas']['real'],
+            part_frac_coeffs[degree]['thetas']['imaginary'])]
+
+    alphas = [-Float(r) + Float(i)*I for r, i in
+        zip(part_frac_coeffs[degree]['alphas']['real'],
+            part_frac_coeffs[degree]['alphas']['imaginary'])]
+
+    [alpha0] = [Float(r) + Float(i)*I for r, i in
+        zip(part_frac_coeffs[degree]['alpha0']['real'],
+            part_frac_coeffs[degree]['alpha0']['imaginary'])]
+
+    return thetas_alphas_to_expr_complex(thetas, alphas, alpha0).replace(customre, re)
+
+def plot_difference(degree):
+    # TODO: Avoid using SymPy's re, which evaluate to re form.
+    from ..partialfrac import (thetas_alphas, thetas_alphas_to_expr_complex,
+        customre, t)
+    from ..cram import get_CRAM_from_cache
+    from ..util import plot_in_terminal
+    from sympy import re, exp
+
+    expr = get_CRAM_from_cache(degree, 200)
+    thetas, alphas, alpha0 = thetas_alphas(expr, 200)
+    part_frac = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
+    part_frac = part_frac.replace(customre, re)
+
+    paper_part_frac = get_paper_part_frac(degree)
+
+    # print('part_frac', part_frac)
+    # print('paper_part_frac', paper_part_frac)
+
+    print("Difference between our partial fraction and paper partial fraction")
+    plot_in_terminal(part_frac - paper_part_frac, (0, 100), prec=200, points=1000)
+
+    print("Difference between our partial fraction and exp(-t)")
+    plot_in_terminal(part_frac - exp(-t), (0, 100), prec=200, points=1000)
+
+    print("Difference between paper partial fraction and exp(-t)")
+    plot_in_terminal(paper_part_frac - exp(-t), (0, 100), prec=200, points=1000)
+
+if __name__ == '__main__':
+    plot_difference(14)
+    plot_difference(16)

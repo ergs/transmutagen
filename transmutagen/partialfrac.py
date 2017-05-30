@@ -88,7 +88,6 @@ class customre(Function):
     def _eval_evalf(self, prec):
         return re(self.args[0]._eval_evalf(prec))
 
-
 def thetas_alphas_to_expr_complex(thetas, alphas, alpha0):
     return alpha0 + 2*customre(Add(*[alpha/(t - theta) for theta,
         alpha in zip(thetas, alphas) if im(theta) >= 0]))
