@@ -26,7 +26,7 @@ def test_coefficients(degree):
     print(expr)
     assert generated_coeffs[degree] == correct_coeffs[degree], expr
 
-# @pytest.mark.xfail
+@pytest.mark.xfail
 @pytest.mark.parametrize('real_imag', ['real', 'imag'])
 @pytest.mark.parametrize('idx', range(16//2))
 @pytest.mark.parametrize('typ', ['thetas', 'alphas', 'alpha0'])
