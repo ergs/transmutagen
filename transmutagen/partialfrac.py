@@ -100,6 +100,16 @@ def thetas_alphas_to_expr_complex2(thetas, alphas, alpha0):
     return alpha0 + Add(*[alpha/(t - theta) for theta,
         alpha in zip(thetas, alphas)])
 
+def thetas_alphas_to_expr_expanded(thetas, alphas, alpha0):
+    expr = thetas_alphas_to_expr_complex2(thetas, alphas, alpha0)
+    p, q = expr.as_numer_denom()
+    p = Poly(p, t)
+    q = Poly(q, t)
+    p = Poly(p/q.TC(), t, expand=True)
+    q = Poly(q/q.TC(), t, expand=True)
+
+    return p, q
+
 def allroots(expr, degree, prec, chop=True):
     roots = set()
     start = random.random() + random.random()*I

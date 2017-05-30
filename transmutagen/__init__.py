@@ -7,12 +7,14 @@ __all__ = ['general_rat_func', 'nsolve_intervals', 'nsolve_points',
     'CRAM_exp', 'get_CRAM_from_cache', 'CRAM_coeffs']
 
 from .partialfrac import (t, thetas_alphas, thetas_alphas_to_expr_real,
-    thetas_alphas_to_expr_complex, thetas_alphas_to_expr_complex2, allroots,
+    thetas_alphas_to_expr_complex, thetas_alphas_to_expr_complex2,
+    thetas_alphas_to_expr_expanded, allroots,
     multiply_vector, customre)
 
 __all__ += ['t', 'thetas_alphas', 'thetas_alphas_to_expr_real',
     'thetas_alphas_to_expr_complex', 'thetas_alphas_to_expr_complex2',
-    'allroots', 'multiply_vector', 'customre']
+    'thetas_alphas_to_expr_expanded', 'allroots', 'multiply_vector',
+    'customre']
 
 from .codegen import (MatrixNumPyPrinter, autoeye, numpy_solve_with_autoeye,
     scipy_sparse_solve_with_autoeye, scipy_translations,
