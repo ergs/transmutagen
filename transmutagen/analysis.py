@@ -145,9 +145,9 @@ def analyze_cram_digits(max_degree=20):
             exprs[degree][prec] = get_CRAM_from_cache(degree, prec, log=True, plot=True)
             cram_coeffs[degree][prec] = CRAM_coeffs(exprs[degree][prec], prec)
             thetas, alphas, alpha0 = thetas_alphas(exprs[degree][prec], prec)
-            t = sorted(thetas, key=re)
+            t = sorted(thetas, key=im)
             part_frac_coeffs[degree][prec]['thetas'] = [[re(i) for i in t], [im(i) for i in t]]
-            t = sorted(thetas, key=re)
+            t = sorted(alphas, key=im)
             part_frac_coeffs[degree][prec]['alphas'] = [[re(i) for i in t], [im(i) for i in t]]
             part_frac_coeffs[degree][prec]['alpha0'] = [[re(alpha0)], [im(alpha0)]]
 
