@@ -132,7 +132,7 @@ def analyze_cram_digits():
     exprs = defaultdict(dict)
     part_frac_coeffs = defaultdict(dict)
     # {degree: {prec: {'p': [coeffs], 'q': [coeffs]}}}
-    correct_digits = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    correct_expr_digits = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     # {degree: {prec: {'thetas': [coeffs], 'alphas': [coeffs], 'alpha0', [coeff]}}}
     correct_part_frac_digits = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     for degree in range(1, 21):
@@ -150,7 +150,7 @@ def analyze_cram_digits():
             coeffs = exprs[degree][prec]
             for l in 'pq':
                 for coeff, coeff1000 in zip(coeffs[l], coeffs1000[l]):
-                    correct_digits[degree][prec][l].append(len(os.path.commonprefix([coeff,
+                    correct_expr_digits[degree][prec][l].append(len(os.path.commonprefix([coeff,
                         coeff1000])) - 1)
 
             these_part_frac_coeffs = part_frac_coeffs[degree][prec]
@@ -159,48 +159,51 @@ def analyze_cram_digits():
                     correct_part_frac_digits[degree][prec][l].append(len(os.path.commonprefix([coeff,
                         coeff1000])) - 1)
 
-    # Plot minimum number of correct digits as a function of precision
-    plt.clf()
-    fig, ax = plt.subplots()
+    for typ, correct_digits in [('CRAM expression', correct_expr_digits),
+        ('Partial fraction', correct_part_frac_digits),]:
 
-    minvals = defaultdict(list)
-    for degree in range(1, 21):
-        print("Degree", degree)
+       # Plot minimum number of correct digits as a function of precision
+        plt.clf()
+        fig, ax = plt.subplots()
+
+        minvals = defaultdict(list)
+        for degree in range(1, 16):
+            print("Degree", degree)
+            for prec in range(100, 1000, 100):
+                print("  Precision", prec)
+                for l in 'pq':
+                    print('    ', end='')
+                    print(l, end=' ')
+                    for i in correct_digits[degree][prec][l]:
+                        print(i, end=' ')
+                    print()
+                minvals[degree].append(min(correct_digits[degree][prec]['p'] + correct_digits[degree][prec]['q']))
+            ax.plot(range(100, 1000, 100), minvals[degree], label=degree)
+
+        # TODO: Make window wider so the legend isn't chopped off
+        ax.legend(title=typ + " coefficients by degree", loc="upper left", bbox_to_anchor=(1,1))
+        plt.ylabel('Number of correct digits')
+        plt.xlabel('Precision')
+
+        plt_show_in_terminal()
+
+        # Plot minimum number of correct digits as a function of degree
+        plt.clf()
+        fig, ax = plt.subplots()
+
+        minvals = defaultdict(list)
         for prec in range(100, 1000, 100):
-            print("  Precision", prec)
-            for l in 'pq':
-                print('    ', end='')
-                print(l, end=' ')
-                for i in correct_digits[degree][prec][l]:
-                    print(i, end=' ')
-                print()
-            minvals[degree].append(min(correct_digits[degree][prec]['p'] + correct_digits[degree][prec]['q']))
-        ax.plot(range(100, 1000, 100), minvals[degree], label=degree)
+            for degree in range(1, 21):
+                minvals[prec].append(min(correct_digits[degree][prec]['p'] + correct_digits[degree][prec]['q']))
+            ax.plot(range(1, 21), minvals[prec], label=prec)
 
-    # TODO: Make window wider so the legend isn't chopped off
-    ax.legend(title="Degree", loc="upper left", bbox_to_anchor=(1,1))
-    plt.ylabel('Number of correct digits')
-    plt.xlabel('Precision')
+        # TODO: Make window wider so the legend isn't chopped off
+        ax.legend(title=typ + " coefficients by precision", loc="upper left", bbox_to_anchor=(1,1))
+        plt.ylabel('Number of correct digits')
+        plt.xlabel('Degree')
+        ax.set_xticks(range(1, 21))
 
-    plt_show_in_terminal()
-
-    # Plot minimum number of correct digits as a function of degree
-    plt.clf()
-    fig, ax = plt.subplots()
-
-    minvals = defaultdict(list)
-    for prec in range(100, 1000, 100):
-        for degree in range(1, 21):
-            minvals[prec].append(min(correct_digits[degree][prec]['p'] + correct_digits[degree][prec]['q']))
-        ax.plot(range(1, 21), minvals[prec], label=prec)
-
-    # TODO: Make window wider so the legend isn't chopped off
-    ax.legend(title="Precision", loc="upper left", bbox_to_anchor=(1,1))
-    plt.ylabel('Number of correct digits')
-    plt.xlabel('Degree')
-    ax.set_xticks(range(1, 21))
-
-    plt_show_in_terminal()
+        plt_show_in_terminal()
 
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
