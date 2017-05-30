@@ -174,6 +174,8 @@ def analyze_cram_digits(max_degree=20):
     for typ, L, correct_digits in [('CRAM expression', 'pq', correct_expr_digits),
         ('Partial fraction', ['thetas', 'alphas', 'alpha0'], correct_part_frac_digits),]:
 
+        print("Correct digits for", typ)
+
         # Plot minimum number of correct digits as a function of precision
         plt.clf()
         fig, ax = plt.subplots()
