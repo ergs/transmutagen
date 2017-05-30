@@ -6,6 +6,7 @@ import tables
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.sparse
+from sympy import re, im, Float
 
 from .tests.test_transmute import run_transmute_test
 from .origen_all import TIME_STEPS
@@ -127,27 +128,34 @@ def analyze_eigenvals():
         plt.title("Eigenvalues of transmutation matrix for " + desc)
         plt_show_in_terminal()
 
-def analyze_cram_digits():
+def analyze_cram_digits(max_degree=20):
     print("Computing coefficients (or getting from cache)")
     exprs = defaultdict(dict)
-    part_frac_coeffs = defaultdict(dict)
+    cram_coeffs = defaultdict(dict)
+    part_frac_coeffs = defaultdict(lambda: defaultdict(dict))
     # {degree: {prec: {'p': [coeffs], 'q': [coeffs]}}}
     correct_expr_digits = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
-    # {degree: {prec: {'thetas': [coeffs], 'alphas': [coeffs], 'alpha0', [coeff]}}}
+    # {degree: {prec: {'thetas': [[real coeffs, ..., im coeffs]], 'alphas':
+    #     [[real coeffs, ..., im coeffs]], 'alpha0', [[real coeff, im coeff]]}}}
     correct_part_frac_digits = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
-    for degree in range(1, 21):
+    for degree in range(1, max_degree+1):
         print("Degree", degree)
         for prec in range(100, 1100, 100):
             print("Precision", prec)
-            exprs[degree][prec] = CRAM_coeffs(get_CRAM_from_cache(degree,
-                prec), prec, log=True, plot=True)
-            part_frac_coeffs[degree][prec] = thetas_alphas(exprs[degree][prec], prec)
+            exprs[degree][prec] = get_CRAM_from_cache(degree, prec, log=True, plot=True)
+            cram_coeffs[degree][prec] = CRAM_coeffs(exprs[degree][prec], prec)
+            thetas, alphas, alpha0 = thetas_alphas(exprs[degree][prec], prec)
+            t = sorted(thetas, key=re)
+            part_frac_coeffs[degree][prec]['thetas'] = [[re(i) for i in t], [im(i) for i in t]]
+            t = sorted(thetas, key=re)
+            part_frac_coeffs[degree][prec]['alphas'] = [[re(i) for i in t], [im(i) for i in t]]
+            part_frac_coeffs[degree][prec]['alpha0'] = [[re(alpha0)], [im(alpha0)]]
 
         # Assume that 1000 has the most correct digits
-        coeffs1000 = exprs[degree][1000]
+        coeffs1000 = cram_coeffs[degree][1000]
         part_frac_coeffs1000 = part_frac_coeffs[degree][1000]
         for prec in range(100, 1000, 100):
-            coeffs = exprs[degree][prec]
+            coeffs = cram_coeffs[degree][prec]
             for l in 'pq':
                 for coeff, coeff1000 in zip(coeffs[l], coeffs1000[l]):
                     correct_expr_digits[degree][prec][l].append(len(os.path.commonprefix([coeff,
@@ -155,29 +163,33 @@ def analyze_cram_digits():
 
             these_part_frac_coeffs = part_frac_coeffs[degree][prec]
             for l in ['thetas', 'alphas', 'alpha0']:
-                for coeff, coeff1000 in zip(these_part_frac_coeffs, part_frac_coeffs1000):
-                    correct_part_frac_digits[degree][prec][l].append(len(os.path.commonprefix([coeff,
-                        coeff1000])) - 1)
+                for i in range(2):
+                    for coeff, coeff1000 in zip(these_part_frac_coeffs[l][i], part_frac_coeffs1000[l][i]):
+                        format_str = '{:.%se}' % (prec - 1)
+                        coeff = format_str.format(Float(coeff, prec))
+                        coeff1000 = format_str.format(Float(coeff1000, prec))
+                        correct_part_frac_digits[degree][prec][l].append(len(os.path.commonprefix([coeff,
+                            coeff1000])) - 1)
 
-    for typ, correct_digits in [('CRAM expression', correct_expr_digits),
-        ('Partial fraction', correct_part_frac_digits),]:
+    for typ, L, correct_digits in [('CRAM expression', 'pq', correct_expr_digits),
+        ('Partial fraction', ['thetas', 'alphas', 'alpha0'], correct_part_frac_digits),]:
 
-       # Plot minimum number of correct digits as a function of precision
+        # Plot minimum number of correct digits as a function of precision
         plt.clf()
         fig, ax = plt.subplots()
 
         minvals = defaultdict(list)
-        for degree in range(1, 16):
+        for degree in range(1, max_degree+1):
             print("Degree", degree)
             for prec in range(100, 1000, 100):
                 print("  Precision", prec)
-                for l in 'pq':
+                for l in L:
                     print('    ', end='')
                     print(l, end=' ')
                     for i in correct_digits[degree][prec][l]:
                         print(i, end=' ')
                     print()
-                minvals[degree].append(min(correct_digits[degree][prec]['p'] + correct_digits[degree][prec]['q']))
+                minvals[degree].append(min(sum([correct_digits[degree][prec][i] for i in L], [])))
             ax.plot(range(100, 1000, 100), minvals[degree], label=degree)
 
         # TODO: Make window wider so the legend isn't chopped off
@@ -193,15 +205,15 @@ def analyze_cram_digits():
 
         minvals = defaultdict(list)
         for prec in range(100, 1000, 100):
-            for degree in range(1, 21):
-                minvals[prec].append(min(correct_digits[degree][prec]['p'] + correct_digits[degree][prec]['q']))
-            ax.plot(range(1, 21), minvals[prec], label=prec)
+            for degree in range(1, max_degree+1):
+                minvals[prec].append(min(sum([correct_digits[degree][prec][i] for i in L], [])))
+            ax.plot(range(1, max_degree+1), minvals[prec], label=prec)
 
         # TODO: Make window wider so the legend isn't chopped off
         ax.legend(title=typ + " coefficients by precision", loc="upper left", bbox_to_anchor=(1,1))
         plt.ylabel('Number of correct digits')
         plt.xlabel('Degree')
-        ax.set_xticks(range(1, 21))
+        ax.set_xticks(range(1, max_degree+1))
 
         plt_show_in_terminal()
 
