@@ -231,6 +231,8 @@ def analyze():
     parser.add_argument('--cram-digits', action='store_true', help="""Analyze
         accuracy of CRAM digits. WARNING: If cache values have not been
         precomputed, this will take a long time (> 1 day) to compute.""")
+    parser.add_argument('--max-degree', type=int, help="""Max degree for
+        --cram-digits. Default is 20.""", default=20)
     try:
         import argcomplete
         argcomplete.autocomplete(parser)
@@ -245,7 +247,7 @@ def analyze():
     if args.eigenvals:
         analyze_eigenvals()
     if args.cram_digits:
-        analyze_cram_digits()
+        analyze_cram_digits(args.max_degree)
 
 if __name__ == '__main__':
     analyze()
