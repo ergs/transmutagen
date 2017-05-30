@@ -57,10 +57,43 @@ def mean_log10_relative_error(exact, approx):
 # Calculations", Pusa and Leppänen:
 # mpmath.cplot(lambdify(t, rat_func14 - exp(-t), 'mpmath'), re=[0, 100], im=[-30, 30], color=lambda i: -mpmath.floor(mpmath.log(abs(i), 10))/(30 - mpmath.floor(mpmath.log(abs(i), 10))), points=100000, verbose=True)
 
+
+@conserve_mpmath_dps
+def cplot_in_terminal(expr, *args, prec=None, logname=None, color=lambda i:
+    -mpmath.floor(mpmath.log(abs(i), 10))/(30 -
+        mpmath.floor(mpmath.log(abs(i), 10))), points=1000000, **kwargs):
+    """
+    Run mpmath.cplot() but show in terminal if possible
+    """
+    kwargs['color'] = color
+    kwargs['points'] = points
+    from mpmath import cplot
+    if prec:
+        mpmath.mp.dps = prec
+    f = lambdify(t, expr, mpmath)
+    try:
+        from iterm2_tools.images import display_image_bytes
+    except ImportError:
+        if logname:
+            os.makedirs('plots', exist_ok=True)
+            file = 'plots/%s.png' % logname
+        else:
+            file = None
+        cplot(f, *args, file=file, **kwargs)
+    else:
+        from io import BytesIO
+        b = BytesIO()
+        cplot(f, *args, **kwargs, file=b)
+        if logname:
+            os.makedirs('plots', exist_ok=True)
+            with open('plots/%s.png' % logname, 'wb') as f:
+                f.write(b.getvalue())
+        print(display_image_bytes(b.getvalue()))
+
 @conserve_mpmath_dps
 def plot_in_terminal(expr, *args, prec=None, logname=None, **kwargs):
     """
-    Run plot() but show in terminal if possible
+    Run mpmath.plot() but show in terminal if possible
     """
     from mpmath import plot
     if prec:

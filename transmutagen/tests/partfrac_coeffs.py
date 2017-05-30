@@ -140,7 +140,7 @@ def plot_difference(degree):
     from ..partialfrac import (thetas_alphas, thetas_alphas_to_expr_complex,
         customre, t)
     from ..cram import get_CRAM_from_cache
-    from ..util import plot_in_terminal
+    from ..util import plot_in_terminal, cplot_in_terminal
     from sympy import re, exp
 
     expr = get_CRAM_from_cache(degree, 200)
@@ -155,12 +155,19 @@ def plot_difference(degree):
 
     print("Difference between our partial fraction and paper partial fraction")
     plot_in_terminal(part_frac - paper_part_frac, (0, 100), prec=200, points=1000)
+    cplot_in_terminal(part_frac - paper_part_frac, re=(0, 100), im=[-30, 30],
+        prec=200, points=100000, verbose=False)
 
     print("Difference between our partial fraction and exp(-t)")
     plot_in_terminal(part_frac - exp(-t), (0, 100), prec=200, points=1000)
+    cplot_in_terminal(part_frac - exp(-t), re=(0, 100), im=[-30, 30],
+        prec=200, points=100000, verbose=False)
 
     print("Difference between paper partial fraction and exp(-t)")
     plot_in_terminal(paper_part_frac - exp(-t), (0, 100), prec=200, points=1000)
+    cplot_in_terminal(part_frac - exp(-t), re=(0, 100), im=[-30, 30],
+        prec=200, points=100000, verbose=False)
+
 
 if __name__ == '__main__':
     plot_difference(14)
