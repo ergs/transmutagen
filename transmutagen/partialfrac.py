@@ -7,8 +7,11 @@ from sympy import (symbols, fraction, nsimplify, intervals, div, LC, Add,
 
 from sympy.utilities.decorator import conserve_mpmath_dps
 
+from .util import memoize
+
 t = symbols('t', real=True)
 
+@memoize
 @conserve_mpmath_dps
 def thetas_alphas(rat_func, prec, *, use_intervals=False, eps=None):
     """

@@ -14,7 +14,6 @@ from .crv_coeffs import coeffs as correct_coeffs
 from .partfrac_coeffs import part_frac_coeffs
 from ..cram import get_CRAM_from_cache, CRAM_coeffs
 from ..partialfrac import thetas_alphas
-from ..util import memoize
 
 # @slow
 @pytest.mark.parametrize('degree', range(1, TOTAL_DEGREES+1))
@@ -27,10 +26,6 @@ def test_coefficients(degree):
     print(expr)
     assert generated_coeffs[degree] == correct_coeffs[degree], expr
 
-@memoize
-def _thetas_alphas(expr, prec):
-    return thetas_alphas(expr, prec)
-
 # @pytest.mark.xfail
 @pytest.mark.parametrize('real_imag', ['real', 'imag'])
 @pytest.mark.parametrize('idx', range(16//2))
@@ -41,7 +36,7 @@ def test_partial_fraction_coefficients(degree, typ, idx, real_imag):
         # How do I do this in the decorators?
         return
     expr = get_CRAM_from_cache(degree, 200)
-    thetas, alphas, alpha0 = _thetas_alphas(expr, 200)
+    thetas, alphas, alpha0 = thetas_alphas(expr, 200)
     format_str = '{:+.19e}'
     paper_coeffs = part_frac_coeffs[degree]
     # Thetas and alphas in the paper are negative what we have, and are only
