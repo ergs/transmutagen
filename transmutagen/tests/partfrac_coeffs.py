@@ -133,7 +133,7 @@ def get_paper_part_frac(degree):
         zip(part_frac_coeffs[degree]['alpha0']['real'],
             part_frac_coeffs[degree]['alpha0']['imaginary'])]
 
-    return thetas_alphas_to_expr_complex(thetas, alphas, alpha0).replace(customre, re)
+    return thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
 
 def plot_difference(degree):
     # TODO: Avoid using SymPy's re, which evaluate to re form.
@@ -148,7 +148,7 @@ def plot_difference(degree):
     part_frac = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
     part_frac = part_frac.replace(customre, re)
 
-    paper_part_frac = get_paper_part_frac(degree)
+    paper_part_frac = get_paper_part_frac(degree).replace(customre, re)
 
     # print('part_frac', part_frac)
     # print('paper_part_frac', paper_part_frac)
