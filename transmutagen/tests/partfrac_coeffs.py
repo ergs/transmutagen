@@ -116,8 +116,8 @@ part_frac_coeffs = {
 }
 
 def get_paper_part_frac(degree):
-    from ..partialfrac import thetas_alphas_to_expr_complex, customre
-    from sympy import Float, I, re
+    from ..partialfrac import thetas_alphas_to_expr_complex
+    from sympy import Float, I
     # Values above are negative what we expect. It also only includes one of
     # each complex conjugate, which is fine so long as we pass in the positive
     # imaginary parts for the thetas.
