@@ -275,10 +275,29 @@ def CRAM_exp(degree, prec=200, *, max_loops=30, c=None, maxsteps=None,
         logger.info('epsilon: %s', N(sol[epsilon]))
         if plot:
             import matplotlib.pyplot as plt
+            from matplotlib.ticker import FuncFormatter, Locator
+
             plt.clf()
             fig, ax = plt.subplots()
-            ax.plot(range(iteration+1), maxmins, linestyle='-', marker='o')
-            ax.set_yscale('log')
+            ax.plot(range(iteration+1), [log(i, 10) for i in maxmins], linestyle='-', marker='o')
+
+            # Log scale the y-axis, in a way that works even for large values.
+            # See https://stackoverflow.com/questions/44211066/matplotlib-log-scale-for-values-too-small-for-floating-point.
+            def log_formatter(x, pos):
+                return "$10^{{{:d}}}$".format(int(x))
+            formatter = FuncFormatter(log_formatter)
+            ax.yaxis.set_major_formatter(formatter)
+
+            # enable log sub-ticks
+            class LogMinorLocator(Locator):
+                def __call__(self):
+                    import numpy as np
+                    majorlocs = self.axis.get_majorticklocs()
+                    step = majorlocs[1] - majorlocs[0]
+                    res = majorlocs[:, None] + np.log10(np.linspace(1, 0.1, 10)) * step
+                    return res.ravel()
+            ax.yaxis.set_minor_locator(LogMinorLocator())
+
             ax.set_xticks(range(iteration+1))
             plt.xlabel("Iteration")
             plt.ylabel("max - min")
