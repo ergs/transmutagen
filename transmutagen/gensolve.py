@@ -334,10 +334,12 @@ def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.js
     with open(headerfile, 'w') as f:
         f.write(header)
     # If this changes, also update py_solve/setup.py
-    compiler_flags = ['-O0', '-fcx-fortran-rules', '-fcx-limited-range',
+    gcc_compiler_flags = ['-O0', '-fcx-fortran-rules', '-fcx-limited-range',
         '-ftree-sra', '-ftree-ter', '-fexpensive-optimizations']
+    clang_compiler_flags = ['-O0', '--ffast-math']
 
-    print("With gcc, it is recommended to compile the following flags:", ' '.join(compiler_flags))
+    print("With gcc, it is recommended to compile the following flags:", ' '.join(gcc_compiler_flags))
+    print("With gcc, it is recommended to compile the following flags:", ' '.join(clang_compiler_flags))
 
 def main(args=None):
     p = ArgumentParser('gensolver')
