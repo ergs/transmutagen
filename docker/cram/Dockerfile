@@ -12,6 +12,10 @@ RUN git clone https://github.com/ergs/transmutagen.git
 
 ENV LD_LIBRARY_PATH=/opt/conda/lib
 
+ENV MATPLOTLIBRC=/home/matplotlibrc
+RUN mkdir -p $MATPLOTLIBRC
+RUN echo "backend : Agg" > $MATPLOTLIBRC/matplotlibrc
+
 WORKDIR /home/transmutagen
 
 ENTRYPOINT ["docker/cram/pull_and_cram.sh"]
