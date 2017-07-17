@@ -10,6 +10,8 @@ RUN conda install -y numpy scipy sympy matplotlib pyne mpmath xonsh gcc scikit-u
 
 RUN git clone https://github.com/ergs/transmutagen.git
 
+RUN pip install iterm2_tools
+
 ENV LD_LIBRARY_PATH=/opt/conda/lib
 
 ENV MATPLOTLIBRC=/root/matplotlibrc
