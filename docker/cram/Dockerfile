@@ -10,6 +10,8 @@ RUN conda install -y numpy scipy sympy matplotlib pyne mpmath xonsh gcc scikit-u
 
 RUN git clone https://github.com/ergs/transmutagen.git
 
+ENV LD_LIBRARY_PATH=/opt/conda/lib
+
 WORKDIR /home/transmutagen
 
 ENTRYPOINT ["docker/cram/pull_and_cram.sh"]
