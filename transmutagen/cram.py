@@ -346,6 +346,28 @@ def CRAM_exp(degree, prec=200, *, max_loops=30, c=None, maxsteps=None,
 
     return ret
 
+def get_local_CRAM_cache_file(degree, prec):
+    """
+    Get the location of the local CRAM cache file
+
+    See also get_installed_CRAM_cache_file().
+    """
+    local_cache = os.path.expanduser('~/.transmutagen/CRAM_cache')
+    os.makedirs(local_cache, exist_ok=True)
+    local_cache_file = os.path.join(local_cache, '%s_%s' % (degree, prec))
+    return local_cache_file
+
+def get_installed_CRAM_cache_file(degree, prec):
+    """
+    Get the location of the CRAM cache file that is installed with
+    transmutagen
+
+    See also get_local_CRAM_cache_file().
+    """
+    installed_cache = os.path.join(os.path.dirname(__file__), 'data', 'CRAM_cache')
+    installed_cache_file = os.path.join(installed_cache, '%s_%s' % (degree, prec))
+    return installed_cache_file
+
 def get_CRAM_from_cache(degree, prec, expr=None, plot=False, log=False,
     use_cache=True, **kwargs):
     if log:
@@ -357,11 +379,8 @@ def get_CRAM_from_cache(degree, prec, expr=None, plot=False, log=False,
         log_to_file = False
 
     if use_cache:
-        installed_cache = os.path.join(os.path.dirname(__file__), 'data', 'CRAM_cache')
-        local_cache = os.path.expanduser('~/.transmutagen/CRAM_cache')
-        os.makedirs(local_cache, exist_ok=True)
-        installed_cache_file = os.path.join(installed_cache, '%s_%s' % (degree, prec))
-        local_cache_file = os.path.join(local_cache, '%s_%s' % (degree, prec))
+        installed_cache_file = get_installed_CRAM_cache_file(degree, prec)
+        local_cache_file = get_local_CRAM_cache_file(degree, prec)
 
     if use_cache and not expr:
         if os.path.exists(installed_cache_file):
@@ -451,6 +470,9 @@ def main():
         help="Log output to a file (in the logs/ directory)")
     parser.add_argument('--log-level', default='info',
         choices=['debug', 'info', 'warning', 'error', 'critical'])
+    parser.add_argument('--save-cache', action="store_true", default=False,
+        help="""Save the computed CRAM expression to the local cache.""")
+
     try:
         import argcomplete
         argcomplete.autocomplete(parser)
@@ -471,7 +493,12 @@ def main():
         logger.setLevel(getattr(logging, args.log_level.upper()))
         del arguments['log_level']
 
-    CRAM_exp(**arguments)
+    expr = CRAM_exp(**arguments)
+
+    if args.save_cache:
+        local_cache_file = get_local_CRAM_cache_file(args.degree, args.prec)
+        with open(local_cache_file, 'w') as f:
+            f.write(srepr(expr))
 
 if __name__ == '__main__':
     main()
