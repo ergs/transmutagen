@@ -497,6 +497,7 @@ def main():
 
     if args.save_cache:
         local_cache_file = get_local_CRAM_cache_file(args.degree, args.prec)
+        print("Saving to", local_cache_file)
         with open(local_cache_file, 'w') as f:
             f.write(srepr(expr))
 
