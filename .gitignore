@@ -1,8 +1,8 @@
 # transmutagen stuff
 plots/
 logs/
-docker/ORIGEN.zip
-docker/o2prec
+ORIGEN.zip
+o2prec
 TAPE*
 log
 /data/
