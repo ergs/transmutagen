@@ -7,4 +7,4 @@ cd "$parent_path"
 
 docker build -f Dockerfile-base . -t origen-base
 docker build -f Dockerfile --no-cache . -t origen
-docker run -v "$parent_path/../data":/data -v "$parent_path/../logs":/logs -v "$parent_path/../CRAM_cache":/CRAM_cache origen "$@"
+docker run -v "$parent_path/../../data":/data -v "$parent_path/../../logs":/logs -v "$parent_path/../../CRAM_cache":/CRAM_cache origen "$@"

@@ -105,12 +105,12 @@ See `--help` and the `transmutagen.tape9utils` docs for more details.
 
 Put `ORIGEN.zip` in the `docker/` directory. Then run
 
-    ./docker/build_and_run.sh
+    ./docker/origen_all/build_and_run.sh
 
 This requires the docker daemon to be running, and may require `sudo`. There
 are various options, which you can see with
 
-    ./docker/build_and_run.sh --help
+    ./docker/origen_all/build_and_run.sh --help
 
 This will run both ORIGEN and transmutagen (CRAM) on a suite of ORIGEN
 libraries, starting nuclides, and times, writing the results to
