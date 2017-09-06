@@ -222,18 +222,22 @@ def analyze_cram_digits(max_degree=20):
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
 
-    parser.add_argument('--origen-results', default='data/results.hdf5',
+    origen = parser.add_argument_group('origen')
+    origen.add_argument('--origen', action='store_true', dest='origen',
+        help="""Run the origen analysis.""")
+    origen.add_argument('--origen-results', default='data/results.hdf5',
         help="""HDF5 file for the results of the ORIGEN runs.""")
-    parser.add_argument('--no-origen', action='store_false', dest='origen',
-        help="""Don't run the origen analysis.""")
-    parser.add_argument('--no-nofission', action='store_false',
-        dest='nofission', help="""Don't run the nofission analysis.""")
-    parser.add_argument('--no-eigenvals', action='store_false',
-        dest='eigenvals', help="""Don't run the eigenvalue analysis.""")
-    parser.add_argument('--cram-digits', action='store_true', help="""Analyze
+    nofission = parser.add_argument_group('nofission')
+    nofission.add_argument('--nofission', action='store_true',
+        dest='nofission', help="""Run the nofission analysis.""")
+    eigenvals = parser.add_argument_group('eigenvals')
+    eigenvals.add_argument('--eigenvals', action='store_true',
+        dest='eigenvals', help="""Run the eigenvalue analysis.""")
+    cram_digits = parser.add_argument_group('cram-digits')
+    cram_digits.add_argument('--cram-digits', action='store_true', help="""Analyze
         accuracy of CRAM digits. WARNING: If cache values have not been
         precomputed, this will take a long time (> 1 day) to compute.""")
-    parser.add_argument('--max-degree', type=int, help="""Max degree for
+    cram_digits.add_argument('--max-degree', type=int, help="""Max degree for
         --cram-digits. Default is 20.""", default=20)
     try:
         import argcomplete
