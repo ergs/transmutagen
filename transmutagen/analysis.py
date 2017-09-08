@@ -132,7 +132,7 @@ def analyze_eigenvals(pwru50_data='data/pwru50_400000000000000.0.npz', save_file
         plt_show_in_terminal()
         if save_file:
             path, ext = os.path.splitext(save_file)
-            plt.savefig(save_file + '_' + desc + ext)
+            plt.savefig(path + '_' + desc + ext)
 
 def analyze_cram_digits(max_degree=20):
     print("Computing coefficients (or getting from cache)")
