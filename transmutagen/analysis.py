@@ -115,9 +115,9 @@ def plot_matrix_sum_histogram(m, title='', axis=0):
     plt.close()
 
 
-def analyze_eigenvals(save_file=None):
+def analyze_eigenvals(pwru50_data='data/pwru50_400000000000000.0.npz', save_file=None):
     from py_solve.py_solve import DECAY_MATRIX, csr_from_flat
-    nucs, matpwru50 = load_sparse_csr('data/pwru50_400000000000000.0.npz')
+    nucs, matpwru50 = load_sparse_csr(pwru50_data)
     matdecay = csr_from_flat(DECAY_MATRIX)
     for desc, mat in {'pwru50': matpwru50, 'decay': matdecay}.items():
         plt.clf()
@@ -243,6 +243,8 @@ def analyze():
     eigenvals = parser.add_argument_group('eigenvals')
     eigenvals.add_argument('--eigenvals', action='store_true',
         dest='eigenvals', help="""Run the eigenvalue analysis.""")
+    eigenvals.add_argument('--pwru50-data', help="""Path to pwru50 data file
+        to analyze.""", default='data/pwru50_400000000000000.0.npz')
     cram_digits = parser.add_argument_group('cram-digits')
     cram_digits.add_argument('--cram-digits', action='store_true', help="""Analyze
         accuracy of CRAM digits. WARNING: If cache values have not been
@@ -261,7 +263,7 @@ def analyze():
     if args.nofission:
         analyze_nofission()
     if args.eigenvals:
-        analyze_eigenvals(save_file=args.save_file)
+        analyze_eigenvals(pwru50_data=args.pwru50_data, save_file=args.save_file)
     if args.cram_digits:
         analyze_cram_digits(args.max_degree)
 
