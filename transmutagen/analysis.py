@@ -261,7 +261,7 @@ def analyze():
     if args.nofission:
         analyze_nofission()
     if args.eigenvals:
-        analyze_eigenvals()
+        analyze_eigenvals(save_file=args.save_file)
     if args.cram_digits:
         analyze_cram_digits(args.max_degree)
 
