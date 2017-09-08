@@ -115,7 +115,7 @@ def plot_matrix_sum_histogram(m, title='', axis=0):
     plt.close()
 
 
-def analyze_eigenvals():
+def analyze_eigenvals(save_file=None):
     from py_solve.py_solve import DECAY_MATRIX, csr_from_flat
     nucs, matpwru50 = load_sparse_csr('data/pwru50_400000000000000.0.npz')
     matdecay = csr_from_flat(DECAY_MATRIX)
@@ -130,6 +130,9 @@ def analyze_eigenvals():
         plt.ylim([np.min(np.imag(eigvals))*10, np.max(np.imag(eigvals))*10])
         plt.title("Eigenvalues of transmutation matrix for " + desc)
         plt_show_in_terminal()
+        if save_file:
+            path, ext = os.path.splitext(save_file)
+            plt.savefig(save_file + '_' + desc + ext)
 
 def analyze_cram_digits(max_degree=20):
     print("Computing coefficients (or getting from cache)")
@@ -224,14 +227,16 @@ def analyze_cram_digits(max_degree=20):
 
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--save-file', help="""File name to save the plot(s)
+        to. For --eigenvals, a filename like "eigenvals.pdf" will be saved as
+        "eigenvals_pwru50.pdf" and "eigenvals_decay.pdf". If not provided the
+        plot is not saved.""")
 
     origen = parser.add_argument_group('origen')
     origen.add_argument('--origen', action='store_true', dest='origen',
         help="""Run the origen analysis.""")
     origen.add_argument('--origen-results', default='data/results.hdf5',
         help="""HDF5 file for the results of the ORIGEN runs.""")
-    origen.add_argument('--save-file', help="""File name to save the plot to.
-        If not provided the plot is not saved.""")
     nofission = parser.add_argument_group('nofission')
     nofission.add_argument('--nofission', action='store_true',
         dest='nofission', help="""Run the nofission analysis.""")
