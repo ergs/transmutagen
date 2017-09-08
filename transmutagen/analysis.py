@@ -14,7 +14,7 @@ from .util import plt_show_in_terminal, load_sparse_csr
 from .cram import get_CRAM_from_cache, CRAM_coeffs
 from .partialfrac import thetas_alphas
 
-def analyze_origen(file):
+def analyze_origen(file, save_file=None):
     plt.clf()
     fig, ax = plt.subplots()
 
@@ -77,6 +77,9 @@ several starting libraries, nuclides, and timesteps.""")
     ax.legend()
     plt.ylabel('Runtime (seconds)')
     plt.xlabel('Time step t')
+
+    if save_file:
+        plt.savefig(save_file)
 
     plt_show_in_terminal()
 
@@ -227,6 +230,8 @@ def analyze():
         help="""Run the origen analysis.""")
     origen.add_argument('--origen-results', default='data/results.hdf5',
         help="""HDF5 file for the results of the ORIGEN runs.""")
+    origen.add_argument('--save-file', help="""File name to save the plot to.
+        If not provided the plot is not saved.""")
     nofission = parser.add_argument_group('nofission')
     nofission.add_argument('--nofission', action='store_true',
         dest='nofission', help="""Run the nofission analysis.""")
@@ -247,7 +252,7 @@ def analyze():
     args = parser.parse_args()
 
     if args.origen:
-        analyze_origen(args.origen_results)
+        analyze_origen(args.origen_results, save_file=args.save_file)
     if args.nofission:
         analyze_nofission()
     if args.eigenvals:
