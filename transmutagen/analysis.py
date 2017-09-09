@@ -14,7 +14,7 @@ from .util import plt_show_in_terminal, load_sparse_csr
 from .cram import get_CRAM_from_cache, CRAM_coeffs
 from .partialfrac import thetas_alphas
 
-def analyze_origen(file, save_file=None):
+def analyze_origen(file, *, save_file=None, title=True):
     plt.clf()
     fig, ax = plt.subplots()
 
@@ -66,7 +66,8 @@ def analyze_origen(file, save_file=None):
 
     # Tweak spacing to prevent clipping of tick-labels
     plt.subplots_adjust(bottom=0.15)
-    plt.title("""Runtimes for different solvers computing transmutation over
+    if title:
+        plt.title("""Runtimes for different solvers computing transmutation over
 several starting libraries, nuclides, and timesteps.""")
 
     ax.set_xscale('log')
@@ -115,7 +116,8 @@ def plot_matrix_sum_histogram(m, title='', axis=0):
     plt.close()
 
 
-def analyze_eigenvals(pwru50_data='data/pwru50_400000000000000.0.npz', save_file=None):
+def analyze_eigenvals(*, pwru50_data='data/pwru50_400000000000000.0.npz',
+    save_file=None, title=True):
     from py_solve.py_solve import DECAY_MATRIX, csr_from_flat
     nucs, matpwru50 = load_sparse_csr(pwru50_data)
     matdecay = csr_from_flat(DECAY_MATRIX)
@@ -128,7 +130,8 @@ def analyze_eigenvals(pwru50_data='data/pwru50_400000000000000.0.npz', save_file
         plt.xscale('symlog')
         plt.xlim([np.min(np.real(eigvals))*2, 1])
         plt.ylim([np.min(np.imag(eigvals))*10, np.max(np.imag(eigvals))*10])
-        plt.title("Eigenvalues of transmutation matrix for " + desc)
+        if title:
+            plt.title("Eigenvalues of transmutation matrix for " + desc)
         plt_show_in_terminal()
         if save_file:
             path, ext = os.path.splitext(save_file)
@@ -231,6 +234,8 @@ def analyze():
         to. For --eigenvals, a filename like "eigenvals.pdf" will be saved as
         "eigenvals_pwru50.pdf" and "eigenvals_decay.pdf". If not provided the
         plot is not saved.""")
+    parser.add_argument('--no-title', action='store_false', dest='title',
+        help="""Don't add a title to plots""")
 
     origen = parser.add_argument_group('origen')
     origen.add_argument('--origen', action='store_true', dest='origen',
@@ -259,11 +264,13 @@ def analyze():
     args = parser.parse_args()
 
     if args.origen:
-        analyze_origen(args.origen_results, save_file=args.save_file)
+        analyze_origen(args.origen_results, save_file=args.save_file,
+            title=args.title)
     if args.nofission:
         analyze_nofission()
     if args.eigenvals:
-        analyze_eigenvals(pwru50_data=args.pwru50_data, save_file=args.save_file)
+        analyze_eigenvals(pwru50_data=args.pwru50_data,
+            save_file=args.save_file, title=args.title)
     if args.cram_digits:
         analyze_cram_digits(args.max_degree)
 
