@@ -11,7 +11,7 @@ slow = pytest.mark.skipif(
 TOTAL_DEGREES = 30
 
 from .crv_coeffs import coeffs as correct_coeffs
-from .partfrac_coeffs import part_frac_coeffs
+from .pusa_coeffs import part_frac_coeffs
 from ..cram import get_CRAM_from_cache, CRAM_coeffs
 from ..partialfrac import thetas_alphas
 
