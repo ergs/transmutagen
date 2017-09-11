@@ -273,15 +273,20 @@ def analyze_pusa_coeffs(*, file=None, title=True):
                             colorama.Style.RESET_ALL, sep='', end=' ')
                 print()
 
-    plot_difference(14, file=file, all_plots=False)
-    plot_difference(16, file=file, all_plots=False)
+        if file:
+            path, ext = os.path.splitext(file)
+            save_file = path + '-' + str(degree) + ext
+
+        plot_difference(degree, file=save_file, all_plots=False)
 
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--file', help="""File name to save the plot(s)
-        to. For --eigenvals, a filename like "eigenvals.pdf" will be saved as
+    parser.add_argument('--file', help="""File name to save the plot(s) to.
+        For --eigenvals, a filename like "eigenvals.pdf" will be saved as
         "eigenvals_pwru50.pdf" and "eigenvals_decay.pdf". If not provided the
-        plot is not saved.""")
+        plot is not saved. For --pusa-coeffs, a filename like
+        "pusa-difference.pdf" will be saved as "pusa-difference-14.pdf" and
+        "pusa-difference-16.pdf".""")
     parser.add_argument('--no-title', action='store_false', dest='title',
         help="""Don't add a title to plots""")
 
