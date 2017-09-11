@@ -339,7 +339,7 @@ def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.js
     clang_compiler_flags = ['-O0', '--ffast-math']
 
     print("With gcc, it is recommended to compile the following flags:", ' '.join(gcc_compiler_flags))
-    print("With gcc, it is recommended to compile the following flags:", ' '.join(clang_compiler_flags))
+    print("With clang, it is recommended to compile the following flags:", ' '.join(clang_compiler_flags))
 
 def main(args=None):
     p = ArgumentParser('gensolver')
