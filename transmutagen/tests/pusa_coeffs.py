@@ -153,17 +153,17 @@ def plot_difference(degree):
     # print('part_frac', part_frac)
     # print('paper_part_frac', paper_part_frac)
 
-    print("Difference between our partial fraction and paper partial fraction")
+    print("Difference between our partial fraction and Pusa paper partial fraction, degree", degree)
     plot_in_terminal(part_frac - paper_part_frac, (0, 100), prec=200, points=1000)
     cplot_in_terminal(part_frac - paper_part_frac, re=(0, 100), im=[-30, 30],
         prec=200, points=100000, verbose=False)
 
-    print("Difference between our partial fraction and exp(-t)")
+    print("Difference between our partial fraction and exp(-t), degree", degree)
     plot_in_terminal(part_frac - exp(-t), (0, 100), prec=200, points=1000)
     cplot_in_terminal(part_frac - exp(-t), re=(0, 100), im=[-30, 30],
         prec=200, points=100000, verbose=False)
 
-    print("Difference between paper partial fraction and exp(-t)")
+    print("Difference between Pusa paper partial fraction and exp(-t), degree", degree)
     plot_in_terminal(paper_part_frac - exp(-t), (0, 100), prec=200, points=1000)
     cplot_in_terminal(part_frac - exp(-t), re=(0, 100), im=[-30, 30],
         prec=200, points=100000, verbose=False)
