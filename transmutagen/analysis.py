@@ -273,6 +273,8 @@ def analyze_pusa_coeffs(*, file=None, title=True):
                             colorama.Style.RESET_ALL, sep='', end=' ')
                 print()
 
+    plot_difference(14, file=file, all_plots=False)
+    plot_difference(16, file=file, all_plots=False)
 
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
