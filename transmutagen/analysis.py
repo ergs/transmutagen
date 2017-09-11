@@ -2,6 +2,7 @@ from collections import defaultdict
 import os
 import argparse
 import decimal
+from ast import literal_eval
 
 import tables
 import numpy as np
@@ -229,8 +230,13 @@ def analyze_cram_digits(max_degree=20):
 
         plt_show_in_terminal()
 
-def analyze_pusa_coeffs():
-    from .tests.pusa_coeffs import part_frac_coeffs
+def analyze_pusa_coeffs(*, file=None, title=True):
+    from .tests.pusa_coeffs import part_frac_coeffs, plot_difference
+
+    try:
+        import colorama
+    except ImportError:
+        raise ImportError("colorama is required to use diff_strs")
 
     print("Differing coefficients:")
     for degree in [14, 16]:
@@ -261,6 +267,10 @@ def analyze_pusa_coeffs():
                     else:
                         our_str, pusa_str = format_str.format(decimal.Decimal(repr(imag_val))), imag_val_paper
                     diff_strs(pusa_str, our_str, end=' ')
+                    if not literal_eval(pusa_str) == literal_eval(our_str):
+                        print(colorama.Back.RED, colorama.Fore.WHITE,
+                            "<- Machine floats differ",
+                            colorama.Style.RESET_ALL, sep='', end=' ')
                 print()
 
 def analyze():
