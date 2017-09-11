@@ -200,5 +200,5 @@ def cram_from_part_frac(degree):
     return thetas_alphas_to_expr_expanded(thetas, alphas, alpha0)
 
 if __name__ == '__main__':
-    plot_difference(14)
-    plot_difference(16)
+    plot_difference(14, all_plots=True)
+    plot_difference(16, all_plots=True)
