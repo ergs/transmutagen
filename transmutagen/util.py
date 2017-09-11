@@ -96,23 +96,25 @@ def plot_in_terminal(expr, *args, prec=None, logname=None, file=None, **kwargs):
     Run mpmath.plot() but show in terminal if possible
     """
     from mpmath import plot
+
+    if logname:
+        os.makedirs('plots', exist_ok=True)
+        file = 'plots/%s.png' % logname
+
     if prec:
         mpmath.mp.dps = prec
     f = lambdify(t, expr, mpmath)
+
     try:
         from iterm2_tools.images import display_image_bytes
     except ImportError:
-        if logname:
-            os.makedirs('plots', exist_ok=True)
-            file = 'plots/%s.png' % logname
         plot(f, *args, file=file, **kwargs)
     else:
         from io import BytesIO
         b = BytesIO()
         plot(f, *args, **kwargs, file=b)
-        if logname:
-            os.makedirs('plots', exist_ok=True)
-            with open('plots/%s.png' % logname, 'wb') as f:
+        if file:
+            with open(file, 'wb') as f:
                 f.write(b.getvalue())
         print(display_image_bytes(b.getvalue()))
 
