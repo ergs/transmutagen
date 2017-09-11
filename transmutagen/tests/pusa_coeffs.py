@@ -135,7 +135,15 @@ def get_paper_part_frac(degree):
 
     return thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
 
-def plot_difference(degree):
+def plot_difference(degree, *, file=None, all_plots=False):
+    """
+    Plot the difference between our coefficients and the Pusa ones
+
+    The file argument is the file to save the plot to. If all_plots is True,
+    more plots are shown. Note that file only controls the first plot when
+    all_plots=True.
+
+    """
     # TODO: Avoid using SymPy's re, which evaluate to re form.
     from ..partialfrac import (thetas_alphas, thetas_alphas_to_expr_complex,
         customre, t)
@@ -154,7 +162,10 @@ def plot_difference(degree):
     # print('paper_part_frac', paper_part_frac)
 
     print("Difference between our partial fraction and Pusa paper partial fraction, degree", degree)
-    plot_in_terminal(part_frac - paper_part_frac, (0, 100), prec=200, points=1000)
+    plot_in_terminal(part_frac - paper_part_frac, (0, 100), prec=200,
+        points=1000, file=file)
+    if not all_plots:
+        return
     cplot_in_terminal(part_frac - paper_part_frac, re=(0, 100), im=[-30, 30],
         prec=200, points=100000, verbose=False)
 
