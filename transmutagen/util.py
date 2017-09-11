@@ -91,7 +91,7 @@ def cplot_in_terminal(expr, *args, prec=None, logname=None, color=lambda i:
         print(display_image_bytes(b.getvalue()))
 
 @conserve_mpmath_dps
-def plot_in_terminal(expr, *args, prec=None, logname=None, **kwargs):
+def plot_in_terminal(expr, *args, prec=None, logname=None, file=None, **kwargs):
     """
     Run mpmath.plot() but show in terminal if possible
     """
@@ -105,8 +105,6 @@ def plot_in_terminal(expr, *args, prec=None, logname=None, **kwargs):
         if logname:
             os.makedirs('plots', exist_ok=True)
             file = 'plots/%s.png' % logname
-        else:
-            file = None
         plot(f, *args, file=file, **kwargs)
     else:
         from io import BytesIO
