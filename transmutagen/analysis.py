@@ -1,6 +1,7 @@
 from collections import defaultdict
 import os
 import argparse
+import decimal
 
 import tables
 import numpy as np
@@ -10,7 +11,7 @@ from sympy import re, im, Float
 
 from .tests.test_transmute import run_transmute_test
 from .origen_all import TIME_STEPS
-from .util import plt_show_in_terminal, load_sparse_csr
+from .util import plt_show_in_terminal, load_sparse_csr, diff_strs
 from .cram import get_CRAM_from_cache, CRAM_coeffs
 from .partialfrac import thetas_alphas
 
@@ -228,6 +229,40 @@ def analyze_cram_digits(max_degree=20):
 
         plt_show_in_terminal()
 
+def analyze_pusa_coeffs():
+    from .tests.pusa_coeffs import part_frac_coeffs
+
+    print("Differing coefficients:")
+    for degree in [14, 16]:
+        print("Degree:", degree)
+        for typ in ['thetas', 'alphas', 'alpha0']:
+            for idx in range(degree//2) if typ != 'alpha0' else range(1):
+                print(typ, '-', idx, sep='', end=': ')
+                for real_imag in ['real', 'imag']:
+                    expr = get_CRAM_from_cache(degree, 200)
+                    thetas, alphas, alpha0 = thetas_alphas(expr, 200)
+                    format_str = '{:+.19e}'
+                    paper_coeffs = part_frac_coeffs[degree]
+                    # Thetas and alphas in the paper are negative what we have, and are only
+                    # counted once per conjugate.
+                    if typ == 'thetas':
+                        vals = [-i for i in thetas if im(-i) >= 0]
+                    elif typ == 'alphas':
+                        vals = [-j for i, j in zip(thetas, alphas) if im(-i) >= 0]
+                    elif typ == 'alpha0':
+                        vals = [alpha0]
+                    val = sorted(vals, key=im)[idx]
+                    real_val_paper, imag_val_paper = sorted(zip(paper_coeffs[typ]['real'],
+                        paper_coeffs[typ]['imaginary']), key=lambda i: float(i[1]))[idx]
+
+                    real_val, imag_val = val.as_real_imag()
+                    if real_imag == 'real':
+                        our_str, pusa_str = format_str.format(decimal.Decimal(repr(real_val))), real_val_paper
+                    else:
+                        our_str, pusa_str = format_str.format(decimal.Decimal(repr(imag_val))), imag_val_paper
+                    diff_strs(pusa_str, our_str, end=' ')
+                print()
+
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--save-file', help="""File name to save the plot(s)
@@ -256,6 +291,12 @@ def analyze():
         precomputed, this will take a long time (> 1 day) to compute.""")
     cram_digits.add_argument('--max-degree', type=int, help="""Max degree for
         --cram-digits. Default is 20.""", default=20)
+    pusa_coeffs = parser.add_argument_group('Pusa coefficients')
+    pusa_coeffs.add_argument('--pusa-coeffs', action='store_true',
+        help="""Analyze the coefficients from the Maria Pusa paper "Correction to
+        Partial Fraction Decomposition Coefficients for Chebyshev Rational
+        Approximation on the Negative Real Axis".""")
+
     try:
         import argcomplete
         argcomplete.autocomplete(parser)
@@ -273,6 +314,8 @@ def analyze():
             save_file=args.save_file, title=args.title)
     if args.cram_digits:
         analyze_cram_digits(args.max_degree)
+    if args.pusa_coeffs:
+        analyze_pusa_coeffs()
 
 if __name__ == '__main__':
     analyze()
