@@ -16,7 +16,7 @@ from sympy.utilities.decorator import conserve_mpmath_dps
 
 t = symbols('t', real=True)
 
-def diff_strs(a, b):
+def diff_strs(a, b, end='\n'):
     """
     Print a colored character-by-character diff of a and b.
 
@@ -44,7 +44,7 @@ def diff_strs(a, b):
         elif op == 'delete':
             print(colorama.Fore.RED, a[i1:j1], sep='', end='')
         print(colorama.Style.RESET_ALL, end='')
-    print()
+    print(end, end='')
 
 def relative_error(exact, approx):
     return abs(exact - approx)/exact
