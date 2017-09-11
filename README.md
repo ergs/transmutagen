@@ -12,7 +12,7 @@ it.
 Transmutagen also depends on
 
  - mpmath
- - sympy (git master)
+ - sympy v1.1
  - matplotlib
  - numpy
  - scipy
