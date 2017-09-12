@@ -276,6 +276,8 @@ def analyze_pusa_coeffs(*, file=None, title=True):
         if file:
             path, ext = os.path.splitext(file)
             save_file = path + '-' + str(degree) + ext
+        else:
+            save_file = None
 
         plot_difference(degree, file=save_file, all_plots=False)
 
