@@ -86,17 +86,23 @@ several starting libraries, nuclides, and timesteps.""")
 
     plt_show_in_terminal()
 
-def analyze_nofission():
+def analyze_nofission(*, run_all=False):
     plt.clf()
     for time, time_name in sorted(TIME_STEPS.items()):
         nofission_transmutes = {}
-        for f in os.listdir('data'):
-            if f.endswith('_nofission.npz'):
-                lib = f.split('_', 1)[0]
-                data = os.path.join('data', f)
-                print("analyzing", data, 'on', time_name)
-                nofission_transmutes[lib] = run_transmute_test(data, 14, 200,
-                    time, run_all=False, _print=True)
+        if run_all:
+            for f in os.listdir('data'):
+                if f.endswith('_nofission.npz'):
+                    lib = f.split('_', 1)[0]
+                    data = os.path.join('data', f)
+                    print("analyzing", data, 'on', time_name)
+                    nofission_transmutes[lib] = run_transmute_test(data, 14, 200,
+                        time, run_all=False, _print=True)
+        else:
+            data = os.path.join(os.path.dirname(__file__), 'tests', 'data', 'pwru50_400000000000000.0_nofission.npz')
+            print("analyzing", data, 'on', time_name)
+            nofission_transmutes['pwru50'] = run_transmute_test(data, 14, 200,
+                time, run_all=False, _print=True)
 
         for lib in nofission_transmutes:
             for r in nofission_transmutes[lib]:
@@ -300,6 +306,10 @@ def analyze():
     nofission = parser.add_argument_group('nofission')
     nofission.add_argument('--nofission', action='store_true',
         dest='nofission', help="""Run the nofission analysis.""")
+    nofission.add_argument('--run-all', action='store_true', help="""Run the
+        nofission analysis on all the nofission data in the data/ directory.
+        The default is to run the analysis on the pwru50 data in the
+        transmutagen/tests directory.""")
     eigenvals = parser.add_argument_group('eigenvals')
     eigenvals.add_argument('--eigenvals', action='store_true',
         dest='eigenvals', help="""Run the eigenvalue analysis.""")
@@ -328,7 +338,7 @@ def analyze():
         analyze_origen(args.origen_results, file=args.file,
             title=args.title)
     if args.nofission:
-        analyze_nofission()
+        analyze_nofission(run_all=args.run_all)
     if args.eigenvals:
         analyze_eigenvals(pwru50_data=args.pwru50_data,
             file=args.file, title=args.title)
