@@ -102,7 +102,7 @@ def analyze_nofission(*, run_all=False):
             data = os.path.join(os.path.dirname(__file__), 'tests', 'data', 'pwru50_400000000000000.0_nofission.npz')
             print("analyzing", data, 'on', time_name)
             nofission_transmutes['pwru50'] = run_transmute_test(data, 14, 200,
-                time, run_all=False, _print=True)
+                time, run_all=run_all, _print=True)
 
         for lib in nofission_transmutes:
             for r in nofission_transmutes[lib]:
@@ -303,24 +303,30 @@ def analyze():
         help="""Run the origen analysis.""")
     origen.add_argument('--origen-results', default='data/results.hdf5',
         help="""HDF5 file for the results of the ORIGEN runs.""")
+
     nofission = parser.add_argument_group('nofission')
     nofission.add_argument('--nofission', action='store_true',
         dest='nofission', help="""Run the nofission analysis.""")
     nofission.add_argument('--run-all', action='store_true', help="""Run the
-        nofission analysis on all the nofission data in the data/ directory.
-        The default is to run the analysis on the pwru50 data in the
-        transmutagen/tests directory.""")
+        nofission analysis on all the nofission data in the data/ directory
+        against all time steps and with all solvers. The default is to run the analysis on the
+        pwru50 data in the transmutagen/tests directory and only against 1
+        second, 1 year, 1000 years, and 1 million years, against the generated
+    C solver, part_frac_complex, and scipy.sparse.linalg.expm.""")
+
     eigenvals = parser.add_argument_group('eigenvals')
     eigenvals.add_argument('--eigenvals', action='store_true',
         dest='eigenvals', help="""Run the eigenvalue analysis.""")
     eigenvals.add_argument('--pwru50-data', help="""Path to pwru50 data file
         to analyze.""", default='data/pwru50_400000000000000.0.npz')
+
     cram_digits = parser.add_argument_group('cram-digits')
     cram_digits.add_argument('--cram-digits', action='store_true', help="""Analyze
         accuracy of CRAM digits. WARNING: If cache values have not been
         precomputed, this will take a long time (> 1 day) to compute.""")
     cram_digits.add_argument('--max-degree', type=int, help="""Max degree for
         --cram-digits. Default is 20.""", default=20)
+
     pusa_coeffs = parser.add_argument_group('Pusa coefficients')
     pusa_coeffs.add_argument('--pusa-coeffs', action='store_true',
         help="""Analyze the coefficients from the Maria Pusa paper "Correction to
