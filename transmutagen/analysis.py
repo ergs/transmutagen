@@ -122,7 +122,8 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
                     print("Could not compute", r, "for", lib)
                     continue
 
-                title = title or lib + ' ' + r + ' ' + time_name
+                if title:
+                    title = lib + ' ' + r + ' ' + time_name
                 if file:
                     path, ext = os.path.splitext(file)
                     filename = '-'.join([path, lib, filename_translation[r],
