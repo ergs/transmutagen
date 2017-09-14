@@ -86,9 +86,18 @@ several starting libraries, nuclides, and timesteps.""")
 
     plt_show_in_terminal()
 
-def analyze_nofission(*, run_all=False):
+def analyze_nofission(*, run_all=False, file=None, title=True):
+    filename_translation = defaultdict(lambda i: i, {
+        'transmutagen generated C solver': 'c-solve',
+        'part_frac_complex': 'lambdify',
+        'scipy.sparse.linalg.expm': 'expm',
+        })
+
     plt.clf()
     for time, time_name in sorted(TIME_STEPS.items()):
+        if not run_all and time_name not in ['1 day', '1 year',
+            '1000 years', '1 million years']:
+            continue
         nofission_transmutes = {}
         if run_all:
             for f in os.listdir('data'):
@@ -112,15 +121,27 @@ def analyze_nofission(*, run_all=False):
                 if m is None or np.isnan(m).any() or np.isinf(m).any():
                     print("Could not compute", r, "for", lib)
                     continue
-                title = lib + ' ' + r + ' ' + time_name
-                plot_matrix_sum_histogram(m, title)
 
-def plot_matrix_sum_histogram(m, title='', axis=0):
+                title = title or lib + ' ' + r + ' ' + time_name
+                if file:
+                    path, ext = os.path.splitext(file)
+                    filename = '-'.join([path, lib, filename_translation[r],
+                        time_name.replace(' ', '-')]) + ext
+                    print("Saving to", file)
+                else:
+                    filename = file
+
+                plot_matrix_sum_histogram(m, title=title, file=filename)
+
+def plot_matrix_sum_histogram(m, *, title='', axis=0, file=None):
     plt.clf()
     plt.hist(np.asarray(np.sum(m, axis=axis)).flatten())
     plt.yscale('log', nonposy='clip')
-    plt.title(title)
+    if title:
+        plt.title(title)
     plt_show_in_terminal()
+    if file:
+        plt.savefig(file)
     plt.close()
 
 
@@ -291,10 +312,15 @@ def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--file', help="""File name to save the plot(s) to.
         For --eigenvals, a filename like "eigenvals.pdf" will be saved as
-        "eigenvals_pwru50.pdf" and "eigenvals_decay.pdf". If not provided the
-        plot is not saved. For --pusa-coeffs, a filename like
-        "pusa-difference.pdf" will be saved as "pusa-difference-14.pdf" and
-        "pusa-difference-16.pdf".""")
+        "eigenvals_pwru50.pdf" and "eigenvals_decay.pdf". For --pusa-coeffs, a
+        filename like "pusa-difference.pdf" will be saved as
+        "pusa-difference-14.pdf" and "pusa-difference-16.pdf". For
+        --nofission, a filename like "nofission.pdf" will be saved as
+        "nofission-pwru50-c-solve-1-second.pdf",
+        "nofission-pwru50-expm-1-year.pdf",
+        "nofission-pwru50-lambdify-1-million-years.pdf", etc.
+
+        If not provided the plot is not saved.""")
     parser.add_argument('--no-title', action='store_false', dest='title',
         help="""Don't add a title to plots""")
 
@@ -309,10 +335,11 @@ def analyze():
         dest='nofission', help="""Run the nofission analysis.""")
     nofission.add_argument('--run-all', action='store_true', help="""Run the
         nofission analysis on all the nofission data in the data/ directory
-        against all time steps and with all solvers. The default is to run the analysis on the
-        pwru50 data in the transmutagen/tests directory and only against 1
-        second, 1 year, 1000 years, and 1 million years, against the generated
-    C solver, part_frac_complex, and scipy.sparse.linalg.expm.""")
+        against all time steps and with all solvers. The default is to run the
+        analysis on the pwru50 data in the transmutagen/tests directory and
+        only against 1 day, 1 year, 1000 years, and 1 million years,
+        against the generated C solver, part_frac_complex, and
+        scipy.sparse.linalg.expm.""")
 
     eigenvals = parser.add_argument_group('eigenvals')
     eigenvals.add_argument('--eigenvals', action='store_true',
@@ -344,7 +371,8 @@ def analyze():
         analyze_origen(args.origen_results, file=args.file,
             title=args.title)
     if args.nofission:
-        analyze_nofission(run_all=args.run_all)
+        analyze_nofission(run_all=args.run_all, file=args.file,
+            title=args.title)
     if args.eigenvals:
         analyze_eigenvals(pwru50_data=args.pwru50_data,
             file=args.file, title=args.title)
