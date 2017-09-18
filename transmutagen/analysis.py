@@ -160,6 +160,12 @@ def analyze_eigenvals(*, pwru50_data='data/pwru50_400000000000000.0.npz',
         plt.xscale('symlog')
         plt.xlim([np.min(np.real(eigvals))*2, 1])
         plt.ylim([np.min(np.imag(eigvals))*10, np.max(np.imag(eigvals))*10])
+        plt.xticks([0] +
+            [-10**i for i in range(1, int(np.ceil(np.log10(-plt.xlim()[0]))), 2)])
+        plt.yticks([-10**i for i in range(-19, int(np.log10(plt.ylim()[0])), 2)] +
+            [0] +
+            [10**i for i in range(-19, int(np.log10(plt.ylim()[1])), 2)])
+        plt.minorticks_off()
         if title:
             plt.title("Eigenvalues of transmutation matrix for " + desc)
         plt_show_in_terminal()
