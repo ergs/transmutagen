@@ -135,7 +135,7 @@ def get_paper_part_frac(degree):
 
     return thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
 
-def plot_difference(degree, *, file=None, all_plots=False):
+def plot_difference(*, file=None, all_plots=False):
     """
     Plot the difference between our coefficients and the Pusa ones
 
@@ -151,33 +151,42 @@ def plot_difference(degree, *, file=None, all_plots=False):
     from ..util import plot_in_terminal, cplot_in_terminal
     from sympy import re, exp
 
-    expr = get_CRAM_from_cache(degree, 200)
-    thetas, alphas, alpha0 = thetas_alphas(expr, 200)
-    part_frac = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
-    part_frac = part_frac.replace(customre, re)
+    part_fracs = {}
+    paper_part_fracs = {}
+    for degree in [14, 16]:
+        expr = get_CRAM_from_cache(degree, 200)
+        thetas, alphas, alpha0 = thetas_alphas(expr, 200)
+        part_frac = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
+        part_frac = part_frac.replace(customre, re)
 
-    paper_part_frac = get_paper_part_frac(degree).replace(customre, re)
+        paper_part_frac = get_paper_part_frac(degree).replace(customre, re)
+
+        part_fracs[degree] = part_frac
+        paper_part_fracs[degree] = paper_part_frac
 
     # print('part_frac', part_frac)
     # print('paper_part_frac', paper_part_frac)
 
-    print("Difference between our partial fraction and Pusa paper partial fraction, degree", degree)
-    plot_in_terminal(part_frac - paper_part_frac, (0, 100), prec=200,
-        points=1000, file=file)
     if not all_plots:
-        return
-    cplot_in_terminal(part_frac - paper_part_frac, re=(0, 100), im=[-30, 30],
-        prec=200, points=100000, verbose=False)
+        plot_in_terminal([part_fracs[14] - paper_part_fracs[14],
+            part_fracs[16] - paper_part_fracs[16]], (0, 100), prec=200,
+            points=1000, file=file)
+    else:
+        print("Difference between our partial fraction and Pusa paper partial fraction, degree", degree)
+        plot_in_terminal(part_frac - paper_part_frac, (0, 100), prec=200,
+            points=1000, file=file)
+        cplot_in_terminal(part_frac - paper_part_frac, re=(0, 100), im=[-30, 30],
+            prec=200, points=100000, verbose=False)
 
-    print("Difference between our partial fraction and exp(-t), degree", degree)
-    plot_in_terminal(part_frac - exp(-t), (0, 100), prec=200, points=1000)
-    cplot_in_terminal(part_frac - exp(-t), re=(0, 100), im=[-30, 30],
-        prec=200, points=100000, verbose=False)
+        print("Difference between our partial fraction and exp(-t), degree", degree)
+        plot_in_terminal(part_frac - exp(-t), (0, 100), prec=200, points=1000)
+        cplot_in_terminal(part_frac - exp(-t), re=(0, 100), im=[-30, 30],
+            prec=200, points=100000, verbose=False)
 
-    print("Difference between Pusa paper partial fraction and exp(-t), degree", degree)
-    plot_in_terminal(paper_part_frac - exp(-t), (0, 100), prec=200, points=1000)
-    cplot_in_terminal(part_frac - exp(-t), re=(0, 100), im=[-30, 30],
-        prec=200, points=100000, verbose=False)
+        print("Difference between Pusa paper partial fraction and exp(-t), degree", degree)
+        plot_in_terminal(paper_part_frac - exp(-t), (0, 100), prec=200, points=1000)
+        cplot_in_terminal(part_frac - exp(-t), re=(0, 100), im=[-30, 30],
+            prec=200, points=100000, verbose=False)
 
 def cram_from_part_frac(degree):
     from ..partialfrac import thetas_alphas_to_expr_expanded
@@ -200,5 +209,4 @@ def cram_from_part_frac(degree):
     return thetas_alphas_to_expr_expanded(thetas, alphas, alpha0)
 
 if __name__ == '__main__':
-    plot_difference(14, all_plots=True)
-    plot_difference(16, all_plots=True)
+    plot_difference(all_plots=True)

@@ -301,22 +301,14 @@ def analyze_pusa_coeffs(*, file=None, title=True):
                             colorama.Style.RESET_ALL, sep='', end=' ')
                 print()
 
-        if file:
-            path, ext = os.path.splitext(file)
-            save_file = path + '-' + str(degree) + ext
-        else:
-            save_file = None
-
-        plot_difference(degree, file=save_file, all_plots=False)
+    plot_difference(file=file, all_plots=False)
 
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--file', help="""File name to save the plot(s) to.
-        For --eigenvals, a filename like "eigenvals.pdf" will be saved as
-        "eigenvals_pwru50.pdf" and "eigenvals_decay.pdf". For --pusa-coeffs, a
-        filename like "pusa-difference.pdf" will be saved as
-        "pusa-difference-14.pdf" and "pusa-difference-16.pdf". For
-        --nofission, a filename like "nofission.pdf" will be saved as
+    parser.add_argument('--file', help="""File name to save the plot(s) to. For --eigenvals, a filename like
+        "eigenvals.pdf" will be saved as "eigenvals_pwru50.pdf" and
+        "eigenvals_decay.pdf". For --nofission, a filename like
+        "nofission.pdf" will be saved as
         "nofission-pwru50-c-solve-1-second.pdf",
         "nofission-pwru50-expm-1-year.pdf",
         "nofission-pwru50-lambdify-1-million-years.pdf", etc.
