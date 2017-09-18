@@ -151,6 +151,8 @@ def plot_difference(*, file=None, all_plots=False):
     from ..util import plot_in_terminal, cplot_in_terminal
     from sympy import re, exp
 
+    import matplotlib.pyplot as plt
+
     part_fracs = {}
     paper_part_fracs = {}
     for degree in [14, 16]:
@@ -168,9 +170,16 @@ def plot_difference(*, file=None, all_plots=False):
     # print('paper_part_frac', paper_part_frac)
 
     if not all_plots:
+        # mpmath.plot doesn't allow us to customize the way the plot looks, so
+        # we have it plot it, and then change it directly from pylab, then use
+        # plt.savefig to actually save the file
         plot_in_terminal([part_fracs[14] - paper_part_fracs[14],
             part_fracs[16] - paper_part_fracs[16]], (0, 100), prec=200,
-            points=1000, file=file)
+            points=1000, file=None)
+        axes = plt.gca()
+        axes.set_xlabel('t')
+        axes.set_ylabel(r'Difference in $\hat{r}_{k,k}$')
+        plt.savefig(file)
     else:
         print("Difference between our partial fraction and Pusa paper partial fraction, degree", degree)
         plot_in_terminal(part_frac - paper_part_frac, (0, 100), prec=200,
