@@ -301,6 +301,10 @@ def analyze_pusa_coeffs(*, file=None, title=True):
                             colorama.Style.RESET_ALL, sep='', end=' ')
                 print()
 
+    from matplotlib import rcParams
+    rcParams['pgf.texsystem'] = 'pdflatex'
+    rcParams["text.usetex"] = True
+
     plot_difference(file=file, all_plots=False)
 
 def analyze():
