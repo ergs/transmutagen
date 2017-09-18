@@ -103,7 +103,10 @@ def plot_in_terminal(expr, *args, prec=None, logname=None, file=None, **kwargs):
 
     if prec:
         mpmath.mp.dps = prec
-    f = lambdify(t, expr, mpmath)
+    if isinstance(expr, (list, tuple)):
+        f = [lambdify(t, i, 'mpmath') for i in expr]
+    else:
+        f = lambdify(t, expr, 'mpmath')
 
     try:
         from iterm2_tools.images import display_image_bytes
