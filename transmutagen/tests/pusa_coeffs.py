@@ -186,6 +186,7 @@ def plot_difference(*, file=None, all_plots=False):
         plt.yticks(locs, [r"$%d\times 10^{%d}$" % (int(i/1e-19), -19) for i
             in locs])
 
+        plt.tight_layout()
         plt.savefig(file)
     else:
         print("Difference between our partial fraction and Pusa paper partial fraction, degree", degree)
