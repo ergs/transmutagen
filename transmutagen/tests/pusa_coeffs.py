@@ -178,7 +178,8 @@ def plot_difference(*, file=None, all_plots=False):
             points=1000, file=None)
         axes = plt.gca()
         axes.set_xlabel('t')
-        axes.set_ylabel(r'Difference in $\hat{r}_{k,k}$')
+        axes.set_ylabel(r'Difference in $\hat{r}_{k,k}(t)$')
+        plt.legend(['Degree 14', 'Degree 16'])
         plt.savefig(file)
     else:
         print("Difference between our partial fraction and Pusa paper partial fraction, degree", degree)
