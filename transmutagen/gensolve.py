@@ -252,6 +252,7 @@ def make_ijk(ij, N):
 
 
 def get_thetas_alphas(degree, prec=200, use_cache=True):
+    print("Computing coefficients for degree", degree)
     rat_func = get_CRAM_from_cache(degree, prec, log=True, plot=False, use_cache=use_cache)
 
     thetas, alphas, alpha0 = thetas_alphas(rat_func, prec)
