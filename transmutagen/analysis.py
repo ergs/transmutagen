@@ -81,6 +81,10 @@ several starting libraries, nuclides, and timesteps.""")
     plt.ylabel('Runtime (seconds)')
     plt.xlabel('Time step t')
 
+    from matplotlib import rcParams
+    rcParams['pgf.texsystem'] = 'pdflatex'
+    rcParams["text.usetex"] = True
+
     if file:
         plt.savefig(file)
 
