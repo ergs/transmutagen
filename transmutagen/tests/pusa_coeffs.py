@@ -180,6 +180,12 @@ def plot_difference(*, file=None, all_plots=False):
         axes.set_xlabel('t')
         axes.set_ylabel(r'Difference in $\hat{r}_{k,k}(t)$')
         plt.legend(['Degree 14', 'Degree 16'])
+
+        # Put "x 10^-19" on every y-axis tick
+        locs, labels = plt.yticks()
+        plt.yticks(locs, [r"$%d\times 10^{%d}$" % (int(i/1e-19), -19) for i
+            in locs])
+
         plt.savefig(file)
     else:
         print("Difference between our partial fraction and Pusa paper partial fraction, degree", degree)
