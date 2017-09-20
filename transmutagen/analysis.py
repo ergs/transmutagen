@@ -92,12 +92,6 @@ several starting libraries, nuclides, and timesteps.""")
     plt_show_in_terminal()
 
 def analyze_nofission(*, run_all=False, file=None, title=True):
-    filename_translation = defaultdict(lambda i: i, {
-        'transmutagen generated C solver': 'c-solve',
-        'part_frac_complex': 'lambdify',
-        'scipy.sparse.linalg.expm': 'expm',
-        })
-
     plt.clf()
     for time, time_name in sorted(TIME_STEPS.items()):
         if not run_all and time_name not in ['1 day', '1 year', '1000 years', '1 million years']:
