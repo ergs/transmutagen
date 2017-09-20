@@ -16,6 +16,11 @@ from .util import plt_show_in_terminal, load_sparse_csr, diff_strs
 from .cram import get_CRAM_from_cache, CRAM_coeffs
 from .partialfrac import thetas_alphas
 
+def setup_matplotlib_rc():
+    from matplotlib import rcParams
+    rcParams['pgf.texsystem'] = 'pdflatex'
+    rcParams["text.usetex"] = True
+
 def analyze_origen(origen_results, *, file=None, title=True):
     plt.clf()
     fig, ax = plt.subplots()
@@ -80,10 +85,6 @@ several starting libraries, nuclides, and timesteps.""")
     ax.legend()
     plt.ylabel('Runtime (seconds)')
     plt.xlabel('Time step t')
-
-    from matplotlib import rcParams
-    rcParams['pgf.texsystem'] = 'pdflatex'
-    rcParams["text.usetex"] = True
 
     if file:
         plt.savefig(file)
@@ -326,10 +327,6 @@ def analyze_pusa_coeffs(*, file=None, title=True):
                             colorama.Style.RESET_ALL, sep='', end=' ')
                 print()
 
-    from matplotlib import rcParams
-    rcParams['pgf.texsystem'] = 'pdflatex'
-    rcParams["text.usetex"] = True
-
     plot_difference(file=file, all_plots=False)
 
 def analyze():
@@ -388,6 +385,8 @@ def analyze():
     except ImportError:
         pass
     args = parser.parse_args()
+
+    setup_matplotlib_rc()
 
     if args.origen:
         analyze_origen(args.origen_results, file=args.file,
