@@ -113,7 +113,7 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
 
         plt.clf()
         fig, axes = plt.subplots(1, 3)
-        fig.set_size_inches(6.4*3, 4.8)
+        fig.set_size_inches(6.4, 4.8/3)
         for lib in nofission_transmutes:
             for r, ax in zip(['scipy.sparse.linalg.expm', 'part_frac_complex',
                 'transmutagen generated C solver'], axes):
