@@ -99,8 +99,7 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
 
     plt.clf()
     for time, time_name in sorted(TIME_STEPS.items()):
-        if not run_all and time_name not in ['1 day', '1 year',
-            '1000 years', '1 million years']:
+        if not run_all and time_name not in ['1 day', '1 year', '1000 years', '1 million years']:
             continue
         nofission_transmutes = {}
         if run_all:
@@ -117,8 +116,11 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
             nofission_transmutes['pwru50'] = run_transmute_test(data, 14, 200,
                 time, run_all=run_all, _print=True)
 
+        plt.clf()
+        fig, axes = plt.subplots(1, 3)
+        fig.set_size_inches(6.4*3, 4.8)
         for lib in nofission_transmutes:
-            for r in nofission_transmutes[lib]:
+            for r, ax in zip(nofission_transmutes[lib], axes):
                 m = nofission_transmutes[lib][r]
                 if not isinstance(m, np.ndarray):
                     m = m.toarray()
@@ -128,15 +130,26 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
 
                 if title:
                     title = lib + ' ' + r + ' ' + time_name
-                if file:
-                    path, ext = os.path.splitext(file)
-                    filename = '-'.join([path, lib, filename_translation[r],
-                        time_name.replace(' ', '-')]) + ext
-                    print("Saving to", file)
-                else:
-                    filename = file
 
-                plot_matrix_sum_histogram(m, title=title, file=filename)
+                ax.hist(np.asarray(np.sum(m, axis=0)).flatten())
+                ax.set_yscale('log', nonposy='clip')
+
+                if title:
+                    ax.set_title(title)
+
+                ax.get_xaxis().get_major_formatter().set_useOffset(False)
+
+            plt_show_in_terminal()
+            if file:
+                path, ext = os.path.splitext(file)
+                filename = '-'.join([path, lib, time_name.replace(' ', '-')]) + ext
+                print("Saving to", file)
+            else:
+                filename = file
+
+            if filename:
+                plt.savefig(filename)
+            plt.close()
 
 def plot_matrix_sum_histogram(m, *, title='', axis=0, file=None):
     plt.clf()
