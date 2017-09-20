@@ -145,7 +145,7 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
             if file:
                 path, ext = os.path.splitext(file)
                 filename = '-'.join([path, lib, time_name.replace(' ', '-')]) + ext
-                print("Saving to", file)
+                print("Saving to", filename)
             else:
                 filename = file
 
