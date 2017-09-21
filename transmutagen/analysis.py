@@ -138,8 +138,6 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
                     ax.set_title(r'\texttt{%s}' % r.replace('_',
                         r'\_').replace('.', r'.\allowbreak{}'))
 
-                ax.get_xaxis().get_major_formatter().set_useOffset(False)
-
             plt_show_in_terminal()
             if file:
                 path, ext = os.path.splitext(file)
