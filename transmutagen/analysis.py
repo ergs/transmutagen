@@ -113,7 +113,7 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
 
         plt.clf()
         fig, axes = plt.subplots(1, 3)
-        fig.set_size_inches(2*6.4, 2/3*4.8)
+        fig.set_size_inches(1.5*6.4, 1.5/3*4.8)
         for lib in nofission_transmutes:
             if title:
                 plt.title(time_name)
