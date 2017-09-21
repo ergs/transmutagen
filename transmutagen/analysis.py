@@ -130,6 +130,10 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
 
                 ax.hist(np.asarray(np.sum(m, axis=0)).flatten())
                 ax.set_yscale('log', nonposy='clip')
+                # Put "x 10^-19" on every y-axis tick
+                locs = ax.get_yticks()
+                ax.set_yticklabels([r"$%d\times 10^{%d}$" % (int(i/1e-19), -19) for i
+            in locs])
 
                 if title:
                     ax.set_title(r'\texttt{%s}' % r.replace('_',
