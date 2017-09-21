@@ -115,6 +115,8 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
         fig, axes = plt.subplots(1, 3)
         fig.set_size_inches(6.4, 4.8/3)
         for lib in nofission_transmutes:
+            if title:
+                plt.title(time_name)
             for r, ax in zip(['scipy.sparse.linalg.expm', 'part_frac_complex',
                 'transmutagen generated C solver'], axes):
 
@@ -125,14 +127,13 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
                     print("Could not compute", r, "for", lib)
                     continue
 
-                if title:
-                    title = lib + ' ' + r + ' ' + time_name
 
                 ax.hist(np.asarray(np.sum(m, axis=0)).flatten())
                 ax.set_yscale('log', nonposy='clip')
 
                 if title:
-                    ax.set_title(title)
+                    ax.set_title(r'\texttt{%s}' % r.replace('_',
+                        r'\_').replace('.', r'.\allowbreak{}'))
 
                 ax.get_xaxis().get_major_formatter().set_useOffset(False)
 
