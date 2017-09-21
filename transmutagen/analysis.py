@@ -164,13 +164,8 @@ def pretty_float(i):
     exponent = int(float_exponent)
     lead_digit = int(i/10**float_exponent)
 
-    # if -3 <= exponent <= -1:
-    #     return str(i)[:5]
-    # if exponent == 0:
-    #     return str(lead_digit)
     if -3 <= exponent <= 3:
         return str(i)[:6]
-        return "%.0f" % i
     return r"$%d\times 10^{%d}$" % (lead_digit, exponent)
 
 def plot_matrix_sum_histogram(m, *, title='', axis=0, file=None):
