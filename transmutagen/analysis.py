@@ -130,10 +130,9 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
 
                 ax.hist(np.asarray(np.sum(m, axis=0)).flatten())
                 ax.set_yscale('log', nonposy='clip')
-                # Put "x 10^-19" on every y-axis tick
-                locs = ax.get_yticks()
-                ax.set_yticklabels([r"$%d\times 10^{%d}$" % (int(i/1e-19), -19) for i
-            in locs])
+                # Put "x 10^-19" on every x-axis tick
+                locs = ax.get_xticks()
+                ax.set_xticklabels([pretty_float(i) for i in locs])
 
                 if title:
                     ax.set_title(r'\texttt{%s}' % r.replace('_',
@@ -152,6 +151,27 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
             if filename:
                 plt.savefig(filename)
             plt.close()
+
+def pretty_float(i):
+    """
+    This function is specifically for the xticks in the nofission graphs. It
+    might not give appropiate representations for other contexts.
+
+    """
+    if i == 0:
+        return '0'
+    float_exponent = np.floor(np.log10(abs(i)))
+    exponent = int(float_exponent)
+    lead_digit = int(i/10**float_exponent)
+
+    # if -3 <= exponent <= -1:
+    #     return str(i)[:5]
+    # if exponent == 0:
+    #     return str(lead_digit)
+    if -3 <= exponent <= 3:
+        return str(i)[:6]
+        return "%.0f" % i
+    return r"$%d\times 10^{%d}$" % (lead_digit, exponent)
 
 def plot_matrix_sum_histogram(m, *, title='', axis=0, file=None):
     plt.clf()
