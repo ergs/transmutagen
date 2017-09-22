@@ -99,20 +99,22 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
         print("scikit-umfpack is required to run the nofission analysis")
         return False
 
-    plt.clf()
-    for backend in ['SuperLU', 'UMFPACK']:
+    valid_time_names = TIME_STEPS.values() if run_all else ['1 day', '1 year', '1000 years', '1 million years']
+    backends = ['SuperLU', 'UMFPACK']
+
+    for backend in backends:
         umfpack = backend == 'UMFPACK'
         for time, time_name in sorted(TIME_STEPS.items()):
-            if not run_all and time_name not in ['1 day', '1 year', '1000 years', '1 million years']:
+            if time_name not in valid_time_names:
                 continue
-            nofission_transmutes = {}
+            nofission_transmutes = {b: {t: {} for t in valid_time_names} for b in backends}
             if run_all:
                 for f in os.listdir('data'):
                     if f.endswith('_nofission.npz'):
                         lib = f.split('_', 1)[0]
                         data = os.path.join('data', f)
                         print("analyzing", data, 'on', time_name)
-                        nofission_transmutes[lib] = run_transmute_test(data, 14, 200,
+                        nofission_transmutes[backend][time_name][lib] = run_transmute_test(data, 14, 200,
                             time, run_all=False, _print=True, umfpack=umfpack)
             else:
                 data = os.path.join(os.path.dirname(__file__), 'tests', 'data', 'pwru50_400000000000000.0_nofission.npz')
@@ -120,14 +122,27 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
                 nofission_transmutes['pwru50'] = run_transmute_test(data, 14, 200,
                     time, run_all=run_all, _print=True, umfpack=umfpack)
 
+    plot_nofission_transmutes(nofission_transmutes, run_all=run_all,
+        file=file, title=title)
+
+    return nofission_transmutes
+
+def plot_nofission_transmutes(nofission_transmutes, *, run_all=False, file=None, title=True):
+    valid_time_names = TIME_STEPS.values() if run_all else ['1 day', '1 year', '1000 years', '1 million years']
+    backends = ['SuperLU', 'UMFPACK']
+
+    for backend in backends:
+        for time, time_name in sorted(TIME_STEPS.items()):
+            if time_name not in valid_time_names:
+                continue
             plt.clf()
             fig, axes = plt.subplots(1, 3)
             fig.set_size_inches(1.5*6.4, 1.5/3*4.8)
-            for lib in nofission_transmutes:
+            for lib in nofission_transmutes[backend][time_name]:
                 for r, ax in zip(['scipy.sparse.linalg.expm', 'part_frac_complex',
                     'transmutagen generated C solver'], axes):
 
-                    m = nofission_transmutes[lib][r]
+                    m = nofission_transmutes[backend][time_name][lib][r]
                     if not isinstance(m, np.ndarray):
                         m = m.toarray()
                     if m is None or np.isnan(m).any() or np.isinf(m).any():
