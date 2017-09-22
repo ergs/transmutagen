@@ -101,13 +101,13 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
 
     valid_time_names = TIME_STEPS.values() if run_all else ['1 day', '1 year', '1000 years', '1 million years']
     backends = ['SuperLU', 'UMFPACK']
+    nofission_transmutes = {b: {t: {} for t in valid_time_names} for b in backends}
 
     for backend in backends:
         umfpack = backend == 'UMFPACK'
         for time, time_name in sorted(TIME_STEPS.items()):
             if time_name not in valid_time_names:
                 continue
-            nofission_transmutes = {b: {t: {} for t in valid_time_names} for b in backends}
             if run_all:
                 for f in os.listdir('data'):
                     if f.endswith('_nofission.npz'):
