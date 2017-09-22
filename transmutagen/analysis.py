@@ -92,63 +92,73 @@ several starting libraries, nuclides, and timesteps.""")
     plt_show_in_terminal()
 
 def analyze_nofission(*, run_all=False, file=None, title=True):
+    try:
+        import scikits.umfpack
+        del scikits
+    except ImportError:
+        print("scikit-umfpack is required to run the nofission analysis")
+        return False
+
     plt.clf()
-    for time, time_name in sorted(TIME_STEPS.items()):
-        if not run_all and time_name not in ['1 day', '1 year', '1000 years', '1 million years']:
-            continue
-        nofission_transmutes = {}
-        if run_all:
-            for f in os.listdir('data'):
-                if f.endswith('_nofission.npz'):
-                    lib = f.split('_', 1)[0]
-                    data = os.path.join('data', f)
-                    print("analyzing", data, 'on', time_name)
-                    nofission_transmutes[lib] = run_transmute_test(data, 14, 200,
-                        time, run_all=False, _print=True)
-        else:
-            data = os.path.join(os.path.dirname(__file__), 'tests', 'data', 'pwru50_400000000000000.0_nofission.npz')
-            print("analyzing", data, 'on', time_name)
-            nofission_transmutes['pwru50'] = run_transmute_test(data, 14, 200,
-                time, run_all=run_all, _print=True)
-
-        plt.clf()
-        fig, axes = plt.subplots(1, 3)
-        fig.set_size_inches(1.5*6.4, 1.5/3*4.8)
-        for lib in nofission_transmutes:
-            if title:
-                plt.title(time_name)
-            for r, ax in zip(['scipy.sparse.linalg.expm', 'part_frac_complex',
-                'transmutagen generated C solver'], axes):
-
-                m = nofission_transmutes[lib][r]
-                if not isinstance(m, np.ndarray):
-                    m = m.toarray()
-                if m is None or np.isnan(m).any() or np.isinf(m).any():
-                    print("Could not compute", r, "for", lib)
-                    continue
-
-
-                ax.hist(np.asarray(np.sum(m, axis=0)).flatten())
-                ax.set_yscale('log', nonposy='clip')
-                # Put "x 10^-19" on every x-axis tick
-                locs = ax.get_xticks()
-                ax.set_xticklabels([pretty_float(i) for i in locs])
-
-                if title:
-                    ax.set_title(r'\texttt{%s}' % r.replace('_',
-                        r'\_').replace('.', r'.\allowbreak{}'))
-
-            plt_show_in_terminal()
-            if file:
-                path, ext = os.path.splitext(file)
-                filename = '-'.join([path, lib, time_name.replace(' ', '-')]) + ext
-                print("Saving to", filename)
+    for backend in ['SuperLU', 'UMFPACK']:
+        umfpack = backend == 'UMFPACK'
+        for time, time_name in sorted(TIME_STEPS.items()):
+            if not run_all and time_name not in ['1 day', '1 year', '1000 years', '1 million years']:
+                continue
+            nofission_transmutes = {}
+            if run_all:
+                for f in os.listdir('data'):
+                    if f.endswith('_nofission.npz'):
+                        lib = f.split('_', 1)[0]
+                        data = os.path.join('data', f)
+                        print("analyzing", data, 'on', time_name)
+                        nofission_transmutes[lib] = run_transmute_test(data, 14, 200,
+                            time, run_all=False, _print=True, umfpack=umfpack)
             else:
-                filename = file
+                data = os.path.join(os.path.dirname(__file__), 'tests', 'data', 'pwru50_400000000000000.0_nofission.npz')
+                print("analyzing", data, 'on', time_name, 'with', backend)
+                nofission_transmutes['pwru50'] = run_transmute_test(data, 14, 200,
+                    time, run_all=run_all, _print=True, umfpack=umfpack)
 
-            if filename:
-                plt.savefig(filename)
-            plt.close()
+            plt.clf()
+            fig, axes = plt.subplots(1, 3)
+            fig.set_size_inches(1.5*6.4, 1.5/3*4.8)
+            for lib in nofission_transmutes:
+                for r, ax in zip(['scipy.sparse.linalg.expm', 'part_frac_complex',
+                    'transmutagen generated C solver'], axes):
+
+                    m = nofission_transmutes[lib][r]
+                    if not isinstance(m, np.ndarray):
+                        m = m.toarray()
+                    if m is None or np.isnan(m).any() or np.isinf(m).any():
+                        print("Could not compute", r, "for", lib)
+                        continue
+
+
+                    ax.hist(np.asarray(np.sum(m, axis=0)).flatten())
+                    if title:
+                        plt.title(time_name + ' with ' + backend)
+                    ax.set_yscale('log', nonposy='clip')
+                    # Put "x 10^-19" on every x-axis tick
+                    locs = ax.get_xticks()
+                    ax.set_xticklabels([pretty_float(i) for i in locs])
+
+                    if title:
+                        ax.set_title(r'\texttt{%s}' % r.replace('_',
+                            r'\_').replace('.', r'.\allowbreak{}'))
+
+                plt_show_in_terminal()
+                if file:
+                    path, ext = os.path.splitext(file)
+                    filename = '-'.join([path, lib, time_name.replace(' ',
+                        '-'), backend.lower()]) + ext
+                    print("Saving to", filename)
+                else:
+                    filename = file
+
+                if filename:
+                    plt.savefig(filename)
+                plt.close()
 
 def pretty_float(i):
     """

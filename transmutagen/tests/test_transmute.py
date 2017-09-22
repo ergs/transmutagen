@@ -8,7 +8,7 @@ import datetime
 from sympy import sympify, lambdify, horner, fraction
 
 import numpy as np
-from scipy.sparse.linalg import expm
+from scipy.sparse.linalg import expm, use_solver
 
 from ..cram import logger
 from ..partialfrac import (thetas_alphas, thetas_alphas_to_expr_real,
@@ -38,13 +38,16 @@ def time_and_run(f, *args, _print=False):
     return res
 
 def run_transmute_test(data, degree, prec, time, expr=None, plot=True,
-    _print=False, run_all=True, use_cache=True):
+    _print=False, run_all=True, use_cache=True, umfpack=None):
     """
     Run transmute test on the data
 
     If run_all=True, runs the test on all forms of the exponential. Otherwise,
     only use part_frac_complex (the fastest).
     """
+    if umfpack is not None:
+        use_solver(useUmfpack=umfpack)
+
     nucs, matrix = load_sparse_csr(data)
 
     expr = get_CRAM_from_cache(degree, prec, expr=expr, plot=plot, use_cache=use_cache)
