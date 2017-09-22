@@ -146,7 +146,8 @@ def plot_nofission_transmutes(nofission_transmutes, *, run_all=False, file=None,
                     if not isinstance(m, np.ndarray):
                         m = m.toarray()
                     if m is None or np.isnan(m).any() or np.isinf(m).any():
-                        print("Could not compute", r, "for", lib)
+                        print("Could not compute", r, "for", lib, "on",
+                            time_name, "with", backend)
                         continue
 
 
