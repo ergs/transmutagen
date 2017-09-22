@@ -119,7 +119,7 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
             else:
                 data = os.path.join(os.path.dirname(__file__), 'tests', 'data', 'pwru50_400000000000000.0_nofission.npz')
                 print("analyzing", data, 'on', time_name, 'with', backend)
-                nofission_transmutes[backend][time_name][lib]['pwru50'] = run_transmute_test(data, 14, 200,
+                nofission_transmutes[backend][time_name]['pwru50'] = run_transmute_test(data, 14, 200,
                     time, run_all=run_all, _print=True, umfpack=umfpack)
 
     plot_nofission_transmutes(nofission_transmutes, run_all=run_all,
