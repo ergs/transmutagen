@@ -28,6 +28,12 @@ script:
   - pyflakes transmutagen py_solve setup.py
   - PYTHONPATH=py_solve py.test transmutagen
 
+  # Test the analysis scripts (except ORIGEN, since we need data for that)
+  - PYTHONPATH=py_solve python -m transmutagen.analysis --nofission
+  - PYTHONPATH=py_solve python -m transmutagen.analysis --eigenvals
+  - PYTHONPATH=py_solve python -m transmutagen.analysis --pusa-coeffs
+  - PYTHONPATH=py_solve python -m transmutagen.analysis --cram-digits
+
   # See if it installs
   - python setup.py sdist
   - pip install dist/*
