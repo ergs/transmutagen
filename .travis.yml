@@ -12,7 +12,7 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
 
-  - conda create -q -n test-environment python=3.5 pip mpmath matplotlib pytest pyflakes numpy scipy pyne gcc jinja2 gmpy2 cython scikit-umfpack
+  - conda create -q -n test-environment python=3.5 pip mpmath matplotlib pytest pyflakes numpy scipy pyne gcc jinja2 gmpy2 cython scikit-umfpack colorama
   - source activate test-environment
   # Change to git+git://github.com/sympy/sympy.git when
   # https://github.com/sympy/sympy/pull/12088 is merged.
