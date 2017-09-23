@@ -403,7 +403,8 @@ def analyze():
     eigenvals.add_argument('--eigenvals', action='store_true',
         dest='eigenvals', help="""Run the eigenvalue analysis.""")
     eigenvals.add_argument('--pwru50-data', help="""Path to pwru50 data file
-        to analyze.""", default='data/pwru50_400000000000000.0.npz')
+        to analyze. The default is the data that is in the
+    transmutagen/tests/data directory.""", default=None)
 
     cram_digits = parser.add_argument_group('cram-digits')
     cram_digits.add_argument('--cram-digits', action='store_true', help="""Analyze
