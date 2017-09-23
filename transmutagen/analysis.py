@@ -204,8 +204,9 @@ def plot_matrix_sum_histogram(m, *, title='', axis=0, file=None):
     plt.close()
 
 
-def analyze_eigenvals(*, pwru50_data='data/pwru50_400000000000000.0.npz',
-    file=None, title=True):
+def analyze_eigenvals(*, pwru50_data=None, file=None, title=True):
+    if not pwru50_data:
+        pwru50_data = os.path.join(os.path.dirname(__file__), 'tests', 'data', 'pwru50_400000000000000.0.npz')
     from py_solve.py_solve import DECAY_MATRIX, csr_from_flat
     nucs, matpwru50 = load_sparse_csr(pwru50_data)
     matdecay = csr_from_flat(DECAY_MATRIX)
