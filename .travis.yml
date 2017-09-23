@@ -23,6 +23,11 @@ install:
   - python setup.py build_ext --inplace
   - cd ..
 
+  # Make matplotlib stuff work
+  - export MATPLOTLIBRC=~/matplotlibrc
+  - mkdir -p $MATPLOTLIBRC
+  - echo "backend : Agg" >> $MATPLOTLIBRC/matplotlibrc
+
 script:
   - set -e
   - pyflakes transmutagen py_solve setup.py
