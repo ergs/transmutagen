@@ -153,7 +153,7 @@ def plot_nofission_transmutes(nofission_transmutes, *, run_all=False, file=None,
 
                     ax.hist(np.asarray(np.sum(m, axis=0)).flatten())
                     if title:
-                        plt.title(time_name + ' with ' + backend)
+                        fig.suptitle(time_name + ' with ' + backend, y=1.08)
                     ax.set_yscale('log', nonposy='clip')
                     # Put "x 10^-19" on every x-axis tick
                     locs = ax.get_xticks()
@@ -173,7 +173,7 @@ def plot_nofission_transmutes(nofission_transmutes, *, run_all=False, file=None,
                     filename = file
 
                 if filename:
-                    plt.savefig(filename)
+                    plt.savefig(filename, bbox_inches='tight')
                 plt.close()
 
 def pretty_float(i):
