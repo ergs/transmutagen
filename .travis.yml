@@ -26,7 +26,8 @@ install:
   # Make matplotlib stuff work
   - export MATPLOTLIBRC=~/matplotlibrc
   - mkdir -p $MATPLOTLIBRC
-  - echo "backend : Agg" > $MATPLOTLIBRC/matplotlibrc
+  - >
+    echo "backend : Agg" >> $MATPLOTLIBRC/matplotlibrc
 
 script:
   - set -e
