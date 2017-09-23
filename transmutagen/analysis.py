@@ -374,9 +374,9 @@ def analyze():
         "eigenvals.pdf" will be saved as "eigenvals_pwru50.pdf" and
         "eigenvals_decay.pdf". For --nofission, a filename like
         "nofission.pdf" will be saved as
-        "nofission-pwru50-c-solve-1-second.pdf",
-        "nofission-pwru50-expm-1-year.pdf",
-        "nofission-pwru50-lambdify-1-million-years.pdf", etc.
+        "nofission-pwru50-c-solve-1-second-superlu.pdf",
+        "nofission-pwru50-expm-1-year-umfpack.pdf",
+        "nofission-pwru50-lambdify-1-million-years-superlu.pdf", etc.
 
         If not provided the plot is not saved.""")
     parser.add_argument('--no-title', action='store_false', dest='title',
