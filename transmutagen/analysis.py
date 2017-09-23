@@ -3,6 +3,7 @@ import os
 import argparse
 import decimal
 from ast import literal_eval
+import sys
 
 import tables
 import numpy as np
@@ -96,8 +97,7 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
         import scikits.umfpack
         del scikits
     except ImportError:
-        print("scikit-umfpack is required to run the nofission analysis")
-        return False
+        sys.exit("scikit-umfpack is required to run the nofission analysis")
 
     valid_time_names = TIME_STEPS.values() if run_all else ['1 day', '1 year', '1000 years', '1 million years']
     backends = ['SuperLU', 'UMFPACK']
