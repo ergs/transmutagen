@@ -44,7 +44,6 @@ script:
   - PYTHONPATH=py_solve python -m transmutagen.analysis --nofission
   - PYTHONPATH=py_solve python -m transmutagen.analysis --eigenvals
   - PYTHONPATH=py_solve python -m transmutagen.analysis --pusa-coeffs
-  - PYTHONPATH=py_solve python -m transmutagen.analysis --cram-digits
 
   # See if it installs
   - python setup.py sdist
