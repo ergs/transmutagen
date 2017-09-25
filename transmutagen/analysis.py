@@ -381,9 +381,11 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
                         our_str, pusa_str = format_str.format(decimal.Decimal(repr(imag_val))), imag_val_paper
                     if latex:
                         if real_imag == 'real':
-                            print(pusa_str, '&', our_str, r'\\')
+                            print(r'\texttt{%s}' % pusa_str, '&',
+                                r'\texttt{%s}' % our_str, r'\\')
                         else:
-                            print('&', pusa_str, '$i$ &', our_str, '$i$', r'\\')
+                            print('&', r'\texttt{%s}' % pusa_str, '$i$ &',
+                                r'\texttt{%s}' % our_str, '$i$', r'\\')
                     else:
                         diff_strs(pusa_str, our_str, end=' ')
                     if not literal_eval(pusa_str) == literal_eval(our_str):
