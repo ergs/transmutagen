@@ -17,7 +17,7 @@ from sympy.utilities.decorator import conserve_mpmath_dps
 
 t = symbols('t', real=True)
 
-def diff_strs(a, b, *, end='\n', style='terminal', sep=' ', stop_chars=''):
+def diff_strs(a, b, *, end='\n', style='terminal', sep=' ', stop_chars='', file=None):
     r"""
     Print a colored character-by-character diff of a and b.
 
@@ -43,6 +43,8 @@ def diff_strs(a, b, *, end='\n', style='terminal', sep=' ', stop_chars=''):
 
     If a character in stop_chars is hit, the diff will stop (currently only
     implemented for style='latex separated').
+
+    file is the file to write to. The default is stdout.
     """
     if style == 'terminal':
         try:
@@ -66,7 +68,7 @@ def diff_strs(a, b, *, end='\n', style='terminal', sep=' ', stop_chars=''):
             if a[i] != b[i]:
                 break
         else: # no break
-            print(r'\texttt{%s}' % a, r'\texttt{%s}' % b, sep=sep, end=end)
+            print(r'\texttt{%s}' % a, r'\texttt{%s}' % b, sep=sep, end=end, file=file)
             return
 
         for j in range(len(a)):
@@ -79,7 +81,7 @@ def diff_strs(a, b, *, end='\n', style='terminal', sep=' ', stop_chars=''):
 
         print(r'\texttt{' + a[:i] + r'\underline{' + a[i:j] + '}' + a[j:] + '}',
               r'\texttt{' + b[:i] + r'\underline{' + b[i:k] + '}' + b[k:] + '}',
-              sep=sep, end=end)
+              sep=sep, end=end, file=file)
         return
 
     else:
@@ -89,20 +91,20 @@ def diff_strs(a, b, *, end='\n', style='terminal', sep=' ', stop_chars=''):
         raise NotImplementedError("stop_chars not yet implemented for style != 'latex separated'")
 
     if style == 'latex':
-        print(r'\texttt{', end='')
+        print(r'\texttt{', end='', file=file)
     s = difflib.SequenceMatcher(a=a, b=b, autojunk=False)
     for op, i1, j1, i2, j2 in s.get_opcodes():
         if op == 'equal':
-            print(a[i1:j1], end='')
+            print(a[i1:j1], end='', file=file)
         elif op == 'replace':
-            print(_removed(a[i1:j1]), _added(b[i2:j2]), sep='', end='')
+            print(_removed(a[i1:j1]), _added(b[i2:j2]), sep='', end='', file=file)
         elif op == 'insert':
-            print(_added(b[i2:j2]), sep='', end='')
+            print(_added(b[i2:j2]), sep='', end='', file=file)
         elif op == 'delete':
-            print(_removed(a[i1:j1]), sep='', end='')
+            print(_removed(a[i1:j1]), sep='', end='', file=file)
     if style == 'latex':
-        print('}', end='')
-    print(end, end='')
+        print('}', end='', file=file)
+    print(end, end='', file=file)
 
 def relative_error(exact, approx):
     return abs(exact - approx)/exact
