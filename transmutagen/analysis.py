@@ -386,6 +386,9 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
                         else:
                             print('&', r'\texttt{%s}' % pusa_str, '$i$ &',
                                 r'\texttt{%s}' % our_str, '$i$', r'\\')
+                        print(r'& \texttt{', end=' ')
+                        diff_strs(pusa_str, our_str, end=' ', style='latex')
+                        print(r'} & \\')
                     else:
                         diff_strs(pusa_str, our_str, end=' ')
                     if not literal_eval(pusa_str) == literal_eval(our_str):
