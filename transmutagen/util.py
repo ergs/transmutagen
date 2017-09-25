@@ -59,24 +59,16 @@ def diff_strs(a, b, *, end='\n', style='terminal', sep=' '):
         def _added(s):
             return r'\underline{\color{green}%s}' % s
     elif style == 'latex separated':
-        newa = ''
-        newb = ''
-        s = difflib.SequenceMatcher(a=a, b=b, autojunk=False)
-        for op, i1, j1, i2, j2 in s.get_opcodes():
-            aseg = a[i1:j1]
-            bseg = b[i2:j2]
-            if op == 'equal':
-                newa += aseg
-                newb += bseg
-            elif op == 'replace':
-                newa += r'\underline{%s}' % aseg
-                newb += r'\underline{%s}' % bseg
-            elif op == 'insert':
-                newb += r'\underline{%s}' % bseg
-            elif op == 'delete':
-                newa += r'\underline{%s}' % aseg
+        for i in range(max(len(a), len(b))):
+            if a[i] != b[i]:
+                break
+        else: # no break
+            print(r'\texttt{%s}' % a, r'\texttt{%s}' % b, sep=sep, end=end)
+            return
 
-        print(r'\texttt{%s}' % newa, r'\texttt{%s}' % newb, sep=sep, end=end)
+        print(r'\texttt{' + a[:i] + r'\underline{' + a[i:] + '}}',
+              r'\texttt{' + b[:i] + r'\underline{' + b[i:] + '}}',
+              sep=sep, end=end)
         return
 
     else:
