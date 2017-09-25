@@ -348,7 +348,7 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
         if latex:
             print(r"""\begin{table}[h!]
 \centering
-\begin{tabular}{ l l l }
+\begin{tabular}{ r l l }
 Coefficient & Values from~\cite{pusa2012correction} & Values computed via Transmutagen \\
 \hline
 """)
