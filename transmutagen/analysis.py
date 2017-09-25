@@ -348,7 +348,7 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
         if latex:
             print(r"""\begin{table}[h!]
 \centering
-\begin{tabular}{ l c c }""")
+\begin{tabular}{ l l l }""")
         else:
             print("Degree:", degree)
         for typ in ['thetas', 'alphas', 'alpha0']:
