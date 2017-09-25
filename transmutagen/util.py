@@ -88,6 +88,8 @@ def diff_strs(a, b, *, end='\n', style='terminal', sep=' ', stop_chars=''):
     if stop_chars and style != 'latex separated':
         raise NotImplementedError("stop_chars not yet implemented for style != 'latex separated'")
 
+    if style == 'latex':
+        print(r'\texttt{', end='')
     s = difflib.SequenceMatcher(a=a, b=b, autojunk=False)
     for op, i1, j1, i2, j2 in s.get_opcodes():
         if op == 'equal':
@@ -98,6 +100,8 @@ def diff_strs(a, b, *, end='\n', style='terminal', sep=' ', stop_chars=''):
             print(_added(b[i2:j2]), sep='', end='')
         elif op == 'delete':
             print(_removed(a[i1:j1]), sep='', end='')
+    if style == 'latex':
+        print('}', end='')
     print(end, end='')
 
 def relative_error(exact, approx):
