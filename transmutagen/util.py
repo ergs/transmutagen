@@ -17,7 +17,7 @@ from sympy.utilities.decorator import conserve_mpmath_dps
 
 t = symbols('t', real=True)
 
-def diff_strs(a, b, *, end='\n', style='terminal', sep=' '):
+def diff_strs(a, b, *, end='\n', style='terminal', sep=' ', stop_chars=''):
     r"""
     Print a colored character-by-character diff of a and b.
 
@@ -40,6 +40,9 @@ def diff_strs(a, b, *, end='\n', style='terminal', sep=' '):
     \usepackage{ulem}
 
     in the LaTeX preamble.
+
+    If a character in stop_chars is hit, the diff will stop (currently only
+    implemented for style='latex separated').
     """
     if style == 'terminal':
         try:
@@ -66,13 +69,24 @@ def diff_strs(a, b, *, end='\n', style='terminal', sep=' '):
             print(r'\texttt{%s}' % a, r'\texttt{%s}' % b, sep=sep, end=end)
             return
 
-        print(r'\texttt{' + a[:i] + r'\underline{' + a[i:] + '}}',
-              r'\texttt{' + b[:i] + r'\underline{' + b[i:] + '}}',
+        for j in range(len(a)):
+            if a[j] in stop_chars:
+                break
+
+        for k in range(len(b)):
+            if b[k] in stop_chars:
+                break
+
+        print(r'\texttt{' + a[:i] + r'\underline{' + a[i:j] + '}' + a[j:] + '}',
+              r'\texttt{' + b[:i] + r'\underline{' + b[i:k] + '}' + b[k:] + '}',
               sep=sep, end=end)
         return
 
     else:
         raise ValueError("style should be one of ['terminal', 'latex', 'latex separated']")
+
+    if stop_chars and style != 'latex separated':
+        raise NotImplementedError("stop_chars not yet implemented for style != 'latex separated'")
 
     s = difflib.SequenceMatcher(a=a, b=b, autojunk=False)
     for op, i1, j1, i2, j2 in s.get_opcodes():
