@@ -334,30 +334,23 @@ def _latex_typ(typ, idx):
 def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
     from .tests.pusa_coeffs import part_frac_coeffs, plot_difference
 
-
     try:
-        if not latex:
-            import colorama
+        import colorama
     except ImportError:
         raise ImportError("colorama is required to use diff_strs")
 
-    if not latex:
-        print("Differing coefficients:")
-
+    print("Differing coefficients:")
     for degree in [14, 16]:
         if latex:
-            print(r"""\begin{table}[h!]
-\centering
-\begin{tabular}{ r l l }
-Coefficient & Values from~\cite{pusa2012correction} & Values computed via Transmutagen \\
-\hline
-""")
-        else:
-            print("Degree:", degree)
+            path, ext = os.path.splitext(latex)
+            filename = '-'.join([path, str(degree)]) + ext
+            print("Saving LaTeX table to", filename)
+            f = open(filename, 'w')
+        print("Degree:", degree)
         for typ in ['thetas', 'alphas', 'alpha0']:
             for idx in range(degree//2) if typ != 'alpha0' else range(1):
                 if latex:
-                    print(_latex_typ(typ, idx), end=' & ')
+                    f.write(_latex_typ(typ, idx) + ' & ')
                 else:
                     print(typ, '-', idx, sep='', end=': ')
                 for real_imag in ['real', 'imag']:
@@ -385,29 +378,25 @@ Coefficient & Values from~\cite{pusa2012correction} & Values computed via Transm
                     if latex:
                         if real_imag == 'real':
                             diff_strs(pusa_str, our_str, end=r'\\',
-                                style='latex separated', sep=' & ', stop_chars='e')
+                                style='latex separated', sep=' & ',
+                                stop_chars='e', file=f)
                         else:
-                            print('&', end=' ')
+                            f.write(' & ')
                             diff_strs(pusa_str + ' $i$', our_str + ' $i$', end=r'\\',
-                                style='latex separated', sep=' & ', stop_chars='e')
-                    else:
-                        diff_strs(pusa_str, our_str, end=' ')
+                                style='latex separated', sep=' & ',
+                                stop_chars='e', file=f)
+                    diff_strs(pusa_str, our_str, end=' ')
                     if not literal_eval(pusa_str) == literal_eval(our_str):
                         if latex:
                             pass
-                            # print(r"\footnote{Machine floats differ.}")
-                        else:
-                            print(colorama.Back.RED, colorama.Fore.WHITE,
-                                "<- Machine floats differ",
-                                colorama.Style.RESET_ALL, sep='', end=' ')
+                            # f.write(r"\footnote{Machine floats differ.}")
+                        print(colorama.Back.RED, colorama.Fore.WHITE,
+                            "<- Machine floats differ",
+                            colorama.Style.RESET_ALL, sep='', end=' ')
                 print()
 
         if latex:
-            print(r"""\end{tabular}
-\caption{Differences for degree %s}
-\label{table:pusa-degree-%s}
-\end{table}
-""" % (degree, degree))
+            f.close()
 
     plt.ion()
     plot_difference(file=file, all_plots=False)
@@ -462,8 +451,9 @@ def analyze():
         help="""Analyze the coefficients from the Maria Pusa paper "Correction to
         Partial Fraction Decomposition Coefficients for Chebyshev Rational
         Approximation on the Negative Real Axis".""")
-    pusa_coeffs.add_argument('--latex', action='store_true', default=False,
-    help="""Output LaTeX table.""")
+    pusa_coeffs.add_argument('--latex', help="""Save LaTeX table to the given
+    file. A filename like pusa-table.tex will result in pusa-table-14.tex and
+    pusa-table-16.tex.""")
 
     try:
         import argcomplete
