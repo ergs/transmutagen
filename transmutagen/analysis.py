@@ -390,7 +390,8 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
                         diff_strs(pusa_str, our_str, end=' ')
                     if not literal_eval(pusa_str) == literal_eval(our_str):
                         if latex:
-                            print(r"\footnote{Machine floats differ.}")
+                            pass
+                            # print(r"\footnote{Machine floats differ.}")
                         else:
                             print(colorama.Back.RED, colorama.Fore.WHITE,
                                 "<- Machine floats differ",
