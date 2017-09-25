@@ -323,20 +323,40 @@ def analyze_cram_digits(max_degree=20):
 
         plt_show_in_terminal()
 
-def analyze_pusa_coeffs(*, file=None, title=True):
+def _latex_typ(typ, idx):
+    typ_mapping = {'thetas': r'\theta', 'alphas': r'\alpha', 'alpha0':
+        r'\alpha_0'}
+    if typ != 'alpha0':
+        return '$' + typ_mapping[typ] + '_' + str(idx+1) + '$'
+    else:
+        return '$' + typ_mapping[typ] + '$'
+
+def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
     from .tests.pusa_coeffs import part_frac_coeffs, plot_difference
 
+
     try:
-        import colorama
+        if not latex:
+            import colorama
     except ImportError:
         raise ImportError("colorama is required to use diff_strs")
 
-    print("Differing coefficients:")
+    if not latex:
+        print("Differing coefficients:")
+
     for degree in [14, 16]:
-        print("Degree:", degree)
+        if latex:
+            print(r"""\begin{table}[h!]
+\centering
+\begin{tabular}{ l c c }""")
+        else:
+            print("Degree:", degree)
         for typ in ['thetas', 'alphas', 'alpha0']:
             for idx in range(degree//2) if typ != 'alpha0' else range(1):
-                print(typ, '-', idx, sep='', end=': ')
+                if latex:
+                    print(_latex_typ(typ, idx), end=' & ')
+                else:
+                    print(typ, '-', idx, sep='', end=': ')
                 for real_imag in ['real', 'imag']:
                     expr = get_CRAM_from_cache(degree, 200)
                     thetas, alphas, alpha0 = thetas_alphas(expr, 200)
@@ -359,13 +379,30 @@ def analyze_pusa_coeffs(*, file=None, title=True):
                         our_str, pusa_str = format_str.format(decimal.Decimal(repr(real_val))), real_val_paper
                     else:
                         our_str, pusa_str = format_str.format(decimal.Decimal(repr(imag_val))), imag_val_paper
-                    diff_strs(pusa_str, our_str, end=' ')
+                    if latex:
+                        if real_imag == 'real':
+                            print(pusa_str, '&', our_str, r'\\')
+                        else:
+                            print('&', pusa_str, '$i$ &', our_str, '$i$', r'\\')
+                    else:
+                        diff_strs(pusa_str, our_str, end=' ')
                     if not literal_eval(pusa_str) == literal_eval(our_str):
-                        print(colorama.Back.RED, colorama.Fore.WHITE,
-                            "<- Machine floats differ",
-                            colorama.Style.RESET_ALL, sep='', end=' ')
+                        if latex:
+                            print(r"\footnote{Machine floats differ.}")
+                        else:
+                            print(colorama.Back.RED, colorama.Fore.WHITE,
+                                "<- Machine floats differ",
+                                colorama.Style.RESET_ALL, sep='', end=' ')
                 print()
 
+        if latex:
+            print(r"""\end{tabular}
+\caption{Differences for degree %s}
+\label{table:pusa-degree-%s}
+\end{table}
+""" % (degree, degree))
+
+    plt.ion()
     plot_difference(file=file, all_plots=False)
 
 def analyze():
@@ -418,6 +455,8 @@ def analyze():
         help="""Analyze the coefficients from the Maria Pusa paper "Correction to
         Partial Fraction Decomposition Coefficients for Chebyshev Rational
         Approximation on the Negative Real Axis".""")
+    pusa_coeffs.add_argument('--latex', action='store_true', default=False,
+    help="""Output LaTeX table.""")
 
     try:
         import argcomplete
@@ -440,7 +479,7 @@ def analyze():
     if args.cram_digits:
         analyze_cram_digits(args.max_degree)
     if args.pusa_coeffs:
-        analyze_pusa_coeffs(file=args.file, title=args.title)
+        analyze_pusa_coeffs(file=args.file, title=args.title, latex=args.latex)
 
 if __name__ == '__main__':
     analyze()
