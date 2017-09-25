@@ -17,8 +17,8 @@ from sympy.utilities.decorator import conserve_mpmath_dps
 
 t = symbols('t', real=True)
 
-def diff_strs(a, b, end='\n'):
-    """
+def diff_strs(a, b, end='\n', style='terminal'):
+    r"""
     Print a colored character-by-character diff of a and b.
 
     Requires colorama to be installed.
@@ -28,23 +28,45 @@ def diff_strs(a, b, end='\n'):
 
     Note that this can be slow for large strings (more than 10000 characters).
 
+    style should be one of 'terminal' or 'latex'. If style='terminal', the
+    colorama module is required for printing colored output in the terminal.
+    If style='latex', the output will require
+
+    \usepackage{color}
+    \usepackage{ulem}
+
+    in the LaTeX preamble.
     """
-    try:
-        import colorama
-    except ImportError:
-        raise ImportError("colorama is required to use diff_strs")
+    if style == 'terminal':
+        try:
+            import colorama
+        except ImportError:
+            raise ImportError("colorama is required to use diff_strs")
+
+        def _removed(s):
+            return colorama.Fore.RED + s + colorama.Style.RESET_ALL
+
+        def _added(s):
+            return colorama.Fore.GREEN + s + colorama.Style.RESET_ALL
+    elif style == 'latex':
+        def _removed(s):
+            return r'\sout{\color{red}%s}' % s
+
+        def _added(s):
+            return r'\underline{\color{green}%s}' % s
+    else:
+        raise ValueError("style should be one of ['terminal', 'latex']")
 
     s = difflib.SequenceMatcher(a=a, b=b, autojunk=False)
     for op, i1, j1, i2, j2 in s.get_opcodes():
         if op == 'equal':
             print(a[i1:j1], end='')
         elif op == 'replace':
-            print(colorama.Fore.RED, a[i1:j1], colorama.Fore.GREEN, b[i2:j2], sep='', end='')
+            print(_removed(a[i1:j1]), _added(b[i2:j2]), sep='', end='')
         elif op == 'insert':
-            print(colorama.Fore.GREEN, b[i2:j2], sep='', end='')
+            print(_added(b[i2:j2]), sep='', end='')
         elif op == 'delete':
-            print(colorama.Fore.RED, a[i1:j1], sep='', end='')
-        print(colorama.Style.RESET_ALL, end='')
+            print(_removed(a[i1:j1]), sep='', end='')
     print(end, end='')
 
 def relative_error(exact, approx):
