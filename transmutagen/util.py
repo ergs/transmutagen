@@ -38,6 +38,7 @@ def diff_strs(a, b, *, end='\n', style='terminal', sep=' ', stop_chars='', file=
 
     \usepackage{color}
     \usepackage{ulem}
+    \usepackage{soul}
 
     in the LaTeX preamble.
 
@@ -62,7 +63,7 @@ def diff_strs(a, b, *, end='\n', style='terminal', sep=' ', stop_chars='', file=
             return r'\sout{\color{red}%s}' % s
 
         def _added(s):
-            return r'\underline{\color{green}%s}' % s
+            return r'\ul{\color{green}%s}' % s
     elif style == 'latex separated':
         for i in range(max(len(a), len(b))):
             if a[i] != b[i]:
@@ -79,8 +80,8 @@ def diff_strs(a, b, *, end='\n', style='terminal', sep=' ', stop_chars='', file=
             if b[k] in stop_chars:
                 break
 
-        print(r'\texttt{' + a[:i] + r'\underline{' + a[i:j] + '}' + a[j:] + '}',
-              r'\texttt{' + b[:i] + r'\underline{' + b[i:k] + '}' + b[k:] + '}',
+        print(r'\texttt{' + a[:i] + r'\ul{' + a[i:j] + '}' + a[j:] + '}',
+              r'\texttt{' + b[:i] + r'\ul{' + b[i:k] + '}' + b[k:] + '}',
               sep=sep, end=end, file=file)
         return
 
