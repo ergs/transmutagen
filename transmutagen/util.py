@@ -17,7 +17,7 @@ from sympy.utilities.decorator import conserve_mpmath_dps
 
 t = symbols('t', real=True)
 
-def diff_strs(a, b, end='\n', style='terminal'):
+def diff_strs(a, b, *, end='\n', style='terminal', sep=' '):
     r"""
     Print a colored character-by-character diff of a and b.
 
@@ -28,8 +28,12 @@ def diff_strs(a, b, end='\n', style='terminal'):
 
     Note that this can be slow for large strings (more than 10000 characters).
 
-    style should be one of 'terminal' or 'latex'. If style='terminal', the
-    colorama module is required for printing colored output in the terminal.
+    style should be one of 'terminal', 'latex', or 'latex separated'. If
+    style='terminal', the colorama module is required for printing colored
+    output in the terminal. style='latex' will produce output similar to
+    style='terminal'. style='latex separated' will output the two strings in a
+    separate format, separated by ``sep``.
+
     If style='latex', the output will require
 
     \usepackage{color}
@@ -54,8 +58,29 @@ def diff_strs(a, b, end='\n', style='terminal'):
 
         def _added(s):
             return r'\underline{\color{green}%s}' % s
+    elif style == 'latex separated':
+        newa = ''
+        newb = ''
+        s = difflib.SequenceMatcher(a=a, b=b, autojunk=False)
+        for op, i1, j1, i2, j2 in s.get_opcodes():
+            aseg = a[i1:j1]
+            bseg = b[i2:j2]
+            if op == 'equal':
+                newa += aseg
+                newb += bseg
+            elif op == 'replace':
+                newa += r'\underline{%s}' % aseg
+                newb += r'\underline{%s}' % bseg
+            elif op == 'insert':
+                newb += r'\underline{%s}' % bseg
+            elif op == 'delete':
+                newa += r'\underline{%s}' % aseg
+
+        print(r'\texttt{%s}' % newa, r'\texttt{%s}' % newb, sep=sep, end=end)
+        return
+
     else:
-        raise ValueError("style should be one of ['terminal', 'latex']")
+        raise ValueError("style should be one of ['terminal', 'latex', 'latex separated']")
 
     s = difflib.SequenceMatcher(a=a, b=b, autojunk=False)
     for op, i1, j1, i2, j2 in s.get_opcodes():
