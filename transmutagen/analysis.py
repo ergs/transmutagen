@@ -348,7 +348,10 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
         if latex:
             print(r"""\begin{table}[h!]
 \centering
-\begin{tabular}{ l l l }""")
+\begin{tabular}{ l l l }
+Coefficient & Values from~\cite{pusa2012correction} & Values computed via Transmutagen \\
+\hline
+""")
         else:
             print("Degree:", degree)
         for typ in ['thetas', 'alphas', 'alpha0']:
