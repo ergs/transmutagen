@@ -375,21 +375,25 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
                         our_str, pusa_str = format_str.format(decimal.Decimal(repr(real_val))), real_val_paper
                     else:
                         our_str, pusa_str = format_str.format(decimal.Decimal(repr(imag_val))), imag_val_paper
+
+                    machine_differences = (literal_eval(pusa_str) != literal_eval(our_str))
+
                     if latex:
-                        if real_imag == 'real':
-                            diff_strs(pusa_str, our_str, end=r'\\',
-                                style='latex separated', sep=' & ',
-                                stop_chars='e', file=f)
-                        else:
+                        latex_pusa_str = pusa_str
+                        latex_our_str = our_str
+                        # if machine_differences:
+                        #     latex_pusa_str = r'{\it %s}' % latex_pusa_str
+                        #     latex_our_str = r'{\it %s}' % latex_our_str
+                        if real_imag == 'imag':
                             f.write(' & ')
-                            diff_strs(pusa_str + ' $i$', our_str + ' $i$', end=r'\\',
-                                style='latex separated', sep=' & ',
-                                stop_chars='e', file=f)
+                            latex_pusa_str = latex_pusa_str + ' $i$'
+                            latex_our_str = latex_our_str + ' $i$'
+
+                        diff_strs(latex_pusa_str, latex_our_str, end=r'\\',
+                            style='latex separated', sep=' & ',
+                            stop_chars='e', file=f)
                     diff_strs(pusa_str, our_str, end=' ')
-                    if not literal_eval(pusa_str) == literal_eval(our_str):
-                        if latex:
-                            pass
-                            # f.write(r"\footnote{Machine floats differ.}")
+                    if machine_differences:
                         print(colorama.Back.RED, colorama.Fore.WHITE,
                             "<- Machine floats differ",
                             colorama.Style.RESET_ALL, sep='', end=' ')
