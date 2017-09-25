@@ -6,6 +6,7 @@ import logging
 import time
 from functools import wraps
 import io
+import sys
 
 import numpy as np
 from scipy.sparse import csr_matrix
@@ -109,7 +110,10 @@ def plot_in_terminal(expr, *args, prec=None, logname=None, file=None, **kwargs):
         f = lambdify(t, expr, 'mpmath')
 
     try:
-        from iterm2_tools.images import display_image_bytes
+        if hasattr(sys.stdout, 'isatty') and sys.stdout.isatty():
+            from iterm2_tools.images import display_image_bytes
+        else:
+            raise ImportError
     except ImportError:
         plot(f, *args, file=file, **kwargs)
     else:
