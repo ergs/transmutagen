@@ -350,7 +350,7 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
         for typ in ['thetas', 'alphas', 'alpha0']:
             for idx in range(degree//2) if typ != 'alpha0' else range(1):
                 if latex:
-                    f.write(_latex_typ(typ, idx) + ' & ')
+                    f.write(r'\multirow{2}{*}{%s} & ' % _latex_typ(typ, idx))
                 else:
                     print(typ, '-', idx, sep='', end=': ')
                 for real_imag in ['real', 'imag']:
