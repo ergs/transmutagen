@@ -392,6 +392,8 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
                         diff_strs(latex_pusa_str, latex_our_str, end=r'\\',
                             style='latex separated', sep=' & ',
                             stop_chars='e', file=f)
+                        if real_imag == 'imag':
+                            f.write(r'\cline{2-3}')
                     diff_strs(pusa_str, our_str, end=' ')
                     if machine_differences:
                         print(colorama.Back.RED, colorama.Fore.WHITE,
