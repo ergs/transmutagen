@@ -226,5 +226,33 @@ def cram_from_part_frac(degree):
 
     return thetas_alphas_to_expr_expanded(thetas, alphas, alpha0)
 
+def transmutagen_cram_error(degree, t0):
+    from ..partialfrac import (thetas_alphas, thetas_alphas_to_expr_complex,
+        customre, t)
+    from ..cram import get_CRAM_from_cache
+
+    from sympy import re, exp, nsolve, diff
+
+    expr = get_CRAM_from_cache(degree, 200)
+    thetas, alphas, alpha0 = thetas_alphas(expr, 200)
+    part_frac = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
+    part_frac = part_frac.replace(customre, re)
+
+
+    E = part_frac - exp(-t)
+
+    return E.subs(t, nsolve(diff(E, t), t0, prec=200))
+
+def paper_cram_error(degree, t0):
+    from ..partialfrac import t, customre
+
+    from sympy import re, exp, nsolve, diff
+
+    paper_part_frac = get_paper_part_frac(degree).replace(customre, re)
+
+    E = paper_part_frac - exp(-t)
+
+    return E.subs(t, nsolve(diff(E, t), t0, prec=200))
+
 if __name__ == '__main__':
     plot_difference(all_plots=True)
