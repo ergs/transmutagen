@@ -41,10 +41,9 @@ script:
   - PYTHONPATH=py_solve py.test transmutagen
 
   # Test the analysis scripts (except ORIGEN, since we need data for that)
-  - PYTHONPATH=py_solve python -m transmutagen.analysis --nofission
-  - PYTHONPATH=py_solve python -m transmutagen.analysis --eigenvals
-  - PYTHONPATH=py_solve python -m transmutagen.analysis --pusa-coeffs
-  - PYTHONPATH=py_solve python -m transmutagen.analysis --pusa-coeffs --latex
+  - PYTHONPATH=py_solve python -m transmutagen.analysis --nofission --file test.pgf
+  - PYTHONPATH=py_solve python -m transmutagen.analysis --eigenvals --file test.pdf
+  - PYTHONPATH=py_solve python -m transmutagen.analysis --pusa-coeffs --latex test.tex --file test.pgf
 
   # See if it installs
   - python setup.py sdist
