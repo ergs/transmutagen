@@ -386,8 +386,8 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
                         #     latex_our_str = r'{\it %s}' % latex_our_str
                         if real_imag == 'imag':
                             f.write(' & ')
-                            latex_pusa_str = latex_pusa_str + '$\cdot i$'
-                            latex_our_str = latex_our_str + '$\cdot i$'
+                            latex_pusa_str = latex_pusa_str + 'j'
+                            latex_our_str = latex_our_str + 'j'
 
                         diff_strs(latex_pusa_str, latex_our_str, end=r'\\',
                             style='latex separated', sep=' & ',
