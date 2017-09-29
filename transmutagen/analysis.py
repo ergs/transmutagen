@@ -9,13 +9,15 @@ import tables
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.sparse
-from sympy import re, im, Float
+from sympy import re, im, Float, exp, diff
+import mpmath
 
 from .tests.test_transmute import run_transmute_test
 from .origen_all import TIME_STEPS
-from .util import plt_show_in_terminal, load_sparse_csr, diff_strs
-from .cram import get_CRAM_from_cache, CRAM_coeffs
-from .partialfrac import thetas_alphas
+from .util import (plt_show_in_terminal, load_sparse_csr, diff_strs,)
+from .cram import get_CRAM_from_cache, CRAM_coeffs, nsolve_intervals
+from .partialfrac import (thetas_alphas, thetas_alphas_to_expr_complex,
+    customre)
 
 def setup_matplotlib_rc():
     from matplotlib import rcParams
@@ -333,7 +335,8 @@ def _latex_typ(typ, idx):
 
 def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
     from .tests.pusa_coeffs import (part_frac_coeffs, plot_difference,
-        transmutagen_cram_error, paper_cram_error)
+        transmutagen_cram_error, paper_cram_error, get_paper_part_frac)
+    from .partialfrac import t
 
     try:
         import colorama
@@ -408,23 +411,39 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
     plt.ion()
     plot_difference(file=file, all_plots=False)
 
+    part_fracs = {}
+    paper_part_fracs = {}
     for degree in [14, 16]:
-        for t0 in range(0, 20):
+        expr = get_CRAM_from_cache(degree, 200)
+        thetas, alphas, alpha0 = thetas_alphas(expr, 200)
+        part_frac = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
+        part_frac = part_frac.replace(customre, re)
+
+        paper_part_frac = get_paper_part_frac(degree).replace(customre, re)
+
+        part_fracs[degree] = part_frac
+        paper_part_fracs[degree] = paper_part_frac
+
+        critical_points = nsolve_intervals(diff(part_fracs[14] - exp(-t), t),
+            (0, 100), prec=200)
+
+        print('-'*80)
+        for t0 in critical_points:
+            print()
+
             transmutagen_error = transmutagen_cram_error(degree, t0)
             pusa_error = paper_cram_error(degree, t0)
 
-            print()
             expr = get_CRAM_from_cache(degree, 200)
             thetas, alphas, alpha0 = thetas_alphas(expr, 200)
             print('degree', degree, 'alpha0:\t\t%.20g' % alpha0)
             for name, error in [("Our", transmutagen_error), ("Pusa", pusa_error)]:
-                print(name, "error near t=%d:\t\t%.20g" % (t0,
+                print(name, "error near t=%.4f:\t%.20g" % (t0,
                     error))
                 alpha_error = abs(abs(error) - alpha0)
                 color = colorama.Fore.RED if alpha_error > 1e-195 else colorama.Fore.GREEN
 
                 print("Off by:", color, '\t\t\t%.5g' % alpha_error, colorama.Style.RESET_ALL)
-
 
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
