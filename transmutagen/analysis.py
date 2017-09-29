@@ -412,6 +412,7 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
 
     part_fracs = {}
     paper_part_fracs = {}
+    interval = (0, 100)
     for degree in [14, 16]:
         expr = get_CRAM_from_cache(degree, 200)
         thetas, alphas, alpha0 = thetas_alphas(expr, 200)
@@ -423,10 +424,11 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
         part_fracs[degree] = part_frac
         paper_part_fracs[degree] = paper_part_frac
 
-        critical_points = nsolve_intervals(diff(part_fracs[14] - exp(-t), t),
-            (0, 100), prec=200)
+        critical_points = nsolve_intervals(diff(part_fracs[degree] - exp(-t), t),
+            interval, prec=200)
 
         print('-'*80)
+        print("Testing", len(critical_points), "points in", interval, "for degree", degree)
         for t0 in critical_points:
             print()
 
