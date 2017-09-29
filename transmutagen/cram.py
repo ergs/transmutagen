@@ -92,7 +92,7 @@ def nsolve_intervals(expr, bounds, division=10000, solver='bisect', scale=True, 
 
             root = nsolve(scaled_expr, interval, solver=solver, prec=prec, **kwargs)
         except ValueError as e:
-            logger.debug("No solution found: %s", e)
+            logger.warn("No solution found: %s", e)
             continue
         else:
             if interval[0] < root < interval[1]:
