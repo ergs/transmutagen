@@ -55,6 +55,9 @@ def nsolve_intervals(expr, bounds, division=10000, solver='bisect', scale=True, 
     """
     Divide bounds into division intervals and nsolve in each one
     """
+    kwargs.setdefault('maxsteps', int(1.7*prec))
+    kwargs.setdefault('tol', mpmath.mpf(10)**-(prec - 8))
+
     roots = []
     L = bounds[1] - bounds[0]
     # These are only needed for scaling and sign checks, so don't bother with
