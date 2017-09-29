@@ -10,7 +10,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.sparse
 from sympy import re, im, Float, exp, diff
-import mpmath
 
 from .tests.test_transmute import run_transmute_test
 from .origen_all import TIME_STEPS
