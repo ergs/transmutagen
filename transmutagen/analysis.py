@@ -413,9 +413,11 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
     part_fracs = {}
     paper_part_fracs = {}
     interval = (0, 100)
+    prec = 200
+
     for degree in [14, 16]:
-        expr = get_CRAM_from_cache(degree, 200)
-        thetas, alphas, alpha0 = thetas_alphas(expr, 200)
+        expr = get_CRAM_from_cache(degree, prec)
+        thetas, alphas, alpha0 = thetas_alphas(expr, prec)
         part_frac = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
         part_frac = part_frac.replace(customre, re)
 
@@ -425,7 +427,7 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
         paper_part_fracs[degree] = paper_part_frac
 
         critical_points = nsolve_intervals(diff(part_fracs[degree] - exp(-t), t),
-            interval, prec=200)
+            interval, prec=prec)
 
         print('-'*80)
         print("Testing", len(critical_points), "points in", interval, "for degree", degree)
@@ -435,8 +437,8 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
             transmutagen_error = transmutagen_cram_error(degree, t0)
             pusa_error = paper_cram_error(degree, t0)
 
-            expr = get_CRAM_from_cache(degree, 200)
-            thetas, alphas, alpha0 = thetas_alphas(expr, 200)
+            expr = get_CRAM_from_cache(degree, prec)
+            thetas, alphas, alpha0 = thetas_alphas(expr, prec)
             print('degree', degree, 'alpha0:\t\t%.20g' % alpha0)
             for name, error in [("Our", transmutagen_error), ("Pusa", pusa_error)]:
                 print(name, "error near t=%.4f:\t%.20g" % (t0,
