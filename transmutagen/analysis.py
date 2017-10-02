@@ -434,8 +434,8 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
         for t0 in critical_points:
             print()
 
-            transmutagen_error = transmutagen_cram_error(degree, t0)
-            pusa_error = paper_cram_error(degree, t0)
+            transmutagen_error = transmutagen_cram_error(degree, t0, prec)
+            pusa_error = paper_cram_error(degree, t0, prec)
 
             expr = get_CRAM_from_cache(degree, prec)
             thetas, alphas, alpha0 = thetas_alphas(expr, prec)
