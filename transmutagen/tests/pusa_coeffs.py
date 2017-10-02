@@ -242,7 +242,7 @@ def transmutagen_cram_error(degree, t0, prec=200):
     E = part_frac - exp(-t)
     E = E.evalf(20)
 
-    return E.subs(t, nsolve(diff(E, t), t0, prec=20))
+    return E.subs(t, nsolve(diff(E, t), t0, prec=prec))
 
 def paper_cram_error(degree, t0, prec=200):
     from ..partialfrac import t, customre
