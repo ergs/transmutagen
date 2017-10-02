@@ -440,13 +440,27 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
             expr = get_CRAM_from_cache(degree, prec)
             thetas, alphas, alpha0 = thetas_alphas(expr, prec)
             print('degree', degree, 'alpha0:\t\t%.20g' % alpha0)
-            for name, error in [("Our", transmutagen_error), ("Pusa", pusa_error)]:
+
+            transmutagen_alpha_error = abs(abs(transmutagen_error) - alpha0)
+            pusa_alpha_error = abs(abs(pusa_error) - alpha0)
+
+            for name, error, alpha_error in [
+                ("Our", transmutagen_error, transmutagen_alpha_error),
+                ("Pusa", pusa_error, pusa_alpha_error)]:
+
                 print(name, "error near t=%.4f:\t%.20g" % (t0,
                     error))
                 alpha_error = abs(abs(error) - alpha0)
-                color = colorama.Fore.RED if alpha_error > 1e-195 else colorama.Fore.GREEN
+                color = colorama.Fore.RED if alpha_error > 1e-20 else colorama.Fore.GREEN
 
                 print("Off by:", color, '\t\t\t%.5g' % alpha_error, colorama.Style.RESET_ALL)
+                alpha_error = abs(abs(error) - alpha0)
+            if transmutagen_alpha_error >= pusa_alpha_error:
+                print(colorama.Fore.RED, "Pusa error is better",
+                    colorama.Style.RESET_ALL, sep='')
+            else:
+                print(colorama.Fore.GREEN, "Our error is better",
+                    colorama.Style.RESET_ALL, sep='')
 
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
