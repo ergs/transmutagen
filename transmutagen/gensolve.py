@@ -176,9 +176,9 @@ void {{namespace}}_scalar_times_vector_{{typefuncname}}({{type}} alpha, {{type}}
 {%- endfor %}
 {%- endif %}
 
-void {{namespace}}_solve_special(double* A, double complex theta, double complex alpha, double* b, double complex* x) {
+void {{namespace}}_solve_special(double* A, long double complex theta, long double complex alpha, double* b, long double complex* x) {
   /* Solves (A + theta*I)x = alpha*b and stores the result in x */
-  double complex LU [{{NIJK}}];
+  long double complex LU [{{NIJK}}];
 
   /* LU = A + theta*I */
   {%- for i in range(NNZ) %}
@@ -189,7 +189,7 @@ void {{namespace}}_solve_special(double* A, double complex theta, double complex
   {%- endif %}
   {%- endfor %}
 
-  memset(LU+{{NNZ}}, 0, {{NIJK-NNZ}}*sizeof(double complex));
+  memset(LU+{{NNZ}}, 0, {{NIJK-NNZ}}*sizeof(long double complex));
 
   /* Decompose first */
   {%- for i in range(N) %}
@@ -221,7 +221,7 @@ void {{namespace}}_solve_special(double* A, double complex theta, double complex
 void {{namespace}}_expm_multiply{{degree}}(double* A, double* b, double* x) {
     /* Computes exp(A)*b and stores the result in x */
     {%- for i in range(degree//2) %}
-    double complex x{{i}} [{{N}}];
+    long double complex x{{i}} [{{N}}];
     {%- endfor %}
 
     {% set thetas, alphas, alpha0 = get_thetas_alphas(degree) -%}
@@ -315,7 +315,7 @@ def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.js
     decay_matrix = make_decay_matrix(decay_matrix_kind, json_data['fromto'], ijnucs)
     types = [  # C type, type function name
              ('double', 'double'),
-             ('double complex', 'complex')]
+             ('long double complex', 'complex')]
     env = Environment()
     src_template = env.from_string(SRC, globals=globals())
     src = src_template.render(N=N, ij=ij, ijk=ijk, nucs=nucs, sorted=sorted,
