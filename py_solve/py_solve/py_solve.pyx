@@ -74,11 +74,11 @@ def solve(A, b):
     A = asflat(A)
     b_flat = b.flatten()
     # solve for type
-    if A.dtype == np.complex256:
-        x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.complex256)
-        c_solve.transmutagen_solve_complex(<long double complex*> np.PyArray_DATA(A),
-                                           <long double complex*> np.PyArray_DATA(b),
-                                           <long double complex*> np.PyArray_DATA(x))
+    if A.dtype == np.complex128:
+        x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.complex128)
+        c_solve.transmutagen_solve_complex(<double complex*> np.PyArray_DATA(A),
+                                           <double complex*> np.PyArray_DATA(b),
+                                           <double complex*> np.PyArray_DATA(x))
     elif A.dtype == np.float64:
         x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
         c_solve.transmutagen_solve_double(<double*> np.PyArray_DATA(A),
@@ -94,8 +94,8 @@ def diag_add(A, theta):
     """Returns a flat matrix which represents A + theta*I."""
     dtype = np.common_type(A, np.array(theta))
     r = np.array(asflat(A), dtype=dtype)
-    if dtype == np.complex256:
-        c_solve.transmutagen_diag_add_complex(<long double complex*> np.PyArray_DATA(r), theta)
+    if dtype == np.complex128:
+        c_solve.transmutagen_diag_add_complex(<double complex*> np.PyArray_DATA(r), theta)
     elif dtype == np.float64:
         c_solve.transmutagen_diag_add_double(<double*> np.PyArray_DATA(r), theta)
     else:
@@ -107,11 +107,11 @@ def dot(A, x):
     """Takes the dot product of Ax and returns y."""
     A = asflat(A)
     # solve for type
-    if A.dtype == np.complex256:
-        y = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.complex256)
-        c_solve.transmutagen_dot_complex(<long double complex*> np.PyArray_DATA(A),
-                                         <long double complex*> np.PyArray_DATA(x),
-                                         <long double complex*> np.PyArray_DATA(y))
+    if A.dtype == np.complex128:
+        y = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.complex128)
+        c_solve.transmutagen_dot_complex(<double complex*> np.PyArray_DATA(A),
+                                         <double complex*> np.PyArray_DATA(x),
+                                         <double complex*> np.PyArray_DATA(y))
     elif A.dtype == np.float64:
         y = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
         c_solve.transmutagen_dot_double(<double*> np.PyArray_DATA(A),
@@ -125,11 +125,11 @@ def scalar_times_vector(alpha, v):
     """Returns alpha*v, there alpha is a scalar and v is a vector"""
     dtype = np.common_type(v, np.array(alpha))
     r = np.array(asflat(v), dtype=dtype)
-    if dtype == np.complex256:
-        y = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.complex256)
+    if dtype == np.complex128:
+        y = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.complex128)
         c_solve.transmutagen_scalar_times_vector_complex(
             alpha,
-            <long double complex*> np.PyArray_DATA(r)
+            <double complex*> np.PyArray_DATA(r)
             )
     elif dtype == np.float64:
         y = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
