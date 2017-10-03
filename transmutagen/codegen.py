@@ -43,10 +43,8 @@ class MatrixNumPyPrinter(NumPyPrinter):
         num_terms = [i for i in expr.args if i.is_number]
         rest_terms = [i for i in expr.args if i not in num_terms]
 
-        if len(rest_terms) > 2:
-            rest = 'sortsum(array([%s]))' % (', '.join(self._print(i) for i in rest_terms))
-        elif len(rest_terms) == 2:
-            return super()._print_Add(Add(*rest_terms))
+        if len(rest_terms) > 1:
+            rest = super()._print_Add(Add(*rest_terms))
         elif len(rest_terms) == 1:
             rest = self._print(rest_terms[0])
         else:
@@ -246,12 +244,6 @@ scipy_translations = {
     'matrix_power': lambda a, b: a**b,
     'real': lambda m: np.real(m) if isinstance(m, np.ndarray) else scipy.sparse.csr_matrix((np.real(m.data), m.indices,
         m.indptr), shape=m.shape),
-    'sort': np.sort,
-    'sum': np.sum,
-    'array': np.array,
-
-    'sortsum': lambda a: np.sum(a[np.argsort(np.abs(a), axis=0)][:,
-        np.arange(np.shape(a)[-1]), np.arange(np.shape(a)[-1]), np.arange(np.shape(a)[-1])][::-1], axis=0),
     }
 
 scipy_translations_autoeye = {
