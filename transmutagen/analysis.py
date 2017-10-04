@@ -378,6 +378,11 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
                         our_str, pusa_str = format_str.format(decimal.Decimal(repr(real_val))), real_val_paper
                     else:
                         our_str, pusa_str = format_str.format(decimal.Decimal(repr(imag_val))), imag_val_paper
+                        if imag_val == 0:
+                            # Decimal formats the string with e+19, which is
+                            # undesirable. See
+                            # https://bugs.python.org/issue31684.
+                            our_str = "+0.0000000000000000000e+0"
 
                     machine_differences = (literal_eval(pusa_str) != literal_eval(our_str))
 
