@@ -25,6 +25,7 @@ class MatrixNumPyPrinter(NumPyPrinter):
         # TODO: Make this automatic
         'use_autoeye': True,
         'py_solve': False,
+        'float128': False,
         }
 
     def __init__(self, settings=None):
@@ -109,9 +110,12 @@ class MatrixNumPyPrinter(NumPyPrinter):
         return super()._print_Integer(expr)
 
     def _print_Float(self, expr):
+        super_float = super()._print_Float(expr)
+        if self._settings['float128']:
+            super_float = 'float128(%r)' % super_float
         if self._settings['use_autoeye']:
-            return 'autoeye(%s)' % super()._print_Float(expr)
-        return super()._print_Float(expr)
+            return 'autoeye(%s)' % super_float
+        return super_float
 
     def _print_Pow(self, expr):
         if self._settings['py_solve']:
@@ -244,6 +248,7 @@ scipy_translations = {
     'matrix_power': lambda a, b: a**b,
     'real': lambda m: np.real(m) if isinstance(m, np.ndarray) else scipy.sparse.csr_matrix((np.real(m.data), m.indices,
         m.indptr), shape=m.shape),
+    'float128': np.float128,
     }
 
 scipy_translations_autoeye = {
@@ -252,7 +257,7 @@ scipy_translations_autoeye = {
     }
 
 @memoize
-def CRAM_matrix_exp_lambdify(degree=14, prec=200, use_cache=True,
+def CRAM_matrix_exp_lambdify(degree=14, prec=200, *, use_cache=True,
     form='complex partial fraction', py_solve=False):
     """
     Return a lambdified function for the CRAM approximation to exp(-x)
