@@ -293,13 +293,13 @@ def write_if_diff(filename, contents, verbose=True):
     if not os.path.isfile(filename):
         existing = None
     else:
-        with io.open(filename, 'r') as f:
+        with open(filename, 'r') as f:
             existing = f.read()
     if contents == existing:
         if verbose:
             print(filename + " generated is the same as existing file, skipping.")
         return
-    with io.open(filename, 'w') as f:
+    with open(filename, 'w') as f:
         if verbose:
             print("Writing", filename)
         f.write(contents)
