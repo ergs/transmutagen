@@ -288,6 +288,23 @@ def make_decay_matrix(kind, fromto, ijnucs):
                          'either "pyne" or "none", got ' + str(kind))
 
 
+def write_if_diff(filename, contents, verbose=True):
+    """Only writes the file if it is different. This prevents touching the file needlessly."""
+    if not os.path.isfile(filename):
+        existing = None
+    else:
+        with io.open(filename, 'r') as f:
+            existing = f.read()
+    if contents == existing:
+        if verbose:
+            print(filename + " generated is the same as existing file, skipping.")
+        return
+    with io.open(filename, 'w') as f:
+        if verbose:
+            print("Writing", filename)
+        f.write(contents)
+
+
 def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.json'),
     outfile=None, degrees=None, py_solve=False, namespace='transmutagen',
     decay_matrix_kind='pyne'):
@@ -328,12 +345,8 @@ def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.js
     header_template = env.from_string(HEADER, globals=globals())
     header = header_template.render(types=types, degrees=degrees,
         py_solve=py_solve, namespace=namespace)
-    print("Writing", outfile)
-    with open(outfile, 'w') as f:
-        f.write(src)
-    print("Writing", headerfile)
-    with open(headerfile, 'w') as f:
-        f.write(header)
+    write_if_diff(outfile, src)
+    write_if_diff(headerfile, header)
     # If this changes, also update py_solve/setup.py
     gcc_compiler_flags = ['-O0', '-fcx-fortran-rules', '-fcx-limited-range',
         '-ftree-sra', '-ftree-ter', '-fexpensive-optimizations']
