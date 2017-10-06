@@ -177,13 +177,21 @@ def plot_in_terminal(expr, *args, prec=None, logname=None, file=None, **kwargs):
     except ImportError:
         plot(f, *args, file=file, **kwargs)
     else:
-        from io import BytesIO
-        b = BytesIO()
+        # mpmath.plot ignores the axes argument if file is given, so let
+        # file=False, disable this.
+        if 'axes' in kwargs:
+            file=False
+        if file is not False:
+            from io import BytesIO
+            b = BytesIO()
+        else:
+            b = None
         plot(f, *args, **kwargs, file=b)
         if file:
             with open(file, 'wb') as f:
                 f.write(b.getvalue())
-        print(display_image_bytes(b.getvalue()))
+        if b:
+            print(display_image_bytes(b.getvalue()))
 
 def plt_show_in_terminal(logname=None):
     import matplotlib.pyplot as plt
