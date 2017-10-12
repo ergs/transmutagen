@@ -214,7 +214,7 @@ def analyze_eigenvals(*, pwru50_data=None, file=None, title=True):
     for desc, mat in {'pwru50': matpwru50, 'decay': matdecay}.items():
         plt.clf()
         print("analyzing eigenvalues of", desc)
-        eigvals, eigvects = scipy.sparse.linalg.eigen.eigs(mat, 3507)
+        eigvals, eigvects = scipy.sparse.linalg.eigen.eigs(mat, mat.shape[0]-2)
         plt.scatter(np.real(eigvals), np.imag(eigvals))
         plt.yscale('symlog', linthreshy=1e-20)
         plt.xscale('symlog')
