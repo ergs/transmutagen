@@ -432,6 +432,7 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
         part_fracs[degree] = part_frac
         paper_part_fracs[degree] = paper_part_frac
 
+        print("Computing critical points for degree", degree)
         critical_points = nsolve_intervals(diff(part_fracs[degree] - exp(-t), t),
             interval, prec=prec)
 
