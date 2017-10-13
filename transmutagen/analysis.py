@@ -93,7 +93,7 @@ several starting libraries, nuclides, and timesteps.""")
 
     plt_show_in_terminal()
 
-def analyze_nofission(*, run_all=False, file=None, title=True):
+def analyze_nofission(*, run_all=False, file=None, title=True, expr=None):
     try:
         import scikits.umfpack
         del scikits
@@ -116,12 +116,12 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
                         data = os.path.join('data', f)
                         print("analyzing", data, 'on', time_name)
                         nofission_transmutes[backend][time_name][lib] = run_transmute_test(data, 14, 200,
-                            time, run_all=False, _print=True, umfpack=umfpack)
+                            time, run_all=False, _print=True, umfpack=umfpack, expr=expr)
             else:
                 data = os.path.join(os.path.dirname(__file__), 'tests', 'data', 'pwru50_400000000000000.0_nofission.npz')
                 print("analyzing", data, 'on', time_name, 'with', backend)
                 nofission_transmutes[backend][time_name]['pwru50'] = run_transmute_test(data, 14, 200,
-                    time, run_all=run_all, _print=True, umfpack=umfpack)
+                    time, run_all=run_all, _print=True, umfpack=umfpack, expr=expr)
 
     plot_nofission_transmutes(nofission_transmutes, run_all=run_all,
         file=file, title=title)
