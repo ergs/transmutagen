@@ -37,8 +37,9 @@ def time_and_run(f, *args, _print=False):
         print("Total time", end - start)
     return res
 
-def run_transmute_test(data, degree, prec, time, expr=None, plot=True,
-    _print=False, run_all=True, use_cache=True, umfpack=None):
+def run_transmute_test(data, degree, prec, time, *, expr=None, plot=True,
+    _print=False, run_all=True, use_cache=True, umfpack=None, thetas=None,
+    alphas=None, alpha0=None):
     """
     Run transmute test on the data
 
@@ -54,7 +55,8 @@ def run_transmute_test(data, degree, prec, time, expr=None, plot=True,
 
     num, den = fraction(expr)
 
-    thetas, alphas, alpha0 = thetas_alphas(expr, prec)
+    if not (thetas and alphas and alpha0):
+        thetas, alphas, alpha0 = thetas_alphas(expr, prec)
     part_frac = thetas_alphas_to_expr_real(thetas, alphas, alpha0)
     part_frac_complex = thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
     # part_frac_complex2 = thetas_alphas_to_expr_complex2(thetas, alphas, alpha0)

@@ -137,8 +137,7 @@ def get_paper_part_frac(degree):
     return thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
 
 
-def get_paper_expr(degree):
-    from ..partialfrac import thetas_alphas_to_expr_expanded
+def get_paper_thetas_alphas(degree):
     from sympy import Float, I
 
     thetas = [-Float(r) + Float(i)*I for r, i in
@@ -154,6 +153,12 @@ def get_paper_expr(degree):
     [alpha0] = [Float(r) + Float(i)*I for r, i in
         zip(part_frac_coeffs[degree]['alpha0']['real'],
             part_frac_coeffs[degree]['alpha0']['imaginary'])]
+
+    return thetas, alphas, alpha0
+
+def get_paper_expr(degree):
+    from ..partialfrac import thetas_alphas_to_expr_expanded
+    thetas, alphas, alpha0 = get_paper_thetas_alphas(degree)
 
     p, q = thetas_alphas_to_expr_expanded(thetas, alphas, alpha0)
     return p/q
