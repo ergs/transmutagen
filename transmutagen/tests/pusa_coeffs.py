@@ -155,7 +155,8 @@ def get_paper_expr(degree):
         zip(part_frac_coeffs[degree]['alpha0']['real'],
             part_frac_coeffs[degree]['alpha0']['imaginary'])]
 
-    return thetas_alphas_to_expr_expanded(thetas, alphas, alpha0)
+    p, q = thetas_alphas_to_expr_expanded(thetas, alphas, alpha0)
+    return p/q
 
 def plot_difference(*, file=None, all_plots=False):
     """
