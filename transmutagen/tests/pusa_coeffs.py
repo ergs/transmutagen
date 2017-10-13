@@ -136,6 +136,27 @@ def get_paper_part_frac(degree):
 
     return thetas_alphas_to_expr_complex(thetas, alphas, alpha0)
 
+
+def get_paper_expr(degree):
+    from ..partialfrac import thetas_alphas_to_expr_expanded
+    from sympy import Float, I
+
+    thetas = [-Float(r) + Float(i)*I for r, i in
+        zip(part_frac_coeffs[degree]['thetas']['real'],
+            part_frac_coeffs[degree]['thetas']['imaginary'])]
+    thetas = thetas + [i.conjugate() for i in thetas]
+
+    alphas = [-Float(r) + Float(i)*I for r, i in
+        zip(part_frac_coeffs[degree]['alphas']['real'],
+            part_frac_coeffs[degree]['alphas']['imaginary'])]
+    alphas = alphas + [i.conjugate() for i in alphas]
+
+    [alpha0] = [Float(r) + Float(i)*I for r, i in
+        zip(part_frac_coeffs[degree]['alpha0']['real'],
+            part_frac_coeffs[degree]['alpha0']['imaginary'])]
+
+    return thetas_alphas_to_expr_expanded(thetas, alphas, alpha0)
+
 def plot_difference(*, file=None, all_plots=False):
     """
     Plot the difference between our coefficients and the Pusa ones
@@ -205,26 +226,6 @@ def plot_difference(*, file=None, all_plots=False):
         plot_in_terminal(paper_part_frac - exp(-t), (0, 100), prec=200, points=1000)
         cplot_in_terminal(part_frac - exp(-t), re=(0, 100), im=[-30, 30],
             prec=200, points=100000, verbose=False)
-
-def cram_from_part_frac(degree):
-    from ..partialfrac import thetas_alphas_to_expr_expanded
-    from sympy import Float, I
-
-    thetas = [-Float(r) + Float(i)*I for r, i in
-        zip(part_frac_coeffs[degree]['thetas']['real'],
-            part_frac_coeffs[degree]['thetas']['imaginary'])]
-    thetas = thetas + [i.conjugate() for i in thetas]
-
-    alphas = [-Float(r) + Float(i)*I for r, i in
-        zip(part_frac_coeffs[degree]['alphas']['real'],
-            part_frac_coeffs[degree]['alphas']['imaginary'])]
-    alphas = alphas + [i.conjugate() for i in alphas]
-
-    [alpha0] = [Float(r) + Float(i)*I for r, i in
-        zip(part_frac_coeffs[degree]['alpha0']['real'],
-            part_frac_coeffs[degree]['alpha0']['imaginary'])]
-
-    return thetas_alphas_to_expr_expanded(thetas, alphas, alpha0)
 
 def transmutagen_cram_error(degree, t0, prec=200):
     from ..partialfrac import (thetas_alphas, thetas_alphas_to_expr_complex,
