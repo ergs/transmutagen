@@ -335,7 +335,8 @@ def _latex_typ(typ, idx):
 
 def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
     from .tests.pusa_coeffs import (part_frac_coeffs, plot_difference,
-        transmutagen_cram_error, paper_cram_error, get_paper_part_frac)
+        transmutagen_cram_error, paper_cram_error, get_paper_part_frac,
+        get_paper_expr)
     from .partialfrac import t
 
     try:
@@ -428,6 +429,7 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
         part_frac = part_frac.replace(customre, re)
 
         paper_part_frac = get_paper_part_frac(degree).replace(customre, re)
+        paper_expr = get_paper_expr(degree)
 
         part_fracs[degree] = part_frac
         paper_part_fracs[degree] = paper_part_frac
@@ -468,6 +470,8 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
             else:
                 print(colorama.Fore.GREEN, "Our error is better",
                     colorama.Style.RESET_ALL, sep='')
+
+    analyze_nofission(expr=paper_expr)
 
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
