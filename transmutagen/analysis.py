@@ -164,6 +164,7 @@ def plot_nofission_transmutes(nofission_transmutes, *, run_all=False, file=None,
                         ax.set_title(r'\texttt{%s}' % r.replace('_',
                             r'\_').replace('.', r'.\allowbreak{}'))
 
+                print(time_name, 'with', backend)
                 plt_show_in_terminal()
                 if file:
                     path, ext = os.path.splitext(file)
