@@ -17,10 +17,10 @@ cdef extern from "solve.h":
     void transmutagen_dot_double(double*, double*, double*)
     void transmutagen_scalar_times_vector_double(double, double*)
 
-    void transmutagen_solve_complex(complex_t*, complex_t*, complex_t*)
-    void transmutagen_diag_add_complex(complex_t*, complex_t)
-    void transmutagen_dot_complex(complex_t*, complex_t*, complex_t*)
-    void transmutagen_scalar_times_vector_complex(complex_t, complex_t*)
+    void transmutagen_solve_complex(double complex*, double complex*, double complex*)
+    void transmutagen_diag_add_complex(double complex*, double complex)
+    void transmutagen_dot_complex(double complex*, double complex*, double complex*)
+    void transmutagen_scalar_times_vector_complex(double complex, double complex*)
 
     void transmutagen_expm_multiply6(double*, double*, double*)
     void transmutagen_expm_multiply8(double*, double*, double*)
