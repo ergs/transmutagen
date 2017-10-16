@@ -93,7 +93,8 @@ several starting libraries, nuclides, and timesteps.""")
 
     plt_show_in_terminal()
 
-def analyze_nofission(*, run_all=False, file=None, title=True):
+def analyze_nofission(*, run_all=False, file=None, title=True, thetas=None,
+    alphas=None, alpha0=None):
     try:
         import scikits.umfpack
         del scikits
@@ -116,12 +117,14 @@ def analyze_nofission(*, run_all=False, file=None, title=True):
                         data = os.path.join('data', f)
                         print("analyzing", data, 'on', time_name)
                         nofission_transmutes[backend][time_name][lib] = run_transmute_test(data, 14, 200,
-                            time, run_all=False, _print=True, umfpack=umfpack)
+                            time, run_all=False, _print=True, umfpack=umfpack,
+                            thetas=thetas, alphas=alphas, alpha0=alpha0)
             else:
                 data = os.path.join(os.path.dirname(__file__), 'tests', 'data', 'pwru50_400000000000000.0_nofission.npz')
                 print("analyzing", data, 'on', time_name, 'with', backend)
                 nofission_transmutes[backend][time_name]['pwru50'] = run_transmute_test(data, 14, 200,
-                    time, run_all=run_all, _print=True, umfpack=umfpack)
+                    time, run_all=run_all, _print=True, umfpack=umfpack,
+                    thetas=thetas, alphas=alphas, alpha0=alpha0)
 
     plot_nofission_transmutes(nofission_transmutes, run_all=run_all,
         file=file, title=title)
@@ -164,6 +167,7 @@ def plot_nofission_transmutes(nofission_transmutes, *, run_all=False, file=None,
                         ax.set_title(r'\texttt{%s}' % r.replace('_',
                             r'\_').replace('.', r'.\allowbreak{}'))
 
+                print(time_name, 'with', backend)
                 plt_show_in_terminal()
                 if file:
                     path, ext = os.path.splitext(file)
@@ -214,7 +218,7 @@ def analyze_eigenvals(*, pwru50_data=None, file=None, title=True):
     for desc, mat in {'pwru50': matpwru50, 'decay': matdecay}.items():
         plt.clf()
         print("analyzing eigenvalues of", desc)
-        eigvals, eigvects = scipy.sparse.linalg.eigen.eigs(mat, 3507)
+        eigvals, eigvects = scipy.sparse.linalg.eigen.eigs(mat, mat.shape[0]-2)
         plt.scatter(np.real(eigvals), np.imag(eigvals))
         plt.yscale('symlog', linthreshy=1e-20)
         plt.xscale('symlog')
@@ -334,7 +338,8 @@ def _latex_typ(typ, idx):
 
 def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
     from .tests.pusa_coeffs import (part_frac_coeffs, plot_difference,
-        transmutagen_cram_error, paper_cram_error, get_paper_part_frac)
+        transmutagen_cram_error, paper_cram_error, get_paper_part_frac,
+        get_paper_thetas_alphas)
     from .partialfrac import t
 
     try:
@@ -427,10 +432,12 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
         part_frac = part_frac.replace(customre, re)
 
         paper_part_frac = get_paper_part_frac(degree).replace(customre, re)
+        paper_thetas, paper_alphas, paper_alpha0 = get_paper_thetas_alphas(degree)
 
         part_fracs[degree] = part_frac
         paper_part_fracs[degree] = paper_part_frac
 
+        print("Computing critical points for degree", degree)
         critical_points = nsolve_intervals(diff(part_fracs[degree] - exp(-t), t),
             interval, prec=prec)
 
@@ -466,6 +473,8 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
             else:
                 print(colorama.Fore.GREEN, "Our error is better",
                     colorama.Style.RESET_ALL, sep='')
+
+    analyze_nofission(thetas=paper_thetas, alphas=paper_alphas, alpha0=paper_alpha0)
 
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
