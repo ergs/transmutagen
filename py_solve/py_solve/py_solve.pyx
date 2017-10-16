@@ -76,9 +76,9 @@ def solve(A, b):
     # solve for type
     if A.dtype == np.complex128:
         x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.complex128)
-        c_solve.transmutagen_solve_complex(<double complex*> np.PyArray_DATA(A),
-                                           <double complex*> np.PyArray_DATA(b),
-                                           <double complex*> np.PyArray_DATA(x))
+        c_solve.transmutagen_solve_complex(<c_solve.complex_t*> np.PyArray_DATA(A),
+                                           <c_solve.complex_t*> np.PyArray_DATA(b),
+                                           <c_solve.complex_t*> np.PyArray_DATA(x))
     elif A.dtype == np.float64:
         x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
         c_solve.transmutagen_solve_double(<double*> np.PyArray_DATA(A),
@@ -95,7 +95,7 @@ def diag_add(A, theta):
     dtype = np.common_type(A, np.array(theta))
     r = np.array(asflat(A), dtype=dtype)
     if dtype == np.complex128:
-        c_solve.transmutagen_diag_add_complex(<double complex*> np.PyArray_DATA(r), theta)
+        c_solve.transmutagen_diag_add_complex(<c_solve.complex_t*> np.PyArray_DATA(r), theta)
     elif dtype == np.float64:
         c_solve.transmutagen_diag_add_double(<double*> np.PyArray_DATA(r), theta)
     else:
@@ -109,9 +109,9 @@ def dot(A, x):
     # solve for type
     if A.dtype == np.complex128:
         y = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.complex128)
-        c_solve.transmutagen_dot_complex(<double complex*> np.PyArray_DATA(A),
-                                         <double complex*> np.PyArray_DATA(x),
-                                         <double complex*> np.PyArray_DATA(y))
+        c_solve.transmutagen_dot_complex(<c_solve.complex_t*> np.PyArray_DATA(A),
+                                         <c_solve.complex_t*> np.PyArray_DATA(x),
+                                         <c_solve.complex_t*> np.PyArray_DATA(y))
     elif A.dtype == np.float64:
         y = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
         c_solve.transmutagen_dot_double(<double*> np.PyArray_DATA(A),
@@ -129,7 +129,7 @@ def scalar_times_vector(alpha, v):
         y = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.complex128)
         c_solve.transmutagen_scalar_times_vector_complex(
             alpha,
-            <double complex*> np.PyArray_DATA(r)
+            <c_solve.complex_t*> np.PyArray_DATA(r)
             )
     elif dtype == np.float64:
         y = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)

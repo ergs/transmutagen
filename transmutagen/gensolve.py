@@ -23,6 +23,7 @@ HEADER = """\
 
 {% if py_solve %}
 #include <complex.h>
+#include <quadmath.h>
 {%- endif %}
 
 typedef struct {{namespace}}_transmute_info_tag {
@@ -62,6 +63,7 @@ SRC = """\
 #include <string.h>
 
 #include <complex.h>
+#include <quadmath.h>
 
 #include "{{headerfilename}}"
 
@@ -176,9 +178,9 @@ void {{namespace}}_scalar_times_vector_{{typefuncname}}({{type}} alpha, {{type}}
 {%- endfor %}
 {%- endif %}
 
-void {{namespace}}_solve_special(double* A, double complex theta, double complex alpha, double* b, double complex* x) {
+void {{namespace}}_solve_special(double* A, __complex128 theta, __complex128 alpha, double* b, __complex128* x) {
   /* Solves (A + theta*I)x = alpha*b and stores the result in x */
-  double complex LU [{{NIJK}}];
+  __complex128 LU [{{NIJK}}];
 
   /* LU = A + theta*I */
   {%- for i in range(NNZ) %}
@@ -189,7 +191,7 @@ void {{namespace}}_solve_special(double* A, double complex theta, double complex
   {%- endif %}
   {%- endfor %}
 
-  memset(LU+{{NNZ}}, 0, {{NIJK-NNZ}}*sizeof(double complex));
+  memset(LU+{{NNZ}}, 0, {{NIJK-NNZ}}*sizeof(__complex128));
 
   /* Decompose first */
   {%- for i in range(N) %}
@@ -221,7 +223,7 @@ void {{namespace}}_solve_special(double* A, double complex theta, double complex
 void {{namespace}}_expm_multiply{{degree}}(double* A, double* b, double* x) {
     /* Computes exp(A)*b and stores the result in x */
     {%- for i in range(degree//2) %}
-    double complex x{{i}} [{{N}}];
+    __complex128 x{{i}} [{{N}}];
     {%- endfor %}
 
     {% set thetas, alphas, alpha0 = get_thetas_alphas(degree) -%}
@@ -230,7 +232,7 @@ void {{namespace}}_expm_multiply{{degree}}(double* A, double* b, double* x) {
     {%- endfor %}
 
     {% for i in range(N) %}
-    x[{{i}}] = (double)creal({%- for j in range(degree//2) %}+x{{j}}[{{i}}]{%- endfor %}) + {{alpha0}}*b[{{i}}];
+    x[{{i}}] = (double)crealq({%- for j in range(degree//2) %}+x{{j}}[{{i}}]{%- endfor %}) + {{alpha0}}*b[{{i}}];
     {%- endfor %}
 }
 
@@ -315,7 +317,7 @@ def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.js
     decay_matrix = make_decay_matrix(decay_matrix_kind, json_data['fromto'], ijnucs)
     types = [  # C type, type function name
              ('double', 'double'),
-             ('double complex', 'complex')]
+             ('__complex128', 'complex')]
     env = Environment()
     src_template = env.from_string(SRC, globals=globals())
     src = src_template.render(N=N, ij=ij, ijk=ijk, nucs=nucs, sorted=sorted,

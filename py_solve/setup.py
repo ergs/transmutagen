@@ -46,7 +46,9 @@ sourcefiles = ['py_solve/py_solve.pyx', 'py_solve/solve.c']
 extensions = [Extension("py_solve.py_solve", sourcefiles,
     # If this changes, also modify the list in transmutagen/gensolve.py
     # TODO: Use just -O0 --ffast-math with clang
-    extra_compile_args=['-O0', '-fcx-fortran-rules', '-fcx-limited-range', '-ftree-sra', '-ftree-ter', '-fexpensive-optimizations',])]
+    extra_compile_args=['-O0', '-fcx-fortran-rules', '-fcx-limited-range', '-ftree-sra', '-ftree-ter', '-fexpensive-optimizations',],
+    libraries=['quadmath'],
+)]
 setup_kwargs['ext_modules'] = cythonize(extensions)
 
 
