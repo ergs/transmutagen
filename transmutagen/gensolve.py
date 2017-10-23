@@ -201,13 +201,6 @@ void {{namespace}}_solve_special(double* A, double complex theta, double complex
   {%- for j in range(i+1, N) %}
   {%- if (j, i) in ijk %}
   LU[{{ijk[j, i]}}] /= LU[{{ijk[i, i]}}];
-  {%- endif %}
-  {%- endfor %}
-  {%- endfor %}
-
-  {%- for i in range(N) %}
-  {%- for j in range(i+1, N) %}
-  {%- if (j, i) in ijk %}
   {%- for k in range(i+1, N) %}
   {%- if (i, k) in ijk %}
   LU[{{ijk[j, k]}}] -= LU[{{ijk[j, i]}}] * LU[{{ijk[i, k]}}];
