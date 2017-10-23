@@ -181,8 +181,20 @@ void {{namespace}}_scalar_times_vector_{{typefuncname}}({{type}} alpha, {{type}}
 {%- endfor %}
 {%- endif %}
 
-void {{namespace}}_solve_special_decompose(double complex* LU) {
+void {{namespace}}_solve_special(double* A, double complex theta, double complex alpha, double* b, double complex* x) {
   /* Solves (A + theta*I)x = alpha*b and stores the result in x */
+  double complex LU [{{NIJK}}];
+
+  /* LU = A + theta*I */
+  {%- for i in range(NNZ) %}
+  {%- if i in diagonals %}
+  LU[{{i}}] = theta + A[{{i}}];
+  {%- else %}
+  LU[{{i}}] = A[{{i}}];
+  {%- endif %}
+  {%- endfor %}
+
+  memset(LU+{{NNZ}}, 0, {{NIJK-NNZ}}*sizeof(double complex));
 
   /* Decompose first */
   {%- for i in range(N) %}
@@ -197,9 +209,6 @@ void {{namespace}}_solve_special_decompose(double complex* LU) {
   {%- endif %}
   {%- endfor %}
   {%- endfor %}
-}
-
-void {{namespace}}_solve_special_substitution(double complex* LU, double complex alpha, double* b, double complex* x) {
 
   /* Multiply x by alpha and perform Solve */
   {%- for i in range(N) %}
@@ -220,24 +229,9 @@ void {{namespace}}_expm_multiply{{degree}}(double* A, double* b, double* x) {
     double complex x{{i}} [{{N}}];
     {%- endfor %}
 
-    double complex LU [{{NIJK}}];
-
     {% set thetas, alphas, alpha0 = get_thetas_alphas(degree) -%}
     {% for theta, alpha in sorted(zip(thetas, alphas), key=abs0) if im(theta) >= 0 %}
-
-    /* LU = A + theta*I */
-    {%- for i in range(NNZ) %}
-    {%- if i in diagonals %}
-    LU[{{i}}] = {{ -theta}} + A[{{i}}];
-    {%- else %}
-    LU[{{i}}] = A[{{i}}];
-    {%- endif %}
-    {%- endfor %}
-
-    memset(LU+{{NNZ}}, 0, {{NIJK-NNZ}}*sizeof(double complex));
-
-    {{namespace}}_solve_special_decompose(LU);
-    {{namespace}}_solve_special_substitution(LU, {{2*alpha}}, b, x{{loop.index0}});
+    {{namespace}}_solve_special(A, {{ -theta}}, {{2*alpha}}, b, x{{loop.index0}});
     {%- endfor %}
 
     {% for i in range(N) %}
