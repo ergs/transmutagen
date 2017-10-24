@@ -490,6 +490,7 @@ def analyze_gensolve(*, origen_json_file=None, json_file=None, pairs_per_pass=1)
 
     runtime = generate_and_run(new_json)
     print("Run 0 took", runtime, "seconds")
+    added = [0]
     runtimes.append(runtime)
 
     new_fromtos = sorted(set(map(tuple, json_data['fromto'])) - set(map(tuple, origen_json_data['fromto'])))
@@ -500,13 +501,14 @@ def analyze_gensolve(*, origen_json_file=None, json_file=None, pairs_per_pass=1)
         if (len(new_fromtos) - i) % pairs_per_pass != 0:
             continue
 
+        added.append(i)
         print("Compiling and running %d/%d" % (i, len(new_fromtos)))
         runtime = generate_and_run(new_json)
         print("Run", i, "took", runtime, "seconds")
         runtimes.append(runtime)
 
     plt.clf()
-    plt.plot(runtimes)
+    plt.plot(added, runtimes)
     plt_show_in_terminal()
 
 
