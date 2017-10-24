@@ -63,6 +63,11 @@ SRC = """\
 
 #include <complex.h>
 
+{% if timing_test %}
+#include <time.h>
+#include <stdio.h>
+{% endif %}
+
 #include "{{headerfilename}}"
 
 const int {{namespace.upper()}}_I[{{NNZ}}] =
@@ -235,6 +240,45 @@ void {{namespace}}_expm_multiply{{degree}}(double* A, double* b, double* x) {
 }
 
 {% endfor %}
+
+{% if timing_test %}
+
+int main(int argc, const char* argv[]) {
+    double A[{{NNZ}}];
+    double b[{{N}}];
+    double x[{{N}}];
+    int i;
+    double sum = 0.0;
+    clock_t start, diff;
+
+    memcpy(A, {{namespace.upper()}}_DECAY_MATRIX, {{NNZ}}*sizeof(double));
+
+    for (i=0; i <= {{N}}; i++) {
+        b[i] = 0.0;
+    }
+
+    /* U235 */
+    b[{{namespace}}_transmute_nucid_to_i(922350000)] = 1.0;
+
+    /* CPU time */
+    start = clock();
+
+    {{namespace}}_expm_multiply14(A, b, x);
+
+    diff = clock() - start;
+    float msec = (float)diff / CLOCKS_PER_SEC;
+    printf("Took %f seconds\\n", msec);
+
+    for (i=0; i <= {{N}}; i++) {
+        sum += x[i];
+    }
+
+    printf("Sum of resulting vector: %f\\n", sum);
+
+    return(0);
+}
+
+{% endif %}
 """
 
 def make_ijk(ij, N):
@@ -307,7 +351,7 @@ def write_if_diff(filename, contents, verbose=True):
 
 def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.json'),
     outfile=None, degrees=None, py_solve=False, namespace='transmutagen',
-    decay_matrix_kind='pyne'):
+    decay_matrix_kind='pyne', timing_test=False):
 
     if degrees is None:
         degrees = [6, 8, 10, 12, 14, 16, 18] if py_solve else [14]
@@ -341,7 +385,8 @@ def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.js
         diagonals=diagonals, degrees=degrees, py_solve=py_solve,
         get_thetas_alphas=get_thetas_alphas, im=im, abs0=lambda i:abs(i[0]),
         zip=zip, enumerate=enumerate, headerfilename=headerfilename,
-        __version__=__version__, sys=sys, decay_matrix=decay_matrix, nucname=nucname)
+        __version__=__version__, sys=sys, decay_matrix=decay_matrix,
+        nucname=nucname, timing_test=timing_test)
     header_template = env.from_string(HEADER, globals=globals())
     header = header_template.render(types=types, degrees=degrees,
         py_solve=py_solve, namespace=namespace)
@@ -377,6 +422,9 @@ def main(args=None):
     p.add_argument('--decay-matrix', default='pyne', dest='decay_matrix_kind',
                    choices={'none', 'None', 'NONE', 'pyne', 'Pyne', 'PyNE', 'PYNE'},
                    help='method for generating included decay matrix, default "pyne".')
+    p.add_argument("--timing-test", action='store_true', default=False,
+        help="""Generate a main() function that does a timing test on the decay
+        matrix.""")
 
     ns = p.parse_args(args=args)
     if ns.outfile and not ns.outfile.endswith('.c'):
