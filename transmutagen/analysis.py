@@ -4,6 +4,11 @@ import argparse
 import decimal
 from ast import literal_eval
 import sys
+import json
+import subprocess
+import copy
+import tempfile
+import re as re_module
 
 import tables
 import numpy as np
@@ -476,6 +481,58 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
 
     analyze_nofission(thetas=paper_thetas, alphas=paper_alphas, alpha0=paper_alpha0)
 
+def analyze_gensolve(*, origen_json_data=None, json_data=None):
+    origen_json_data = origen_json_data or json.load(open(os.path.join(os.path.dirname(__file__), 'data', 'gensolve_origen.json')))
+    json_data = json_data or json.load(open(os.path.join(os.path.dirname(__file__), 'data', 'gensolve.json')))
+
+    new_json = copy.deepcopy(origen_json_data)
+    runtimes = []
+
+    runtime = generate_and_run(new_json)
+    print("Run 0 took", runtime, "seconds")
+    runtimes.append(runtime)
+
+    new_fromtos = sorted(set(map(tuple, json_data['fromto'])) - set(map(tuple, origen_json_data['fromto'])))
+
+    for i, fromto in enumerate(new_fromtos, 1):
+        new_json['fromto'].append(list(fromto))
+
+        print("Compiling and running %d/%d" % (i, len(new_fromtos)))
+        runtime = generate_and_run(new_json)
+        print("Run", i, "took", runtime, "seconds")
+        runtimes.append(runtime)
+
+    plt.clf()
+    plt.plot(runtimes)
+    plt_show_in_terminal()
+
+
+def generate_and_run(json_data):
+    from transmutagen.gensolve import generate, GCC_COMPILER_FLAGS
+
+    TIMING_TEST_OUT = re_module.compile(r'Took (.*) seconds\nSum of resulting vector: (.*)\n')
+
+    with tempfile.TemporaryDirectory() as d:
+        outfile = os.path.join(d, 'test.c')
+        generate(json_data=json_data, py_solve=False, degrees=[14],
+        outfile=outfile, timing_test=True)
+
+        outscript = os.path.join(d, 'test.o')
+
+        subprocess.run(['gcc'] + GCC_COMPILER_FLAGS + ['-o', outscript] +
+            [outfile], check=True)
+
+        p = subprocess.run([outscript], check=True, stdout=subprocess.PIPE)
+        m = TIMING_TEST_OUT.match(p.stdout.decode('utf-8'))
+        if not m:
+            raise ValueError("Gensolve command output not in the expected format: %s" % p.stdout)
+
+        runtime, vector_sum = map(literal_eval, m.groups())
+        if not vector_sum == 1:
+            raise ValueError("Gensolve vector sum not 1 (%s)" % m.group(2))
+
+        return runtime
+
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--file', help="""File name to save the plot(s) to.
@@ -531,6 +588,10 @@ def analyze():
     file. A filename like pusa-table.tex will result in pusa-table-14.tex and
     pusa-table-16.tex.""")
 
+    gensolve = parser.add_argument_group("Gensolve")
+    gensolve.add_argument('--gensolve', action='store_true', help="""Run
+    gensolve timing analysis.""")
+
     try:
         import argcomplete
         argcomplete.autocomplete(parser)
@@ -553,6 +614,8 @@ def analyze():
         analyze_cram_digits(args.max_degree)
     if args.pusa_coeffs:
         analyze_pusa_coeffs(file=args.file, title=args.title, latex=args.latex)
+    if args.gensolve:
+        analyze_gensolve()
 
 if __name__ == '__main__':
     analyze()
