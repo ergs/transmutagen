@@ -511,12 +511,15 @@ def analyze_gensolve(*, origen_json_file=None, json_file=None, pairs_per_pass=1)
     plt.plot(added, runtimes)
     plt_show_in_terminal()
 
-
 def generate_and_run(json_data):
     from transmutagen.gensolve import generate, GCC_COMPILER_FLAGS
 
     TIMING_TEST_OUT = re_module.compile(r'Took (.*) seconds\nSum of resulting vector: (.*)\n')
 
+    PRE_RUNS = 5
+    RUNS = 100
+
+    runtimes = []
     with tempfile.TemporaryDirectory() as d:
         outfile = os.path.join(d, 'test.c')
         generate(json_data=json_data, py_solve=False, degrees=[14],
@@ -527,16 +530,20 @@ def generate_and_run(json_data):
         subprocess.run(['gcc'] + GCC_COMPILER_FLAGS + ['-o', outscript] +
             [outfile], check=True)
 
-        p = subprocess.run([outscript], check=True, stdout=subprocess.PIPE)
-        m = TIMING_TEST_OUT.match(p.stdout.decode('utf-8'))
-        if not m:
-            raise ValueError("Gensolve command output not in the expected format: %s" % p.stdout)
+        for i in range(PRE_RUNS):
+            p = subprocess.run([outscript], check=True, stdout=subprocess.PIPE)
 
-        runtime, vector_sum = map(literal_eval, m.groups())
-        if not vector_sum == 1:
-            raise ValueError("Gensolve vector sum not 1 (%s)" % m.group(2))
+        for i in range(RUNS):
+            m = TIMING_TEST_OUT.match(p.stdout.decode('utf-8'))
+            if not m:
+                raise ValueError("Gensolve command output not in the expected format: %s" % p.stdout)
 
-        return runtime
+            runtime, vector_sum = map(literal_eval, m.groups())
+            runtimes.append(runtime)
+            if not vector_sum == 1:
+                raise ValueError("Gensolve vector sum not 1 (%s)" % m.group(2))
+
+        return np.mean(runtimes)
 
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
