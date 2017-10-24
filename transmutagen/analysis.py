@@ -494,7 +494,7 @@ def analyze_gensolve(*, origen_json_file=None, json_file=None, pairs_per_pass=1)
     outfile = generate_gensolve_test(new_json, 0)
     print("Running 0/%d" % len(new_fromtos))
     runtimes = run_gensolve_test(outfile)
-    print("Run", 0, "took", np.mean(runtimes), "seconds")
+    print("Run", 0, "took", np.mean(runtimes), "seconds on average")
     all_runtimes.append(runtimes)
 
     for i, fromto in enumerate(new_fromtos, 1):
@@ -508,7 +508,7 @@ def analyze_gensolve(*, origen_json_file=None, json_file=None, pairs_per_pass=1)
         outfile = generate_gensolve_test(new_json, i)
         print("Running %d/%d" % (i, len(new_fromtos)))
         runtimes = run_gensolve_test(outfile)
-        print("Run", i, "took", np.mean(runtimes), "seconds")
+        print("Run", i, "took", np.mean(runtimes), "seconds on average")
         all_runtimes.append(runtimes)
 
     plt.clf()
@@ -521,6 +521,7 @@ def generate_gensolve_test(json_data, tag, directory='gensolve-tests', recompile
     outscript = os.path.join(directory, 'test_%s.o' % tag)
 
     if not recompile and os.path.exists(outscript):
+        print("Already compiled")
         return outscript
 
     os.path.makedirs(directory, exist_ok=True)
