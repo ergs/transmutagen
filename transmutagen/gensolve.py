@@ -354,7 +354,8 @@ def write_if_diff(filename, contents, verbose=True):
         f.write(contents)
 
 
-def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.json'),
+def generate(json_file=os.path.join(os.path.dirname(__file__),
+    'data/gensolve.json'), json_data=None,
     outfile=None, degrees=None, py_solve=False, namespace='transmutagen',
     decay_matrix_kind='pyne', timing_test=False):
 
@@ -366,8 +367,9 @@ def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.js
     headerfile = outfile[:-2] + '.h'
     headerfilename = os.path.basename(headerfile)
 
-    with open(json_file) as f:
-        json_data = json.load(f)
+    if not json_data:
+        with open(json_file) as f:
+            json_data = json.load(f)
 
     nucs = json_data['nucs']
     N = len(nucs)
