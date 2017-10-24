@@ -481,7 +481,7 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
 
     analyze_nofission(thetas=paper_thetas, alphas=paper_alphas, alpha0=paper_alpha0)
 
-def analyze_gensolve(*, origen_json_file=None, json_file=None):
+def analyze_gensolve(*, origen_json_file=None, json_file=None, pairs_per_pass=1):
     origen_json_data = json.load(origen_json_file or open(os.path.join(os.path.dirname(__file__), 'data', 'gensolve_origen.json')))
     json_data = json.load(json_file or open(os.path.join(os.path.dirname(__file__), 'data', 'gensolve.json')))
 
@@ -496,6 +496,9 @@ def analyze_gensolve(*, origen_json_file=None, json_file=None):
 
     for i, fromto in enumerate(new_fromtos, 1):
         new_json['fromto'].append(list(fromto))
+
+        if not (len(fromto) - i) % pairs_per_pass == 0:
+            continue
 
         print("Compiling and running %d/%d" % (i, len(new_fromtos)))
         runtime = generate_and_run(new_json)
@@ -591,6 +594,8 @@ def analyze():
     gensolve = parser.add_argument_group("Gensolve")
     gensolve.add_argument('--gensolve', action='store_true', help="""Run
     gensolve timing analysis.""")
+    gensolve.add_argument('--pairs-per-pass', help="""Number of from-to pairs
+    to add on each pass. The default is %(default)s.""", default=1, type=int)
 
     try:
         import argcomplete
@@ -615,7 +620,7 @@ def analyze():
     if args.pusa_coeffs:
         analyze_pusa_coeffs(file=args.file, title=args.title, latex=args.latex)
     if args.gensolve:
-        analyze_gensolve()
+        analyze_gensolve(pairs_per_pass=args.pairs_per_pass)
 
 if __name__ == '__main__':
     analyze()
