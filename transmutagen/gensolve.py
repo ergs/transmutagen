@@ -15,6 +15,11 @@ from .cram import get_CRAM_from_cache
 from .partialfrac import thetas_alphas
 from . import __version__
 
+# If this changes, also update py_solve/setup.py
+GCC_COMPILER_FLAGS = ['-O0', '-fcx-fortran-rules', '-fcx-limited-range',
+        '-ftree-sra', '-ftree-ter', '-fexpensive-optimizations']
+CLANG_COMPILER_FLAGS = ['-O0', '--ffast-math']
+
 HEADER = """\
 /* This file was generated automatically with transmutagen version {{__version__}}. */
 /* The command used to generate this file was: python -m transmutagen.gensolve {{' '.join(sys.argv[1:])}}*/
@@ -392,13 +397,9 @@ def generate(json_file=os.path.join(os.path.dirname(__file__), 'data/gensolve.js
         py_solve=py_solve, namespace=namespace)
     write_if_diff(outfile, src)
     write_if_diff(headerfile, header)
-    # If this changes, also update py_solve/setup.py
-    gcc_compiler_flags = ['-O0', '-fcx-fortran-rules', '-fcx-limited-range',
-        '-ftree-sra', '-ftree-ter', '-fexpensive-optimizations']
-    clang_compiler_flags = ['-O0', '--ffast-math']
 
-    print("With gcc, it is recommended to compile the following flags:", ' '.join(gcc_compiler_flags))
-    print("With clang, it is recommended to compile the following flags:", ' '.join(clang_compiler_flags))
+    print("With gcc, it is recommended to compile the following flags:", ' '.join(GCC_COMPILER_FLAGS))
+    print("With clang, it is recommended to compile the following flags:", ' '.join(CLANG_COMPILER_FLAGS))
 
 def main(args=None):
     p = ArgumentParser('gensolver')
