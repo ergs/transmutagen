@@ -512,7 +512,8 @@ def analyze_gensolve(*, origen_json_file=None, json_file=None, pairs_per_pass=1)
         all_runtimes.append(runtimes)
 
     plt.clf()
-    plt.plot(added, map(np.mean, runtimes))
+    plt.plot(added, list(map(np.mean, all_runtimes)))
+    plt.plot(added, list(map(np.min, all_runtimes)))
     plt_show_in_terminal()
 
 def generate_gensolve_test(json_data, tag, directory='gensolve-tests', recompile=False):
@@ -524,7 +525,7 @@ def generate_gensolve_test(json_data, tag, directory='gensolve-tests', recompile
         print("Already compiled")
         return outscript
 
-    os.path.makedirs(directory, exist_ok=True)
+    os.makedirs(directory, exist_ok=True)
 
     sourcefile = os.path.join(directory, 'test_%s.c' % tag)
     generate(json_data=json_data, py_solve=False, degrees=[14],
