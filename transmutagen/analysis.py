@@ -478,10 +478,11 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
 
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--file', help="""File name to save the plot(s) to. For --eigenvals, a filename like
-        "eigenvals.pdf" will be saved as "eigenvals_pwru50.pdf" and
-        "eigenvals_decay.pdf". For --nofission, a filename like
-        "nofission.pdf" will be saved as
+    parser.add_argument('--file', help="""File name to save the plot(s) to.
+
+        For --eigenvals, a filename like "eigenvals.pdf" will be saved as
+        "eigenvals_pwru50.pdf" and "eigenvals_decay.pdf". For --nofission, a
+        filename like "nofission.pdf" will be saved as
         "nofission-pwru50-c-solve-1-second-superlu.pdf",
         "nofission-pwru50-expm-1-year-umfpack.pdf",
         "nofission-pwru50-lambdify-1-million-years-superlu.pdf", etc.
