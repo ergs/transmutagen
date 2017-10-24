@@ -486,14 +486,16 @@ def analyze_gensolve(*, origen_json_file=None, json_file=None, pairs_per_pass=1)
     json_data = json.load(json_file or open(os.path.join(os.path.dirname(__file__), 'data', 'gensolve.json')))
 
     new_json = copy.deepcopy(origen_json_data)
-    runtimes = []
-
-    runtime = generate_and_run(new_json)
-    print("Run 0 took", runtime, "seconds")
-    added = [0]
-    runtimes.append(runtime)
-
+    all_runtimes = []
     new_fromtos = sorted(set(map(tuple, json_data['fromto'])) - set(map(tuple, origen_json_data['fromto'])))
+    added = [0]
+
+    print("Compiling 0/%d" % len(new_fromtos))
+    outfile = generate_gensolve_test(new_json, 0)
+    print("Running 0/%d" % len(new_fromtos))
+    runtimes = run_gensolve_test(outfile)
+    print("Run", 0, "took", np.mean(runtimes), "seconds")
+    all_runtimes.append(runtimes)
 
     for i, fromto in enumerate(new_fromtos, 1):
         new_json['fromto'].append(list(fromto))
@@ -502,48 +504,54 @@ def analyze_gensolve(*, origen_json_file=None, json_file=None, pairs_per_pass=1)
             continue
 
         added.append(i)
-        print("Compiling and running %d/%d" % (i, len(new_fromtos)))
-        runtime = generate_and_run(new_json)
-        print("Run", i, "took", runtime, "seconds")
-        runtimes.append(runtime)
+        print("Compiling %d/%d" % (i, len(new_fromtos)))
+        outfile = generate_gensolve_test(new_json, i)
+        print("Running %d/%d" % (i, len(new_fromtos)))
+        runtimes = run_gensolve_test(outfile)
+        print("Run", i, "took", np.mean(runtimes), "seconds")
+        all_runtimes.append(runtimes)
 
     plt.clf()
-    plt.plot(added, runtimes)
+    plt.plot(added, map(np.mean, runtimes))
     plt_show_in_terminal()
 
-def generate_and_run(json_data):
+def generate_gensolve_test(json_data, tag, directory='gensolve-tests', recompile=False):
     from transmutagen.gensolve import generate, GCC_COMPILER_FLAGS
 
+    outscript = os.path.join(directory, 'test_%s.o' % tag)
+
+    if not recompile and os.path.exists(outscript):
+        return outscript
+
+    os.path.makedirs(directory, exist_ok=True)
+
+    sourcefile = os.path.join(directory, 'test_%s.c' % tag)
+    generate(json_data=json_data, py_solve=False, degrees=[14],
+    outfile=sourcefile, timing_test=True)
+
+    subprocess.run(['gcc'] + GCC_COMPILER_FLAGS + ['-o', outscript] +
+        [sourcefile], check=True)
+
+    return outscript
+
+def run_gensolve_test(outscript, pre_runs=5, runs=100):
     TIMING_TEST_OUT = re_module.compile(r'Took (.*) seconds\nSum of resulting vector: (.*)\n')
 
-    PRE_RUNS = 5
-    RUNS = 100
-
     runtimes = []
-    with tempfile.TemporaryDirectory() as d:
-        outfile = os.path.join(d, 'test.c')
-        generate(json_data=json_data, py_solve=False, degrees=[14],
-        outfile=outfile, timing_test=True)
+    for i in range(pre_runs):
+        p = subprocess.run([outscript], check=True, stdout=subprocess.PIPE)
 
-        outscript = os.path.join(d, 'test.o')
+    for i in range(runs):
+        m = TIMING_TEST_OUT.match(p.stdout.decode('utf-8'))
+        if not m:
+            raise ValueError("Gensolve command output not in the expected format: %s" % p.stdout)
 
-        subprocess.run(['gcc'] + GCC_COMPILER_FLAGS + ['-o', outscript] +
-            [outfile], check=True)
+        runtime, vector_sum = map(literal_eval, m.groups())
+        runtimes.append(runtime)
+        if not vector_sum == 1:
+            raise ValueError("Gensolve vector sum not 1 (%s)" % m.group(2))
 
-        for i in range(PRE_RUNS):
-            p = subprocess.run([outscript], check=True, stdout=subprocess.PIPE)
-
-        for i in range(RUNS):
-            m = TIMING_TEST_OUT.match(p.stdout.decode('utf-8'))
-            if not m:
-                raise ValueError("Gensolve command output not in the expected format: %s" % p.stdout)
-
-            runtime, vector_sum = map(literal_eval, m.groups())
-            runtimes.append(runtime)
-            if not vector_sum == 1:
-                raise ValueError("Gensolve vector sum not 1 (%s)" % m.group(2))
-
-        return np.mean(runtimes)
+    return runtimes
 
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
