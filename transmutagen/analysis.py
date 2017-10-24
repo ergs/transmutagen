@@ -497,7 +497,7 @@ def analyze_gensolve(*, origen_json_file=None, json_file=None, pairs_per_pass=1)
     for i, fromto in enumerate(new_fromtos, 1):
         new_json['fromto'].append(list(fromto))
 
-        if (len(fromto) - i) % pairs_per_pass != 0:
+        if (len(new_fromtos) - i) % pairs_per_pass != 0:
             continue
 
         print("Compiling and running %d/%d" % (i, len(new_fromtos)))
