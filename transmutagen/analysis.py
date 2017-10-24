@@ -481,9 +481,9 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
 
     analyze_nofission(thetas=paper_thetas, alphas=paper_alphas, alpha0=paper_alpha0)
 
-def analyze_gensolve(*, origen_json_data=None, json_data=None):
-    origen_json_data = origen_json_data or json.load(open(os.path.join(os.path.dirname(__file__), 'data', 'gensolve_origen.json')))
-    json_data = json_data or json.load(open(os.path.join(os.path.dirname(__file__), 'data', 'gensolve.json')))
+def analyze_gensolve(*, origen_json_file=None, json_file=None):
+    origen_json_data = json.load(origen_json_file or open(os.path.join(os.path.dirname(__file__), 'data', 'gensolve_origen.json')))
+    json_data = json.load(json_file or open(os.path.join(os.path.dirname(__file__), 'data', 'gensolve.json')))
 
     new_json = copy.deepcopy(origen_json_data)
     runtimes = []
