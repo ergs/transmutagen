@@ -543,6 +543,7 @@ def run_gensolve_test(outscript, pre_runs=5, runs=100):
         p = subprocess.run([outscript], check=True, stdout=subprocess.PIPE)
 
     for i in range(runs):
+        p = subprocess.run([outscript], check=True, stdout=subprocess.PIPE)
         m = TIMING_TEST_OUT.match(p.stdout.decode('utf-8'))
         if not m:
             raise ValueError("Gensolve command output not in the expected format: %s" % p.stdout)
