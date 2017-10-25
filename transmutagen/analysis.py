@@ -7,7 +7,6 @@ import sys
 import json
 import subprocess
 import copy
-import tempfile
 import re as re_module
 
 import tables
