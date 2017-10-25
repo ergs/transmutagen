@@ -513,7 +513,8 @@ def analyze_gensolve(*, origen_json_file=None, json_file=None,
 
     plt.clf()
     plt.plot(added, list(map(np.mean, all_runtimes)))
-    plt.plot(added, list(map(np.min, all_runtimes)))
+    plt.fill_between(added, list(map(np.min, all_runtimes)), list(map(np.max,
+        all_runtimes)), alpha=0.5)
     plt_show_in_terminal()
 
 def generate_gensolve_test(json_data, tag, directory='gensolve-tests', recompile=False):
