@@ -480,7 +480,8 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
 
     analyze_nofission(thetas=paper_thetas, alphas=paper_alphas, alpha0=paper_alpha0)
 
-def analyze_gensolve(*, origen_json_file=None, json_file=None, pairs_per_pass=1):
+def analyze_gensolve(*, origen_json_file=None, json_file=None,
+    pairs_per_pass=1, runs=100, warm_up_runs=5):
     origen_json_data = json.load(origen_json_file or open(os.path.join(os.path.dirname(__file__), 'data', 'gensolve_origen.json')))
     json_data = json.load(json_file or open(os.path.join(os.path.dirname(__file__), 'data', 'gensolve.json')))
 
@@ -535,11 +536,11 @@ def generate_gensolve_test(json_data, tag, directory='gensolve-tests', recompile
 
     return outscript
 
-def run_gensolve_test(outscript, pre_runs=5, runs=100):
+def run_gensolve_test(outscript, warm_up_runs=5, runs=100):
     TIMING_TEST_OUT = re_module.compile(r'Took (.*) seconds\nSum of resulting vector: (.*)\n')
 
     runtimes = []
-    for i in range(pre_runs):
+    for i in range(warm_up_runs):
         p = subprocess.run([outscript], check=True, stdout=subprocess.PIPE)
 
     for i in range(runs):
@@ -612,9 +613,14 @@ def analyze():
 
     gensolve = parser.add_argument_group("Gensolve")
     gensolve.add_argument('--gensolve', action='store_true', help="""Run
-    gensolve timing analysis.""")
+        gensolve timing analysis.""")
     gensolve.add_argument('--pairs-per-pass', help="""Number of from-to pairs
-    to add on each pass. The default is %(default)s.""", default=1, type=int)
+        to add on each pass. The default is %(default)s.""", default=1, type=int)
+    gensolve.add_argument('--warm-up-runs', help="""Number of times to run the
+        command first without recording the output. The default is
+        %(default)s.""", default=5, type=int)
+    gensolve.add_argument('--runs', help="""Number of times to run the
+        command. The default is %(default)s.""", default=100, type=int)
 
     try:
         import argcomplete
@@ -639,7 +645,8 @@ def analyze():
     if args.pusa_coeffs:
         analyze_pusa_coeffs(file=args.file, title=args.title, latex=args.latex)
     if args.gensolve:
-        analyze_gensolve(pairs_per_pass=args.pairs_per_pass)
+        analyze_gensolve(pairs_per_pass=args.pairs_per_pass, runs=args.runs,
+            warm_up_runs=args.warm_up_runs)
 
 if __name__ == '__main__':
     analyze()
