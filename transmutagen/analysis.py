@@ -507,7 +507,7 @@ def analyze_gensolve(*, origen_json_file=None, json_file=None,
         print("Compiling %d/%d" % (i, len(new_fromtos)))
         outfile = generate_gensolve_test(new_json, i)
         print("Running %d/%d" % (i, len(new_fromtos)))
-        runtimes = run_gensolve_test(outfile)
+        runtimes = run_gensolve_test(outfile, warm_up_runs=warm_up_runs, runs=runs)
         print("Run", i, "took", np.mean(runtimes), "seconds on average")
         all_runtimes.append(runtimes)
 
