@@ -567,7 +567,7 @@ class InteractiveLUMatrix:
         self.N = N
         self._make_matrix_data()
         self.press = None
-        self.modified = []
+        self.adding = None
         self._make_matrix_data()
 
         self.image = plt.imshow(self.data)
@@ -613,15 +613,18 @@ class InteractiveLUMatrix:
     def _invert(self, event):
         # Inverted
         x, y = int(event.ydata+0.5), int(event.xdata+0.5)
-        if (x, y) in self.modified:
-            return
 
         if (x, y) in self.extra:
+            # When dragging, only add or only remove points
+            if self.adding == False:
+                return
             self.extra.remove((x, y))
+            self.adding = True
         else:
+            if self.adding == True:
+                return
             self.extra.append((x, y))
-
-        self.modified.append((x, y))
+            self.adding = False
 
     def on_press(self, event):
         self._invert(event)
@@ -642,7 +645,7 @@ class InteractiveLUMatrix:
     def on_release(self, event):
         'on release we reset the press data'
         self.press = None
-        self.modified = []
+        self.adding = None
         self._update_image()
 
     def disconnect(self):
