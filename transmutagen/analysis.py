@@ -21,6 +21,7 @@ from .util import (plt_show_in_terminal, load_sparse_csr, diff_strs,)
 from .cram import get_CRAM_from_cache, CRAM_coeffs, nsolve_intervals
 from .partialfrac import (thetas_alphas, thetas_alphas_to_expr_complex,
     customre)
+from .gensolve import make_ijk
 
 def setup_matplotlib_rc():
     from matplotlib import rcParams
@@ -557,6 +558,93 @@ def run_gensolve_test(outscript, warm_up_runs=5, runs=100):
 
     return runtimes
 
+# Based on https://matplotlib.org/users/event_handling.html
+class InteractiveLUMatrix:
+    def __init__(self, N, extra=()):
+        self.extra = list(extra)
+        self.N = N
+        self._make_matrix_data()
+        self.press = None
+        self.modified = []
+        self._make_matrix_data()
+        self.image = plt.imshow(self.data)
+        self._connect()
+
+    def _make_matrix_data(self):
+        extra = self.extra
+        N = self.N
+        ij = {i: j for j, i in enumerate([(i, i) for i in range(N)] + extra)}
+        a = np.zeros((N, N), dtype=int)
+        for i, j in ij:
+            a[i, j] = 1
+        ijk = make_ijk(ij, N)
+        b = np.zeros((N, N), dtype=int)
+        for i, j in ijk:
+            b[i, j] = 1
+        data = a + b
+        self.data = data
+
+    def _update_image(self):
+        self.image.set_data(self.data)
+        self.image.figure.canvas.draw()
+
+    def _connect(self):
+        'connect to all the events we need'
+        self.cidpress = self.image.figure.canvas.mpl_connect(
+            'button_press_event', self.on_press)
+        self.cidrelease = self.image.figure.canvas.mpl_connect(
+            'button_release_event', self.on_release)
+        self.cidmotion = self.image.figure.canvas.mpl_connect(
+            'motion_notify_event', self.on_motion)
+
+    def _invert(self, event):
+        # Inverted
+        x, y = int(event.ydata+0.5), int(event.xdata+0.5)
+        if (x, y) in self.modified:
+            return
+
+        if (x, y) in self.extra:
+            self.extra.remove((x, y))
+        else:
+            self.extra.append((x, y))
+
+        self.modified.append((x, y))
+
+    def on_press(self, event):
+        self._invert(event)
+
+        self._make_matrix_data()
+        self._update_image()
+        self.press = event.xdata, event.ydata
+
+    def on_motion(self, event):
+        'on motion we will move the image if the mouse is over us'
+        if self.press is None:
+            return
+
+        self._invert(event)
+        self._make_matrix_data()
+        self._update_image()
+
+    def on_release(self, event):
+        'on release we reset the press data'
+        self.press = None
+        self.modified = []
+        self._update_image()
+
+    def disconnect(self):
+        'disconnect all the stored connection ids'
+        self.image.figure.canvas.mpl_disconnect(self.cidpress)
+        self.image.figure.canvas.mpl_disconnect(self.cidrelease)
+        self.image.figure.canvas.mpl_disconnect(self.cidmotion)
+
+def analyze_lusolve(N):
+    plt.clf()
+    plt.interactive(True)
+    I = InteractiveLUMatrix(N)
+    plt.show(block=True)
+    I.disconnect()
+
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--file', help="""File name to save the plot(s) to.
@@ -623,6 +711,12 @@ def analyze():
     gensolve.add_argument('--runs', help="""Number of times to run the
         command. The default is %(default)s.""", default=100, type=int)
 
+    lusolve = parser.add_argument_group("LUSolve")
+    lusolve.add_argument('--lusolve', action='store_true', help="""Run
+        LU solve interactive analysis.""")
+    lusolve.add_argument('--N', help="""Size of the matrix. The default is
+        %(default)s""", default=100, type=int)
+
     try:
         import argcomplete
         argcomplete.autocomplete(parser)
@@ -648,6 +742,8 @@ def analyze():
     if args.gensolve:
         analyze_gensolve(pairs_per_pass=args.pairs_per_pass, runs=args.runs,
             warm_up_runs=args.warm_up_runs)
+    if args.lusolve:
+        analyze_lusolve(args.N)
 
 if __name__ == '__main__':
     analyze()
