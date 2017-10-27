@@ -561,13 +561,26 @@ def run_gensolve_test(outscript, warm_up_runs=5, runs=100):
 # Based on https://matplotlib.org/users/event_handling.html
 class InteractiveLUMatrix:
     def __init__(self, N, extra=()):
+        from matplotlib.patches import Patch
+
         self.extra = list(extra)
         self.N = N
         self._make_matrix_data()
         self.press = None
         self.modified = []
         self._make_matrix_data()
+
         self.image = plt.imshow(self.data)
+        patches = [
+            Patch(color=self.image.cmap(self.image.norm(0)),
+                label="zero value"),
+            Patch(color=self.image.cmap(self.image.norm(1)),
+                label="zero value that must be included for LU"),
+            Patch(color=self.image.cmap(self.image.norm(2)),
+                label="nonzero value"),
+            ]
+        plt.legend(handles=patches, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0. )
+
         self._connect()
 
     def _make_matrix_data(self):
