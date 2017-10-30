@@ -372,6 +372,7 @@ def generate(json_file=os.path.join(os.path.dirname(__file__),
             json_data = json.load(f)
 
     nucs = json_data['nucs']
+    # nucs = sorted(nucs, key=nucname.anum)
     N = len(nucs)
     ijkeys = [(nucs.index(j), nucs.index(i)) for i, j in json_data['fromto']]
     ij = {k: l for l, k in enumerate(sorted(ijkeys))}
