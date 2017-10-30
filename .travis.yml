@@ -44,6 +44,7 @@ script:
   - PYTHONPATH=py_solve python -m transmutagen.analysis --nofission --file test.pgf
   - PYTHONPATH=py_solve python -m transmutagen.analysis --eigenvals --file test.pdf
   - PYTHONPATH=py_solve python -m transmutagen.analysis --pusa-coeffs --latex test.tex --file test.pgf
+  - python -m transmutagen.analysis --gensolve --pairs-per-pass 1000
 
   # See if it installs
   - python setup.py sdist
