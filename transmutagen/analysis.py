@@ -104,6 +104,8 @@ def analyze_nofission(*, run_all=False, file=None, title=True, thetas=None,
         import scikits.umfpack
         del scikits
     except ImportError:
+        import traceback
+        traceback.print_exc()
         sys.exit("scikit-umfpack is required to run the nofission analysis")
 
     valid_time_names = TIME_STEPS.values() if run_all else ['1 day', '1 year', '1000 years', '1 million years']
