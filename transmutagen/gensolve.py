@@ -362,7 +362,7 @@ def generate(json_file=os.path.join(os.path.dirname(__file__),
     if degrees is None:
         degrees = [6, 8, 10, 12, 14, 16, 18] if py_solve else [14]
     if not outfile:
-        outfile='py_solve/py_solve/solve.c' if py_solve else 'solve.c'
+        outfile = 'py_solve/py_solve/solve.c' if py_solve else 'solve.c'
     # outfile should always end in .c
     headerfile = outfile[:-2] + '.h'
     headerfilename = os.path.basename(headerfile)
