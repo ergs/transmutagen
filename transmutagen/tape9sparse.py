@@ -47,7 +47,7 @@ def save_sparse(tape9s, phi=4e14, output_dir=None, format='csr',
         base = os.path.basename(tape9)
         base, _ = os.path.splitext(base)
         fission_part = '' if include_fission else '_nofission'
-        output = os.path.join('data', base + '_' + str(phi) + fission_part + '.npz')
+        output = os.path.join(output_dir, base + '_' + str(phi) + fission_part + '.npz')
 
         print("Writing file to", output)
         save_sparse_csr(output, mat, nucs, phi)
