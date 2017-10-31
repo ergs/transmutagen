@@ -23,6 +23,7 @@ for idx in range(c_solve.transmutagen_transmute_info.n):
     b = c_solve.transmutagen_transmute_info.nucs[idx]
     s = b.decode()
     C_NUCS.append(s)
+del b
 NUCS= C_NUCS
 NUCS_IDX = {nuc: idx for idx, nuc in enumerate(NUCS)}
 
