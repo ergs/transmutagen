@@ -217,7 +217,7 @@ def cross_section_data(t9, nlb=None, threshold=THRESHOLD, nucs=None):
 
 def sort_nucs(nucs):
     """Returns the canonical ordering of a collection of nulcides."""
-    return sorted(nucs, key=nucname.id)
+    return sorted(nucs, key=nucname.cinder)
 
 
 def create_dok(phi, nucs, decay_consts, gammas, sigma_ij, sigma_fission,
