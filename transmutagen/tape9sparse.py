@@ -55,7 +55,15 @@ def save_sparse(tape9s, phi=4e14, output_dir=None, format='csr',
 def main(args=None):
     p = make_parser()
     ns = p.parse_args(args=args)
-    save_sparse(**vars(ns))
+    try:
+        save_sparse(**vars(ns))
+    except Exception:
+        import sys
+        import pdb
+        import traceback
+        type, value, tb = sys.exc_info()
+        traceback.print_exc()
+        pdb.post_mortem(tb)
 
 if __name__ == '__main__':
     main()
