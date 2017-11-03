@@ -33,10 +33,11 @@ __all__ += ['execute_origen', 'origen_to_array',
     'origen_data_to_array_atom_fraction', 'initial_vector',
     'compute_mismatch']
 
-from .origen_all import (ALL_LIBS, INITIAL_NUCS, DAY, YEAR, MONTH, TIME_STEPS,
-    PHI)
+from .origen_all import (ALL_LIBS, INITIAL_NUCS, DAY, MONTH, YEAR, TEN_YEARS,
+    THOUSAND_YEARS, MILLION_YEARS, TIME_STEPS, PHI)
 
-__all__ += ['ALL_LIBS', 'INITIAL_NUCS', 'DAY', 'YEAR', 'MONTH', 'TIME_STEPS', 'PHI']
+__all__ += ['ALL_LIBS', 'INITIAL_NUCS', 'DAY', 'MONTH', 'YEAR', 'TEN_YEARS',
+    'THOUSAND_YEARS', 'MILLION_YEARS', 'TIME_STEPS', 'PHI']
 
 from .gensolve import generate
 
