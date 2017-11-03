@@ -286,6 +286,87 @@ int main(int argc, const char* argv[]) {
 {% endif %}
 """
 
+def make_solve_special(ij, N):
+    ijk = make_ijk(ij, N)
+    NIJK = len(ijk)
+    more_than_back = [len([j for j in range(i, N) if (i, j) in ijk]) > 1 for i in range(N)]
+
+    diagonals = {ij[i, i]: i for i in range(N)}
+
+    def solve_special(A, theta, alpha, b):
+        """
+        Solves (A + theta*I)x = alpha*b for x
+        """
+        if len(A.shape) != 1:
+            raise TypeError("A should be 1-dimensional")
+
+        NNZ = A.shape[0]
+        if len(b) != N:
+            raise TypeError("b should be length %d" % N)
+
+        LU = np.zeros(NIJK, dtype=complex)
+
+        # LU = A + theta*I
+        LU[:NNZ] = A
+        for i in diagonals:
+            LU[i] += theta
+
+        # Decompose first
+        for i in range(N):
+            for j in range(i+1, N):
+                if (j, i) in ijk:
+                    LU[ijk[j, i]] /= LU[ijk[i, i]]
+                    for k in range(i+1, N):
+                        if (i, k) in ijk:
+                            LU[ijk[j, k]] -= LU[ijk[j, i]] * LU[ijk[i, k]]
+
+        # Multiply x by alpha and perform Solve
+        x = alpha*b
+        for i in range(N):
+            for j in range(i):
+                if (i, j) in ijk:
+                    x[i] -= LU[ijk[i, j]]*x[j]
+
+        # Backward calc
+        for i in range(N-1, -1, -1):
+            if more_than_back[i]:
+                for j in range(i+1, N):
+                    if (i, j) in ijk:
+                        x[i] -= LU[ijk[i, j]]*x[j]
+
+            x[i] /= LU[ijk[i, i]]
+
+        return x
+
+    return solve_special
+
+def make_expm_multiply(degree, solve_special):
+    thetas, alphas, alpha0 = get_thetas_alphas(degree)
+    thetas = np.array(thetas, dtype=complex)
+    alphas = np.array(alphas, dtype=complex)
+    alpha0 = np.array([alpha0], dtype=float)
+
+    def expm_multiply(A, b, *, debug=False):
+        """Computes exp(A)*b"""
+        N = len(b)
+
+        X = np.zeros((degree//2, N, 1))
+
+        i = 0
+        for theta, alpha in sorted(zip(thetas, alphas), key=lambda i:abs(i[0])):
+            if im(theta) >= 0:
+                if debug:
+                    print("Doing solve special", i)
+                    print("theta", theta)
+                    print("alpha", alpha)
+                X[i] = solve_special(A, -theta, 2*alpha, b)
+                i += 1
+
+        x = np.real(np.sum(X, axis=0)) + alpha0*b[i]
+
+        return x
+    return expm_multiply
+
 def make_ijk(ij, N):
     ijk = ij.copy()
     idx = len(ij)
@@ -353,6 +434,21 @@ def write_if_diff(filename, contents, verbose=True):
             print("Writing", filename)
         f.write(contents)
 
+
+def generate_python_solver(json_file=os.path.join(os.path.dirname(__file__),
+    'data/gensolve.json'), json_data=None, degree=14):
+    if not json_data:
+        with open(json_file) as f:
+            json_data = json.load(f)
+
+    nucs = json_data['nucs']
+    N = len(nucs)
+    ijkeys = [(nucs.index(j), nucs.index(i)) for i, j in json_data['fromto']]
+    ij = {k: l for l, k in enumerate(sorted(ijkeys))}
+
+    solve_special = make_solve_special(ij, N)
+    expm_multiply = make_expm_multiply(degree, solve_special)
+    return expm_multiply
 
 def generate(json_file=os.path.join(os.path.dirname(__file__),
     'data/gensolve.json'), json_data=None,
