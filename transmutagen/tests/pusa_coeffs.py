@@ -207,6 +207,8 @@ def plot_difference(*, file=None, all_plots=False):
         axes = plt.gca()
         axes.set_xlabel('t')
         axes.set_ylabel(r'Difference in $\hat{r}_{k,k}(t)$')
+        axes.axhline(y=0, color='k')
+        axes.axvline(x=0, color='k')
         plt.legend(['Degree 14', 'Degree 16'])
 
         # Put "x 10^-19" on every y-axis tick
