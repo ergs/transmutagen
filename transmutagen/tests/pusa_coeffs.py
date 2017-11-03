@@ -205,7 +205,7 @@ def plot_difference(*, file=None, all_plots=False):
             part_fracs[16] - paper_part_fracs[16]], (0, 100), prec=200,
             points=1000, file=None)
         axes = plt.gca()
-        axes.set_xlabel('t')
+        axes.set_xlabel(r'$t$')
         axes.set_ylabel(r'Difference in $\hat{r}_{k,k}(t)$')
         axes.axhline(y=0, color='k')
         axes.axvline(x=0, color='k')
