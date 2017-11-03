@@ -293,18 +293,19 @@ def make_solve_special(ij, N):
 
     diagonals = {ij[i, i]: i for i in range(N)}
 
-    def solve_special(A, theta, alpha, b):
-        """
-        Solves (A + theta*I)x = alpha*b for x
-        """
-        if len(A.shape) != 1:
-            raise TypeError("A should be 1-dimensional")
+    _pre_decomposed = {}
+    _pre_decomposed_A = None
 
+    def decompose(A, theta):
+        nonlocal _pre_decomposed_A
         NNZ = A.shape[0]
-        if len(b) != N:
-            raise TypeError("b should be length %d" % N)
-
         LU = np.zeros(NIJK, dtype=complex)
+
+        if np.all(_pre_decomposed_A == A):
+            if theta in _pre_decomposed:
+                return _pre_decomposed[theta].copy()
+        else:
+            _pre_decomposed_A = A.copy()
 
         # LU = A + theta*I
         LU[:NNZ] = A
@@ -319,6 +320,22 @@ def make_solve_special(ij, N):
                     for k in range(i+1, N):
                         if (i, k) in ijk:
                             LU[ijk[j, k]] -= LU[ijk[j, i]] * LU[ijk[i, k]]
+
+        _pre_decomposed[theta] = LU.copy()
+        return LU
+
+
+    def solve_special(A, theta, alpha, b):
+        """
+        Solves (A + theta*I)x = alpha*b for x
+        """
+        if len(A.shape) != 1:
+            raise TypeError("A should be 1-dimensional")
+
+        if len(b) != N:
+            raise TypeError("b should be length %d" % N)
+
+        LU = decompose(A, theta)
 
         # Multiply x by alpha and perform Solve
         x = alpha*b
