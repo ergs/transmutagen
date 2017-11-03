@@ -481,7 +481,7 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
                 print(colorama.Fore.GREEN, "Our error is better",
                     colorama.Style.RESET_ALL, sep='')
 
-    analyze_nofission(thetas=paper_thetas, alphas=paper_alphas, alpha0=paper_alpha0)
+    # analyze_nofission(thetas=paper_thetas, alphas=paper_alphas, alpha0=paper_alpha0)
 
 def analyze_gensolve(*, origen_json_file=None, json_file=None,
     pairs_per_pass=1, runs=100, warm_up_runs=5):
