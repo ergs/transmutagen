@@ -2,6 +2,8 @@ from argparse import ArgumentParser
 import json
 import os
 import sys
+import inspect
+import textwrap
 
 from jinja2 import Environment
 from sympy import im
@@ -485,6 +487,57 @@ def generate_python_solver(json_file=os.path.join(os.path.dirname(__file__),
     solve_special = make_solve_special(ij, N)
     expm_multiply = make_expm_multiply(degree, solve_special)
     return expm_multiply
+
+def generate_python_solver_module(json_file=os.path.join(os.path.dirname(__file__),
+    'data/gensolve.json'), json_data=None, degree=14, outfile=None):
+    """
+    A quick and dirty way to convert Python gensolve functions in this file
+    into a module, which won't use nested functions.
+    """
+    import pyflakes.api
+
+    FUNCS = [make_solve_special, make_expm_multiply]
+    IMPORTS = """
+import numpy as np
+from sympy import im
+from transmutagen.gensolve import make_ijk, get_thetas_alphas
+"""
+
+    if not outfile:
+        outfile = 'python_gensolve.py'
+
+    if not json_data:
+        with open(json_file) as f:
+            json_data = json.load(f)
+
+    nucs = json_data['nucs']
+    N = len(nucs)
+    ijkeys = [(nucs.index(j), nucs.index(i)) for i, j in json_data['fromto']]
+    ij = {k: l for l, k in enumerate(sorted(ijkeys))}
+
+    SRC = IMPORTS
+    for func in FUNCS:
+        func_name = func.__name__
+        func_val = func_name[len('make_'):]
+        s = inspect.signature(func)
+        source = inspect.getsource(func)
+        source = textwrap.dedent('\n'.join(source.splitlines()[1:]))
+        source = source.replace('\nreturn ', '\n' + func_val + ' = ')
+        for param in s.parameters:
+            if param in locals():
+                SRC += "{param} = {param_val}\n".format(param=param,
+                    param_val=locals()[param])
+
+        SRC += '\n' + source + '\n'
+
+    SRC = SRC.replace('nonlocal ', 'global ')
+    errors = pyflakes.api.check(SRC, outfile)
+    if errors:
+        print("Warning, the generated file has some errors (see above).")
+
+    with open(outfile, 'w') as f:
+        f.write(SRC)
+
 
 def generate(json_file=os.path.join(os.path.dirname(__file__),
     'data/gensolve.json'), json_data=None,
