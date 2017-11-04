@@ -339,9 +339,18 @@ def make_solve_special(ij, N):
 
         # Multiply x by alpha and perform Solve
         x = alpha*b
+        x_lost_bits = np.zeros(x.shape)
         for i in range(N):
             for j in range(i):
                 if (i, j) in ijk:
+                    rhs = LU[ijk[i, j]]*x[j]
+                    if x[i] and rhs and np.sign(x[i]) == np.sign(rhs):
+                        l = abs(x[i])
+                        r = abs(rhs)
+                        if l > r:
+                            x_lost_bits[i] += np.log2(1 - r/l)
+                        else:
+                            x_lost_bits[i] += np.log2(1 - l/r)
                     x[i] -= LU[ijk[i, j]]*x[j]
 
         # Backward calc
@@ -349,11 +358,19 @@ def make_solve_special(ij, N):
             if more_than_back[i]:
                 for j in range(i+1, N):
                     if (i, j) in ijk:
+                        rhs = LU[ijk[i, j]]*x[j]
+                        if x[i] and rhs and np.sign(x[i]) == np.sign(rhs):
+                            l = abs(x[i])
+                            r = abs(rhs)
+                            if l > r:
+                                x_lost_bits[i] += np.log2(1 - r/l)
+                            else:
+                                x_lost_bits[i] += np.log2(1 - l/r)
                         x[i] -= LU[ijk[i, j]]*x[j]
 
             x[i] /= LU[ijk[i, i]]
 
-        return x
+        return x, x_lost_bits
 
     return solve_special
 
@@ -367,8 +384,9 @@ def make_expm_multiply(degree, solve_special):
         """Computes exp(A)*b"""
         N = len(b)
 
-        X = np.zeros((degree//2, N, 1))
+        X = np.zeros((degree//2, N, 1), dtype=complex)
 
+        x_lost_bits = np.zeros(b.shape)
         i = 0
         for theta, alpha in sorted(zip(thetas, alphas), key=lambda i:abs(i[0])):
             if im(theta) >= 0:
@@ -376,12 +394,13 @@ def make_expm_multiply(degree, solve_special):
                     print("Doing solve special", i)
                     print("theta", theta)
                     print("alpha", alpha)
-                X[i] = solve_special(A, -theta, 2*alpha, b)
+                X[i], lost_bits = solve_special(A, -theta, 2*alpha, b)
+                x_lost_bits += lost_bits
                 i += 1
 
         x = np.real(np.sum(X, axis=0)) + alpha0*b[i]
 
-        return x
+        return x, lost_bits
     return expm_multiply
 
 def make_ijk(ij, N):
