@@ -57,7 +57,7 @@ void {{namespace}}_scalar_times_vector_{{typefuncname}}({{type}}, {{type}}*);
 {% endfor %}
 {%- endif %}
 {%- for degree in degrees %}
-void {{namespace}}_expm_multiply{{degree}}(double* A, double* b, double* x);
+void {{namespace}}_expm_multiply{{degree}}(double* A, double* b, double* x {%- if include_lost_bits %}, double* lost_bits {% endif %});
 {%- endfor %}
 #endif
 
@@ -69,6 +69,10 @@ SRC = """\
 #include <string.h>
 
 #include <complex.h>
+{%- if include_lost_bits %}
+#include <math.h>
+#include <stdlib.h>
+{%- endif %}
 
 {% if timing_test %}
 #include <time.h>
@@ -188,7 +192,7 @@ void {{namespace}}_scalar_times_vector_{{typefuncname}}({{type}} alpha, {{type}}
 {%- endfor %}
 {%- endif %}
 
-void {{namespace}}_solve_special(double* A, double complex theta, double complex alpha, double* b, double complex* x) {
+void {{namespace}}_solve_special(double* A, double complex theta, double complex alpha, double* b, double complex* x {%- if include_lost_bits %}, double* lost_bits{% endif %}) {
   /* Solves (A + theta*I)x = alpha*b and stores the result in x */
   double complex LU [{{NIJK}}];
 
@@ -220,25 +224,62 @@ void {{namespace}}_solve_special(double* A, double complex theta, double complex
   /* Multiply x by alpha and perform Solve */
   {%- for i in range(N) %}
   x[{{i}}] = alpha*b[{{i}}]{% for j in range(i) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
+
+  {%- if include_lost_bits %}
+  {%- for j in range(i) %}
+  {% if (i, j) in ijk %}
+  if (creal(x[{{i}}]) && creal(LU[{{ijk[i, j]}}]*x[{{j}}]) && creal(x[{{i}}])*creal(LU[{{ijk[i, j]}}]*x[{{j}}]) < 0) {
+      if (abs(creal(x[{{i}}])) > abs(creal(LU[{{ijk[i, j]}}]*x[{{j}}]))) {
+          lost_bits[{{i}}] += log2(1 - abs(creal(LU[{{ijk[i, j]}}]*x[{{j}}]))/abs(creal(x[{{i}}])));
+      } else {
+          lost_bits[{{i}}] += log2(1 - abs(creal(x[{{i}}]))/abs(creal(LU[{{ijk[i, j]}}]*x[{{j}}])));
+      }
+  }
+  {%- endif %}
   {%- endfor %}
+  {%- endif %}
+
+  {%- endfor %}
+
   /* Backward calc */
   {%- for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
   x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
+
+  {%- if include_lost_bits %}
+  {%- for j in range(i+1, N) %}
+  {%- if (i, j) in ijk %}
+  if (creal(x[{{i}}]) && creal(LU[{{ijk[i, j]}}]*x[{{j}}]) && creal(x[{{i}}])*creal(LU[{{ijk[i, j]}}]*x[{{j}}]) < 0) {
+      if (abs(creal(x[{{i}}])) > abs(creal(LU[{{ijk[i, j]}}]*x[{{j}}]))) {
+          lost_bits[{{i}}] += log2(1 - abs(creal(LU[{{ijk[i, j]}}]*x[{{j}}]))/abs(creal(x[{{i}}])));
+      } else {
+          lost_bits[{{i}}] += log2(1 - abs(creal(x[{{i}}]))/abs(creal(LU[{{ijk[i, j]}}]*x[{{j}}])));
+      }
+  }
+  {%- endif %}
+  {%- endfor %}
+  {%- endif %}
+
   {%- endif %}
   x[{{i}}] /= LU[{{ijk[i, i]}}];
   {%- endfor %}
 }
 
 {% for degree in degrees %}
-void {{namespace}}_expm_multiply{{degree}}(double* A, double* b, double* x) {
+void {{namespace}}_expm_multiply{{degree}}(double* A, double* b, double* x {%- if include_lost_bits %}, double* lost_bits{% endif %}) {
     /* Computes exp(A)*b and stores the result in x */
     {%- for i in range(degree//2) %}
     double complex x{{i}} [{{N}}];
     {%- endfor %}
 
+    {%- if include_lost_bits %}
+    {%- for i in range(N) %}
+    lost_bits[{{i}}] = 0;
+    {%- endfor %}
+    {%- endif %}
+
     {% set thetas, alphas, alpha0 = get_thetas_alphas(degree) -%}
     {% for theta, alpha in sorted(zip(thetas, alphas), key=abs0) if im(theta) >= 0 %}
-    {{namespace}}_solve_special(A, {{ -theta}}, {{2*alpha}}, b, x{{loop.index0}});
+    {{namespace}}_solve_special(A, {{ -theta}}, {{2*alpha}}, b, x{{loop.index0}} {%- if include_lost_bits %}, lost_bits {% endif %});
     {%- endfor %}
 
     {% for i in range(N) %}
@@ -542,7 +583,7 @@ from transmutagen.gensolve import make_ijk, get_thetas_alphas
 def generate(json_file=os.path.join(os.path.dirname(__file__),
     'data/gensolve.json'), json_data=None,
     outfile=None, degrees=None, py_solve=False, namespace='transmutagen',
-    decay_matrix_kind='pyne', timing_test=False):
+    decay_matrix_kind='pyne', timing_test=False, include_lost_bits=False):
 
     if degrees is None:
         degrees = [6, 8, 10, 12, 14, 16, 18] if py_solve else [14]
@@ -578,10 +619,11 @@ def generate(json_file=os.path.join(os.path.dirname(__file__),
         get_thetas_alphas=get_thetas_alphas, im=im, abs0=lambda i:abs(i[0]),
         zip=zip, enumerate=enumerate, headerfilename=headerfilename,
         __version__=__version__, sys=sys, decay_matrix=decay_matrix,
-        nucname=nucname, timing_test=timing_test)
+        nucname=nucname, timing_test=timing_test,
+        include_lost_bits=include_lost_bits)
     header_template = env.from_string(HEADER, globals=globals())
     header = header_template.render(types=types, degrees=degrees,
-        py_solve=py_solve, namespace=namespace)
+        py_solve=py_solve, namespace=namespace, include_lost_bits=include_lost_bits)
     write_if_diff(outfile, src)
     write_if_diff(headerfile, header)
 
@@ -613,6 +655,9 @@ def main(args=None):
     p.add_argument("--timing-test", action='store_true', default=False,
         help="""Generate a main() function that does a timing test on the decay
         matrix.""")
+    p.add_argument("--include-lost-bits", action='store_true', default=False,
+        help="""Add an additional argument to the generated expm_multiply functions to keep track of how many floating point bits are potentially lost in the calculation (experimental).""")
+
 
     ns = p.parse_args(args=args)
     if ns.outfile and not ns.outfile.endswith('.c'):
