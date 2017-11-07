@@ -223,11 +223,12 @@ void {{namespace}}_solve_special(double* A, double complex theta, double complex
 
   /* Multiply x by alpha and perform Solve */
   {%- for i in range(N) %}
-  x[{{i}}] = alpha*b[{{i}}]{% for j in range(i) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
 
   {%- if include_lost_bits %}
+  x[{{i}}] = alpha*b[{{i}}];
   {%- for j in range(i) %}
   {% if (i, j) in ijk %}
+  x[{{i}}] -= LU[{{ijk[i, j]}}]*x[{{j}}];
   if (creal(x[{{i}}]) && creal(LU[{{ijk[i, j]}}]*x[{{j}}]) && creal(x[{{i}}])*creal(LU[{{ijk[i, j]}}]*x[{{j}}]) < 0) {
       if (abs(creal(x[{{i}}])) > abs(creal(LU[{{ijk[i, j]}}]*x[{{j}}]))) {
           lost_bits[{{i}}] += log2(1 - abs(creal(LU[{{ijk[i, j]}}]*x[{{j}}]))/abs(creal(x[{{i}}])));
@@ -237,17 +238,20 @@ void {{namespace}}_solve_special(double* A, double complex theta, double complex
   }
   {%- endif %}
   {%- endfor %}
+  {%- else %}
+  x[{{i}}] = alpha*b[{{i}}]{% for j in range(i) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
   {%- endif %}
 
   {%- endfor %}
 
   /* Backward calc */
   {%- for i in range(N-1, -1, -1) %}{%if more_than_back[i]%}
-  x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
 
   {%- if include_lost_bits %}
+  x[{{i}}] = x[{{i}}];
   {%- for j in range(i+1, N) %}
   {%- if (i, j) in ijk %}
+  x[{{i}}] -= LU[{{ijk[i, j]}}]*x[{{j}}];
   if (creal(x[{{i}}]) && creal(LU[{{ijk[i, j]}}]*x[{{j}}]) && creal(x[{{i}}])*creal(LU[{{ijk[i, j]}}]*x[{{j}}]) < 0) {
       if (abs(creal(x[{{i}}])) > abs(creal(LU[{{ijk[i, j]}}]*x[{{j}}]))) {
           lost_bits[{{i}}] += log2(1 - abs(creal(LU[{{ijk[i, j]}}]*x[{{j}}]))/abs(creal(x[{{i}}])));
@@ -257,6 +261,8 @@ void {{namespace}}_solve_special(double* A, double complex theta, double complex
   }
   {%- endif %}
   {%- endfor %}
+  {%- else %}
+  x[{{i}}] = x[{{i}}]{% for j in range(i+1, N) %}{%if (i, j) in ijk%} - LU[{{ijk[i, j]}}]*x[{{j}}]{%endif%}{% endfor %};
   {%- endif %}
 
   {%- endif %}
