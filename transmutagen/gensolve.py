@@ -336,6 +336,7 @@ int main(int argc, const char* argv[]) {
 """
 
 def make_solve_special(ij, N):
+    import math
     ijk = make_ijk(ij, N)
     NIJK = len(ijk)
     more_than_back = [len([j for j in range(i, N) if (i, j) in ijk]) > 1 for i in range(N)]
@@ -389,33 +390,38 @@ def make_solve_special(ij, N):
         # Multiply x by alpha and perform Solve
         x = alpha*b
         x_lost_bits = np.zeros(x.shape)
+
         for i in range(N):
+            xvals = [x[i]]
             for j in range(i):
                 if (i, j) in ijk:
                     rhs = LU[ijk[i, j]]*x[j]
-                    if x[i] and rhs and np.sign(x[i]) == np.sign(rhs):
-                        l = abs(x[i])
-                        r = abs(rhs)
+                    if np.real(x[i]) and np.real(rhs):
+                        l = abs(np.real(x[i]))
+                        r = abs(np.real(rhs))
                         if l > r:
-                            x_lost_bits[i] += np.log2(1 - r/l)
+                            x_lost_bits[i] += (l - r)*2**(-53)*(1 - r/l)
                         else:
-                            x_lost_bits[i] += np.log2(1 - l/r)
-                    x[i] -= LU[ijk[i, j]]*x[j]
+                            x_lost_bits[i] += (r - l)*2**(-53)*(1 - l/r)
+                    xvals.append(-rhs)
+            x[i] = math.fsum(np.real(xvals)) + math.fsum(np.imag(xvals))*1j
 
         # Backward calc
         for i in range(N-1, -1, -1):
+            xvals = [x[i]]
             if more_than_back[i]:
                 for j in range(i+1, N):
                     if (i, j) in ijk:
                         rhs = LU[ijk[i, j]]*x[j]
-                        if x[i] and rhs and np.sign(x[i]) == np.sign(rhs):
-                            l = abs(x[i])
-                            r = abs(rhs)
+                        if np.real(x[i]) and np.real(rhs):
+                            l = abs(np.real(x[i]))
+                            r = abs(np.real(rhs))
                             if l > r:
-                                x_lost_bits[i] += np.log2(1 - r/l)
+                                x_lost_bits[i] += (l - r)*2**(-53)*(1 - r/l)
                             else:
-                                x_lost_bits[i] += np.log2(1 - l/r)
-                        x[i] -= LU[ijk[i, j]]*x[j]
+                                x_lost_bits[i] += (r - l)*2**-53*(1 - l/r)
+                        xvals.append(-rhs)
+            x[i] = math.fsum(np.real(xvals)) + math.fsum(np.imag(xvals))*1j
 
             x[i] /= LU[ijk[i, i]]
 
