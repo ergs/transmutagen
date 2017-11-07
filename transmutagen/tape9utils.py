@@ -41,7 +41,6 @@ PAROFFM = {
 # the universe.
 THRESHOLD = LN2/(10 * 13.7e9 * 365.25* 24 * 3600)
 
-
 def origen_to_name(nuc):
     """Takes a nuclide in Origen format and returns it's human readable name."""
     return nucname.name(nucname.zzaaam_to_id(int(nuc)))
