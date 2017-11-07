@@ -147,87 +147,99 @@ def expm_multiply6(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
     x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
+    lost_bits = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
     c_solve.transmutagen_expm_multiply6(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
-        <double*> np.PyArray_DATA(x)
+        <double*> np.PyArray_DATA(x),
+        <double*> np.PyArray_DATA(lost_bits)
         )
     x.shape = b.shape
-    return x
-
+    return x, lost_bits
 
 def expm_multiply8(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
     x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
+    lost_bits = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
     c_solve.transmutagen_expm_multiply8(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
-        <double*> np.PyArray_DATA(x)
+        <double*> np.PyArray_DATA(x),
+        <double*> np.PyArray_DATA(lost_bits)
         )
     x.shape = b.shape
-    return x
+    return x, lost_bits
 
 def expm_multiply10(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
     x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
+    lost_bits = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
     c_solve.transmutagen_expm_multiply10(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
-        <double*> np.PyArray_DATA(x)
+        <double*> np.PyArray_DATA(x),
+        <double*> np.PyArray_DATA(lost_bits)
         )
     x.shape = b.shape
-    return x
+    return x, lost_bits
 
 def expm_multiply12(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
     x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
+    lost_bits = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
     c_solve.transmutagen_expm_multiply12(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
-        <double*> np.PyArray_DATA(x)
+        <double*> np.PyArray_DATA(x),
+        <double*> np.PyArray_DATA(lost_bits)
         )
     x.shape = b.shape
-    return x
+    return x, lost_bits
 
 def expm_multiply14(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
     x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
+    lost_bits = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
     c_solve.transmutagen_expm_multiply14(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
-        <double*> np.PyArray_DATA(x)
+        <double*> np.PyArray_DATA(x),
+        <double*> np.PyArray_DATA(lost_bits)
         )
     x.shape = b.shape
-    return x
-
+    return x, lost_bits
 
 def expm_multiply16(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
     x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
+    lost_bits = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
     c_solve.transmutagen_expm_multiply16(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
-        <double*> np.PyArray_DATA(x)
+        <double*> np.PyArray_DATA(x),
+        <double*> np.PyArray_DATA(lost_bits)
         )
     x.shape = b.shape
-    return x
+    return x, lost_bits
 
 def expm_multiply18(A, b):
     A = np.asarray(A, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
     x = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
+    lost_bits = np.empty(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
     c_solve.transmutagen_expm_multiply18(
         <double*> np.PyArray_DATA(A),
         <double*> np.PyArray_DATA(b),
-        <double*> np.PyArray_DATA(x)
+        <double*> np.PyArray_DATA(x),
+        <double*> np.PyArray_DATA(lost_bits)
         )
     x.shape = b.shape
-    return x
+    return x, lost_bits
 
 def expmI14(A):
     """
@@ -237,6 +249,7 @@ def expmI14(A):
 
     A = asflat(A)
     x = np.empty((N, N), dtype=np.float64)
+    lost_bits = np.empty((N, N), dtype=np.float64)
 
     for i in range(c_solve.transmutagen_transmute_info.n):
         b = np.zeros(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
@@ -246,6 +259,7 @@ def expmI14(A):
             <double*> np.PyArray_DATA(A),
             <double*> np.PyArray_DATA(b),
             <double*> (np.PyArray_DATA(x) + offset),
+            <double*> (np.PyArray_DATA(lost_bits) + offset),
         )
 
-    return x
+    return x, lost_bits
