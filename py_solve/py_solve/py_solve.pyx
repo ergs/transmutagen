@@ -273,6 +273,29 @@ def expmI12(A):
     return x
 
 
+
+def expmI10(A):
+    """
+    Computes exp(-A)*I
+    """
+    cdef int offset, i
+
+    A = asflat(A)
+    x = np.empty((N, N), dtype=np.float64)
+
+    for i in range(c_solve.transmutagen_transmute_info.n):
+        b = np.zeros(c_solve.transmutagen_transmute_info.n, dtype=np.float64)
+        b[i] = 1.0
+        offset = i*c_solve.transmutagen_transmute_info.n*sizeof(double)
+        c_solve.transmutagen_expm_multiply10(
+            <double*> np.PyArray_DATA(A),
+            <double*> np.PyArray_DATA(b),
+            <double*> (np.PyArray_DATA(x) + offset),
+        )
+
+    return x
+
+
 def expmI16(A):
     """
     Computes exp(-A)*I
