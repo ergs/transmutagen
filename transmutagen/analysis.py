@@ -142,14 +142,16 @@ def plot_nofission_transmutes(nofission_transmutes, *, run_all=False, file=None,
         if time_name not in valid_time_names:
             continue
         plt.clf()
-        fig, axes = plt.subplots(1, 4)
+        fig, axes = plt.subplots(1, 4, sharey=True)
         fig.set_size_inches(1.5*6.4, 1.5/4*4.8)
         for lib in nofission_transmutes[time_name]:
-            for r, ax in zip([
-                'scipy.sparse.linalg.expm',
-                'part_frac_complex UMFPACK',
-                'part_frac_complex SuperLU',
-                'transmutagen generated C solver'],
+
+            for (r, title), ax in zip([
+                ('scipy.sparse.linalg.expm', r'\texttt{scipy.\allowbreak{}sparse.\allowbreak{}linalg.\allowbreak{}expm}'),
+                ('part_frac_complex UMFPACK', r'\texttt{sympy.\allowbreak{}lambdify} with UMFPACK'),
+                ('part_frac_complex SuperLU', r'\texttt{sympy.\allowbreak{}lambdify} with SuperLU'),
+                ('transmutagen generated C solver', 'transmutagen generated C solver'),
+                ],
                 axes):
 
                 m = nofission_transmutes[time_name][lib][r]
@@ -160,17 +162,26 @@ def plot_nofission_transmutes(nofission_transmutes, *, run_all=False, file=None,
                     continue
 
 
-                ax.hist(np.asarray(np.sum(m, axis=0)).flatten())
-                if title:
-                    fig.suptitle(time_name, y=1.08)
+                ax.hist(np.asarray(np.sum(m, axis=0) - 1).flatten())
+                # if title:
+                #     fig.suptitle(time_name, y=1.08)
                 ax.set_yscale('log', nonposy='clip')
                 # Put "x 10^-19" on every x-axis tick
                 locs = ax.get_xticks()
                 ax.set_xticklabels([pretty_float(i) for i in locs])
 
+                ax.minorticks_off()
+                locs = ax.get_yticks()
+                ax.set_ylim([0.5, 3509])
+                ax.set_yticklabels([str(int(i)) for i in locs])
+
+
                 if title:
-                    ax.set_title(r'\texttt{%s}' % r.replace('_',
-                        r'\_').replace('.', r'.\allowbreak{}'))
+                    ax.set_title(title)
+
+            # Only the last axis
+            fig.text(0.07, 0.5, "Count", ha='center', va='center', rotation='vertical')
+            fig.text(0.5, -0.15, r'$\sum_i \left (e^{-Mt}\right )_{i,j} - 1$', ha='center', va='center')
 
             print(time_name)
             plt_show_in_terminal()
