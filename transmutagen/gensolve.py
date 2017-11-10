@@ -453,7 +453,7 @@ def make_expm_multiply(degree, solve_special):
                 x_lost_bits += lost_bits
                 i += 1
 
-        x = np.real(np.sum(X, axis=0)) + alpha0*b[i]
+        x = np.real(np.sum(X, axis=0)) + alpha0*b
 
         return x, lost_bits
     return expm_multiply
