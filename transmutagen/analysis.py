@@ -99,7 +99,8 @@ several starting libraries, nuclides, and timesteps.""")
     plt_show_in_terminal()
 
 def analyze_nofission(*, run_all=False, file=None, title=True, thetas=None,
-    alphas=None, alpha0=None):
+    alphas=None, alpha0=None, nofission_data=os.path.join(os.path.dirname(__file__), 'tests',
+        'data', 'pwru50_400000000000000.0_nofission.npz')):
     try:
         import scikits.umfpack
         del scikits
@@ -127,9 +128,8 @@ def analyze_nofission(*, run_all=False, file=None, title=True, thetas=None,
                             time, run_all=False, _print=True, umfpack=umfpack,
                             thetas=thetas, alphas=alphas, alpha0=alpha0)
             else:
-                data = os.path.join(os.path.dirname(__file__), 'tests', 'data', 'pwru50_400000000000000.0_nofission.npz')
-                print("analyzing", data, 'on', time_name, 'with', backend)
-                nofission_transmutes[backend][time_name]['pwru50'] = run_transmute_test(data, 14, 200,
+                print("analyzing", nofission_data, 'on', time_name, 'with', backend)
+                nofission_transmutes[backend][time_name]['pwru50'] = run_transmute_test(nofission_data, 14, 200,
                     time, run_all=run_all, _print=True, umfpack=umfpack,
                     thetas=thetas, alphas=alphas, alpha0=alpha0)
 
@@ -694,6 +694,11 @@ def analyze():
         only against 1 day, 1 year, 1000 years, and 1 million years,
         against the generated C solver, part_frac_complex, and
         scipy.sparse.linalg.expm.""")
+    nofission.add_argument('--nofission-data',
+        default=os.path.join(os.path.dirname(__file__), 'tests',
+            'data', 'pwru50_400000000000000.0_nofission.npz'), help="""Data file to use
+        for nofission analysis (ignored when --run-all is passed). The default
+        is %(default)s.""")
 
     eigenvals = parser.add_argument_group('eigenvals')
     eigenvals.add_argument('--eigenvals', action='store_true',
@@ -749,7 +754,7 @@ def analyze():
             title=args.title)
     if args.nofission:
         analyze_nofission(run_all=args.run_all, file=args.file,
-            title=args.title)
+            title=args.title, nofission_data=args.nofission_data)
     if args.eigenvals:
         analyze_eigenvals(pwru50_data=args.pwru50_data,
             file=args.file, title=args.title)
