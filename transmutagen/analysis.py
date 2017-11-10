@@ -27,6 +27,7 @@ def setup_matplotlib_rc():
     from matplotlib import rcParams
     rcParams['pgf.texsystem'] = 'pdflatex'
     rcParams["text.usetex"] = True
+    rcParams["font.family"] = 'serif'
 
 def analyze_origen(origen_results, *, file=None, title=True):
     plt.clf()
