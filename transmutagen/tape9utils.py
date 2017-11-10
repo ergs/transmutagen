@@ -286,7 +286,7 @@ def dok_to_sparse_info(nucs, dok):
     cols : list
         Column indexes
     vals : list
-        Values at cooresponding row/col index
+        Values at corresponding row/col index
     shape : 2-tuple of ints
         Represents the size of the matirx
     """
