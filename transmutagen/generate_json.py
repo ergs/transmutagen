@@ -8,6 +8,7 @@ import os
 import json
 from argparse import ArgumentParser
 from operator import itemgetter
+from collections import OrderedDict
 
 from scipy.sparse import eye, csr_matrix
 import numpy as np
@@ -36,16 +37,16 @@ def generate_json(tape9s, decaylib, outfile='transmutagen/data/gensolve.json',
         decaylib=decaylib, threshold=threshold)
     mat = common_mat(mats)
     ij = csr_ij(mat)
-    fromto = [(nucs[j], nucs[i]) for i, j in sorted(ij, key=itemgetter(1))]
+    fromto = [(nucs[j], nucs[i]) for i, j in sorted(ij, key=itemgetter(1, 0))]
     os.makedirs(os.path.dirname(outfile), exist_ok=True)
 
     with open(outfile, 'w') as f:
         print("Writing", outfile)
-        json.dump({
-            'nucs': list(nucs),
+        json.dump(OrderedDict([
+            ('nucs', list(nucs)),
             # JSON associative arrays can only have string keys
-            'fromto': fromto,
-            }, f, sort_keys=True, indent=4)
+            ('fromto', fromto),
+            ]), f, indent=4)
 
 def main(args=None):
     p = ArgumentParser('generate_json', description="""Generate the JSON input
