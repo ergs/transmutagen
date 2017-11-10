@@ -196,14 +196,13 @@ def pretty_float(i):
 
     """
     if i == 0:
-        return '0'
+        return '$0$'
     float_exponent = np.floor(np.log10(abs(i)))
-    exponent = int(float_exponent)
-    lead_digit = int(i/10**float_exponent)
 
-    if -3 <= exponent <= 3:
-        return str(i)[:6]
-    return r"$%d\times 10^{%d}$" % (lead_digit, exponent)
+    if -3 <= float_exponent <= 3:
+        return "$%s$" % str(i)[:6]
+    lead_digit, exponent = ("%.0e" % i).split('e')
+    return r"$%s\times 10^{%s}$" % (lead_digit, exponent)
 
 def plot_matrix_sum_histogram(m, *, title='', axis=0, file=None):
     plt.clf()
