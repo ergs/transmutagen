@@ -25,7 +25,7 @@ from .gensolve import make_ijk
 
 def setup_matplotlib_rc():
     from matplotlib import rcParams
-    rcParams['pgf.texsystem'] = 'pdflatex'
+    rcParams['pgf.texsystem'] = 'lualatex'
     rcParams["text.usetex"] = True
     rcParams["font.family"] = 'serif'
 
