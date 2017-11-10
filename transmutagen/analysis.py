@@ -169,7 +169,7 @@ def plot_nofission_transmutes(nofission_transmutes, *, run_all=False, file=None,
                     ax.set_yscale('log', nonposy='clip')
                     # Put "x 10^-19" on every x-axis tick
                     locs = ax.get_xticks()
-                    # ax.set_xticklabels([pretty_float(i) for i in locs])
+                    ax.set_xticklabels([pretty_float(i) for i in locs])
 
                     if title:
                         ax.set_title(r'\texttt{%s}' % r.replace('_',
