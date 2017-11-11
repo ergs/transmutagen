@@ -181,7 +181,7 @@ def plot_nofission_transmutes(nofission_transmutes, *, run_all=False, file=None,
 
             # Only the last axis
             fig.text(0.07, 0.5, "Count", ha='center', va='center', rotation='vertical')
-            fig.text(0.5, -0.15, r'$\sum_i \left (e^{-Mt}\right )_{i,j} - 1$', ha='center', va='center')
+            fig.text(0.5, -0.15, r'$\sum_i \left (e^{-At}\right )_{i,j} - 1$', ha='center', va='center')
 
             print(time_name)
             plt_show_in_terminal()
