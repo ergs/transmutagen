@@ -148,9 +148,9 @@ def plot_nofission_transmutes(nofission_transmutes, *, run_all=False, file=None,
 
             for (r, title), ax in zip([
                 ('scipy.sparse.linalg.expm', r'\texttt{scipy.\allowbreak{}sparse.\allowbreak{}linalg.\allowbreak{}expm}'),
-                ('part_frac_complex UMFPACK', r'\texttt{sympy.\allowbreak{}lambdify} with UMFPACK'),
-                ('part_frac_complex SuperLU', r'\texttt{sympy.\allowbreak{}lambdify} with SuperLU'),
-                ('transmutagen generated C solver', 'transmutagen generated C solver'),
+                ('part_frac_complex UMFPACK', '\\texttt{sympy.\\allowbreak{}lambdify}\nwith UMFPACK'),
+                ('part_frac_complex SuperLU', '\\texttt{sympy.\\allowbreak{}lambdify}\nwith SuperLU'),
+                ('transmutagen generated C solver', 'transmutagen generated\nC solver'),
                 ],
                 axes):
 
