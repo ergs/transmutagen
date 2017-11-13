@@ -47,16 +47,15 @@ from .generate_json import common_mat, generate_json
 
 __all__ += ['common_mat', 'generate_json']
 
-from .tape9utils import (LN2, DECAY_RXS, PAROFF, PAROFFM, THRESHOLD,
-    origen_to_name, decay_data, XS_RXS, XS_TO_ORIGEN, ORIGEN_TO_XS, find_nlb,
+from .tape9utils import (LN2, DECAY_RXS, PAROFF, PAROFFM, origen_to_name,
+    decay_data, XS_RXS, XS_TO_ORIGEN, ORIGEN_TO_XS, find_nlb,
     cross_section_data, sort_nucs, create_dok, dok_to_sparse_info,
     find_decaylib, SPMAT_FORMATS, tape9_to_sparse, normalize_tape9s)
 
-__all__ += ['LN2', 'DECAY_RXS', 'PAROFF', 'PAROFFM', 'THRESHOLD',
-    'origen_to_name', 'decay_data', 'XS_RXS', 'XS_TO_ORIGEN', 'ORIGEN_TO_XS',
-    'find_nlb', 'cross_section_data', 'sort_nucs', 'create_dok',
-    'dok_to_sparse_info', 'find_decaylib', 'SPMAT_FORMATS', 'tape9_to_sparse',
-    'normalize_tape9s']
+__all__ += ['LN2', 'DECAY_RXS', 'PAROFF', 'PAROFFM', 'origen_to_name',
+    'decay_data', 'XS_RXS', 'XS_TO_ORIGEN', 'ORIGEN_TO_XS', 'find_nlb',
+    'cross_section_data', 'sort_nucs', 'create_dok', 'dok_to_sparse_info',
+    'find_decaylib', 'SPMAT_FORMATS', 'tape9_to_sparse', 'normalize_tape9s']
 
 from .util import (diff_strs, relative_error, mean_log10_relative_error,
     plot_in_terminal, plt_show_in_terminal, log_function_args,

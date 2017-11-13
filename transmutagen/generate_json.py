@@ -13,7 +13,7 @@ from collections import OrderedDict
 from scipy.sparse import eye, csr_matrix
 import numpy as np
 
-from .tape9utils import normalize_tape9s, tape9_to_sparse, THRESHOLD
+from .tape9utils import normalize_tape9s, tape9_to_sparse
 
 def csr_ij(mat):
     ij = {}
@@ -31,10 +31,9 @@ def common_mat(mats):
     return csr_matrix((data, (rows, cols)))
 
 
-def generate_json(tape9s, decaylib, outfile='transmutagen/data/gensolve.json',
-    threshold=THRESHOLD):
+def generate_json(tape9s, decaylib, outfile='transmutagen/data/gensolve.json'):
     mats, nucs = tape9_to_sparse(tape9s, phi=1.0, format='csr',
-        decaylib=decaylib, threshold=threshold)
+        decaylib=decaylib)
     mat = common_mat(mats)
     ij = csr_ij(mat)
     fromto = [(nucs[j], nucs[i]) for i, j in sorted(ij, key=itemgetter(1, 0))]
@@ -58,12 +57,10 @@ def main(args=None):
                    default='decay.lib', dest='decaylib')
     p.add_argument('-o', '--outfile', default='transmutagen/data/gensolve.json',
         help="""File to save the JSON file to. The default is %(default)r.""")
-    p.add_argument('--threshold', default=THRESHOLD, help="""Cutoff for
-        ignoring reactions.""", type=float)
 
     ns = p.parse_args(args=args)
     tape9s = normalize_tape9s(ns.tape9s)
-    generate_json(tape9s, ns.decaylib, outfile=ns.outfile, threshold=ns.threshold)
+    generate_json(tape9s, ns.decaylib, outfile=ns.outfile)
 
 
 if __name__ == "__main__":

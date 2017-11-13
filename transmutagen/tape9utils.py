@@ -37,16 +37,13 @@ PAROFFM = {
     #'frac_spont_fiss': 0,
     'frac_beta_n': 9989999,
     }
-# This threshold is a decay constant for a half-life that is 10x the age of
-# the universe.
-THRESHOLD = LN2/(10 * 13.7e9 * 365.25* 24 * 3600)
 
 def origen_to_name(nuc):
     """Takes a nuclide in Origen format and returns it's human readable name."""
     return nucname.name(nucname.zzaaam_to_id(int(nuc)))
 
 
-def decay_data(t9, nlb=(1, 2, 3), threshold=THRESHOLD, nucs=None):
+def decay_data(t9, nlb=(1, 2, 3), nucs=None):
     """Gets decay data from a TAPE9.
 
     Parameters
@@ -55,10 +52,6 @@ def decay_data(t9, nlb=(1, 2, 3), threshold=THRESHOLD, nucs=None):
         A TAPE9 dict that contains the decay data.
     nlb : tuple of ints, optional
         The decay library numbers. Usually this is just (1, 2, 3).
-    threshold : float, optional
-        A cutoff for when we consider nuclides stable or a decay mode
-        forbidden. This is given as a decay constant and the default is
-        for a half-life that is 10x the age of the universe.
     nucs : set or None, optional
         The known set of nuclides.
 
@@ -85,10 +78,10 @@ def decay_data(t9, nlb=(1, 2, 3), threshold=THRESHOLD, nucs=None):
                                               key == 'frac_spont_fiss':
                 continue
             for nuc, val in t9[n][key].items():
-                if val < threshold:
+                if val == 0:
                     continue  # forbidden decay
                 nname = origen_to_name(nuc)
-                if decay_consts[nname] < threshold:
+                if decay_consts[nname] == 0:
                     continue  # stable nuclide
                 poff = PAROFF if int(nuc)%10 == 0 else PAROFFM
                 child = nucname.zzaaam_to_id(int(nuc)) + poff[key]
@@ -98,7 +91,7 @@ def decay_data(t9, nlb=(1, 2, 3), threshold=THRESHOLD, nucs=None):
                 gammas[nname, cname] = val
     # add β- decays
     for nname, val in decay_consts.items():
-        if val < threshold:
+        if val == 0:
             continue  # stable nuclide
         gamma_total = sum([v for (n, c), v in gammas.items() if n == nname])
         if gamma_total < 1.0:
@@ -133,7 +126,7 @@ def find_nlb(t9, nlb=None):
     return tuple(sorted(nlb))
 
 
-def cross_section_data(t9, nlb=None, threshold=THRESHOLD, nucs=None):
+def cross_section_data(t9, nlb=None, nucs=None):
     """Gets decay data from a TAPE9.
 
     Parameters
@@ -143,10 +136,6 @@ def cross_section_data(t9, nlb=None, threshold=THRESHOLD, nucs=None):
     nlb : tuple of ints or None, optional
         The cross section library numbers. If None, this will attempt to discover
         the numbers in the library.
-    threshold : float, optional
-        A cutoff for when we consider nuclides stable or a decay mode
-        forbidden. This is given as a decay constant and the default is
-        for a half-life that is 10x the age of the universe.
     nucs : set or None, optional
         The known set of nuclides.
 
@@ -177,7 +166,7 @@ def cross_section_data(t9, nlb=None, threshold=THRESHOLD, nucs=None):
             xs_rs = ORIGEN_TO_XS[orx]
             for nuc in t9[n][rx]:
                 val = t9[n][rx][nuc]
-                if val < threshold:
+                if val == 0:
                     continue
                 nname = nucname.name(int(nuc))
                 try:
@@ -192,7 +181,7 @@ def cross_section_data(t9, nlb=None, threshold=THRESHOLD, nucs=None):
             rx = 'sigma_f'
             for nuc in t9[n][rx]:
                 val = t9[n][rx][nuc]
-                if val < threshold:
+                if val == 0:
                     continue
                 nname = nucname.name(int(nuc))
                 nucs.add(nname)
@@ -204,7 +193,7 @@ def cross_section_data(t9, nlb=None, threshold=THRESHOLD, nucs=None):
             fromnuc, *_ = rx.partition('_')
             fromnuc = nucname.name(fromnuc)
             for k, v in t9[n][rx].items():
-                if v < threshold:
+                if v == 0:
                     continue
                 tonuc = nucname.name(nucname.zzaaam_to_id(int(k)))
                 # origen yields are in percent
@@ -325,7 +314,7 @@ SPMAT_FORMATS = {
 
 
 def tape9_to_sparse(tape9s, phi, format='csr', decaylib='decay.lib',
-                    include_fission=True, threshold=THRESHOLD):
+                    include_fission=True):
     """Converts a TAPE9 file to a sparse matrix.
 
     Parameters
@@ -343,10 +332,6 @@ def tape9_to_sparse(tape9s, phi, format='csr', decaylib='decay.lib',
     include_fission : bool
         Flag for whether or not the fission data should be included in the
         resultant matrix.
-    threshold : float, optional
-        A cutoff for when we consider nuclides stable or a decay mode
-        forbidden. This is given as a decay constant and the default is
-        for a half-life that is 10x the age of the universe.
 
     Returns
     -------
@@ -361,7 +346,7 @@ def tape9_to_sparse(tape9s, phi, format='csr', decaylib='decay.lib',
     # seed initial nucs with known atomic masses
     data.atomic_mass('u235')
     for tape9 in tape9s:
-        # print("Getting data for", tape9)
+        print("Getting data for", tape9)
         t9 = parse_tape9(tape9)
         decay = find_decaylib(t9, tape9, decaylib)
 
@@ -374,9 +359,8 @@ def tape9_to_sparse(tape9s, phi, format='csr', decaylib='decay.lib',
                 pass
 
         # get the tape 9 data
-        nucs, decays_consts, gammas = decay_data(decay, threshold=threshold, nucs=nucs)
+        nucs, decays_consts, gammas = decay_data(decay, nucs=nucs)
         nucs, sigma_ij, sigma_fission, fission_product_yields = cross_section_data(t9,
-                                                                    threshold=threshold,
                                                                     nucs=nucs)
 
         if not include_fission:
