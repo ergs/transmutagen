@@ -38,7 +38,7 @@ def time_and_run(f, *args, _print=False):
     return res
 
 def run_transmute_test(data, degree, prec, time, *, expr=None, plot=True,
-    _print=False, run_all=True, use_cache=True, umfpack=None, thetas=None,
+    _print=False, run_all=True, use_cache=True, thetas=None,
     alphas=None, alpha0=None):
     """
     Run transmute test on the data
@@ -46,9 +46,6 @@ def run_transmute_test(data, degree, prec, time, *, expr=None, plot=True,
     If run_all=True, runs the test on all forms of the exponential. Otherwise,
     only use part_frac_complex (the fastest).
     """
-    if umfpack is not None:
-        use_solver(useUmfpack=umfpack)
-
     nucs, matrix = load_sparse_csr(data)
 
     expr = get_CRAM_from_cache(degree, prec, expr=expr, plot=plot, use_cache=use_cache)
@@ -70,7 +67,8 @@ def run_transmute_test(data, degree, prec, time, *, expr=None, plot=True,
     else:
         e['transmutagen generated C solver'] = lambda m: py_solve.expmI14(m).T
 
-    e['part_frac_complex'] = lambdify_expr(part_frac_complex)
+    e['part_frac_complex UMFPACK'] = lambda m: (use_solver(useUmfpack=True) or lambdify_expr(part_frac_complex)(m))
+    e['part_frac_complex SuperLU'] = lambda m: (use_solver(useUmfpack=False) or lambdify_expr(part_frac_complex)(m))
     e['scipy.sparse.linalg.expm'] = lambda m: expm(-m)
     if run_all:
         e['rat_func'] = lambdify_expr(expr)

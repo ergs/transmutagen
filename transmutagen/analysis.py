@@ -25,8 +25,9 @@ from .gensolve import make_ijk
 
 def setup_matplotlib_rc():
     from matplotlib import rcParams
-    rcParams['pgf.texsystem'] = 'pdflatex'
+    rcParams['pgf.texsystem'] = 'lualatex'
     rcParams["text.usetex"] = True
+    rcParams["font.family"] = 'serif'
 
 def analyze_origen(origen_results, *, file=None, title=True):
     plt.clf()
@@ -99,7 +100,8 @@ several starting libraries, nuclides, and timesteps.""")
     plt_show_in_terminal()
 
 def analyze_nofission(*, run_all=False, file=None, title=True, thetas=None,
-    alphas=None, alpha0=None):
+    alphas=None, alpha0=None, nofission_data=os.path.join(os.path.dirname(__file__), 'tests',
+        'data', 'pwru50_400000000000000.0_nofission.npz')):
     try:
         import scikits.umfpack
         del scikits
@@ -109,29 +111,25 @@ def analyze_nofission(*, run_all=False, file=None, title=True, thetas=None,
         sys.exit("scikit-umfpack is required to run the nofission analysis")
 
     valid_time_names = TIME_STEPS.values() if run_all else ['1 day', '1 year', '1000 years', '1 million years']
-    backends = ['SuperLU', 'UMFPACK']
-    nofission_transmutes = {b: {t: {} for t in valid_time_names} for b in backends}
+    nofission_transmutes = {t: {} for t in valid_time_names}
 
-    for backend in backends:
-        umfpack = backend == 'UMFPACK'
-        for time, time_name in sorted(TIME_STEPS.items()):
-            if time_name not in valid_time_names:
-                continue
-            if run_all:
-                for f in os.listdir('data'):
-                    if f.endswith('_nofission.npz'):
-                        lib = f.split('_', 1)[0]
-                        data = os.path.join('data', f)
-                        print("analyzing", data, 'on', time_name)
-                        nofission_transmutes[backend][time_name][lib] = run_transmute_test(data, 14, 200,
-                            time, run_all=False, _print=True, umfpack=umfpack,
-                            thetas=thetas, alphas=alphas, alpha0=alpha0)
-            else:
-                data = os.path.join(os.path.dirname(__file__), 'tests', 'data', 'pwru50_400000000000000.0_nofission.npz')
-                print("analyzing", data, 'on', time_name, 'with', backend)
-                nofission_transmutes[backend][time_name]['pwru50'] = run_transmute_test(data, 14, 200,
-                    time, run_all=run_all, _print=True, umfpack=umfpack,
-                    thetas=thetas, alphas=alphas, alpha0=alpha0)
+    for time, time_name in sorted(TIME_STEPS.items()):
+        if time_name not in valid_time_names:
+            continue
+        if run_all:
+            for f in os.listdir('data'):
+                if f.endswith('_nofission.npz'):
+                    lib = f.split('_', 1)[0]
+                    data = os.path.join('data', f)
+                    print("analyzing", data, 'on', time_name)
+                    nofission_transmutes[time_name][lib] = run_transmute_test(data,
+                        14, 200, time, run_all=False, _print=True,
+                        thetas=thetas, alphas=alphas, alpha0=alpha0)
+        else:
+            print("analyzing", nofission_data, 'on', time_name)
+            nofission_transmutes[time_name]['pwru50'] = run_transmute_test(nofission_data,
+                14, 200, time, run_all=run_all, _print=True, thetas=thetas,
+                alphas=alphas, alpha0=alpha0)
 
     plot_nofission_transmutes(nofission_transmutes, run_all=run_all,
         file=file, title=title)
@@ -140,53 +138,63 @@ def analyze_nofission(*, run_all=False, file=None, title=True, thetas=None,
 
 def plot_nofission_transmutes(nofission_transmutes, *, run_all=False, file=None, title=True):
     valid_time_names = TIME_STEPS.values() if run_all else ['1 day', '1 year', '1000 years', '1 million years']
-    backends = ['SuperLU', 'UMFPACK']
+    for time, time_name in sorted(TIME_STEPS.items()):
+        if time_name not in valid_time_names:
+            continue
+        plt.clf()
+        fig, axes = plt.subplots(1, 4, sharey=True)
+        fig.set_size_inches(1.5*6.4, 1.5/4*4.8)
+        for lib in nofission_transmutes[time_name]:
 
-    for backend in backends:
-        for time, time_name in sorted(TIME_STEPS.items()):
-            if time_name not in valid_time_names:
-                continue
-            plt.clf()
-            fig, axes = plt.subplots(1, 3)
-            fig.set_size_inches(1.5*6.4, 1.5/3*4.8)
-            for lib in nofission_transmutes[backend][time_name]:
-                for r, ax in zip(['scipy.sparse.linalg.expm', 'part_frac_complex',
-                    'transmutagen generated C solver'], axes):
+            for (r, title), ax in zip([
+                ('scipy.sparse.linalg.expm', r'\texttt{scipy.\allowbreak{}sparse.\allowbreak{}linalg.\allowbreak{}expm}'),
+                ('part_frac_complex UMFPACK', '\\texttt{sympy.\\allowbreak{}lambdify}\nwith UMFPACK'),
+                ('part_frac_complex SuperLU', '\\texttt{sympy.\\allowbreak{}lambdify}\nwith SuperLU'),
+                ('transmutagen generated C solver', 'transmutagen generated\nC solver'),
+                ],
+                axes):
 
-                    m = nofission_transmutes[backend][time_name][lib][r]
-                    if not isinstance(m, np.ndarray):
-                        m = m.toarray()
-                    if m is None or np.isnan(m).any() or np.isinf(m).any():
-                        print("Could not compute", r, "for", lib, "on",
-                            time_name, "with", backend)
-                        continue
+                m = nofission_transmutes[time_name][lib][r]
+                if not isinstance(m, np.ndarray):
+                    m = m.toarray()
+                if m is None or np.isnan(m).any() or np.isinf(m).any():
+                    print("Could not compute", r, "for", lib)
+                    continue
 
 
-                    ax.hist(np.asarray(np.sum(m, axis=0)).flatten())
-                    if title:
-                        fig.suptitle(time_name + ' with ' + backend, y=1.08)
-                    ax.set_yscale('log', nonposy='clip')
-                    # Put "x 10^-19" on every x-axis tick
-                    locs = ax.get_xticks()
-                    # ax.set_xticklabels([pretty_float(i) for i in locs])
+                ax.hist(np.asarray(np.sum(m, axis=0) - 1).flatten())
+                # if title:
+                #     fig.suptitle(time_name, y=1.08)
+                ax.set_yscale('log', nonposy='clip')
+                # Put "x 10^-19" on every x-axis tick
+                locs = ax.get_xticks()
+                ax.set_xticklabels([pretty_float(i) for i in locs])
 
-                    if title:
-                        ax.set_title(r'\texttt{%s}' % r.replace('_',
-                            r'\_').replace('.', r'.\allowbreak{}'))
+                ax.minorticks_off()
+                locs = ax.get_yticks()
+                ax.set_ylim([0.5, 3509])
+                ax.set_yticklabels([str(int(i)) for i in locs])
 
-                print(time_name, 'with', backend)
-                plt_show_in_terminal()
-                if file:
-                    path, ext = os.path.splitext(file)
-                    filename = '-'.join([path, lib, time_name.replace(' ',
-                        '-'), backend.lower()]) + ext
-                    print("Saving to", filename)
-                else:
-                    filename = file
 
-                if filename:
-                    plt.savefig(filename, bbox_inches='tight')
-                plt.close()
+                if title:
+                    ax.set_title(title)
+
+            # Only the last axis
+            fig.text(0.07, 0.5, "Count", ha='center', va='center', rotation='vertical')
+            fig.text(0.5, -0.15, r'$\sum_i \left (e^{-At}\right )_{i,j} - 1$', ha='center', va='center')
+
+            print(time_name)
+            plt_show_in_terminal()
+            if file:
+                path, ext = os.path.splitext(file)
+                filename = '-'.join([path, lib, time_name.replace(' ', '-')]) + ext
+                print("Saving to", filename)
+            else:
+                filename = file
+
+            if filename:
+                plt.savefig(filename, bbox_inches='tight')
+            plt.close()
 
 def pretty_float(i):
     """
@@ -195,14 +203,13 @@ def pretty_float(i):
 
     """
     if i == 0:
-        return '0'
+        return '$0$'
     float_exponent = np.floor(np.log10(abs(i)))
-    exponent = int(float_exponent)
-    lead_digit = int(i/10**float_exponent)
 
-    if -3 <= exponent <= 3:
-        return str(i)[:6]
-    return r"$%d\times 10^{%d}$" % (lead_digit, exponent)
+    if -3 <= float_exponent <= 3:
+        return "$%s$" % str(i)[:6]
+    lead_digit, exponent = ("%.0e" % i).split('e')
+    return r"$%s\times 10^{%s}$" % (lead_digit, exponent)
 
 def plot_matrix_sum_histogram(m, *, title='', axis=0, file=None):
     plt.clf()
@@ -668,11 +675,12 @@ def analyze():
     parser.add_argument('--file', help="""File name to save the plot(s) to.
 
         For --eigenvals, a filename like "eigenvals.pdf" will be saved as
-        "eigenvals_pwru50.pdf" and "eigenvals_decay.pdf". For --nofission, a
-        filename like "nofission.pdf" will be saved as
-        "nofission-pwru50-c-solve-1-second-superlu.pdf",
-        "nofission-pwru50-expm-1-year-umfpack.pdf",
-        "nofission-pwru50-lambdify-1-million-years-superlu.pdf", etc.
+        "eigenvals_pwru50.pdf" and "eigenvals_decay.pdf".
+
+        For --nofission, a filename like "nofission.pdf" will be saved as
+        "nofission-pwru50-1-day.pdf", "nofission-pwru50-1-year.pdf",
+        "nofission-pwru50-1000-years.pdf", and
+        "nofission-pwru50-1-million-years.pdf".
 
         If not provided the plot is not saved.""")
     parser.add_argument('--no-title', action='store_false', dest='title',
@@ -694,6 +702,11 @@ def analyze():
         only against 1 day, 1 year, 1000 years, and 1 million years,
         against the generated C solver, part_frac_complex, and
         scipy.sparse.linalg.expm.""")
+    nofission.add_argument('--nofission-data',
+        default=os.path.join(os.path.dirname(__file__), 'tests',
+            'data', 'pwru50_400000000000000.0_nofission.npz'), help="""Data file to use
+        for nofission analysis (ignored when --run-all is passed). The default
+        is %(default)s.""")
 
     eigenvals = parser.add_argument_group('eigenvals')
     eigenvals.add_argument('--eigenvals', action='store_true',
@@ -749,7 +762,7 @@ def analyze():
             title=args.title)
     if args.nofission:
         analyze_nofission(run_all=args.run_all, file=args.file,
-            title=args.title)
+            title=args.title, nofission_data=args.nofission_data)
     if args.eigenvals:
         analyze_eigenvals(pwru50_data=args.pwru50_data,
             file=args.file, title=args.title)
