@@ -56,7 +56,7 @@ def main(args=None):
         that directory (transmutagen.origen_all.ALL_LIBS)""")
     p.add_argument('-d', '--decay', help='path to the decay file, if needed',
                    default='decay.lib', dest='decaylib')
-    p.add_argument('--outfile', default='transmutagen/data/gensolve.json',
+    p.add_argument('-o', '--outfile', default='transmutagen/data/gensolve.json',
         help="""File to save the JSON file to. The default is %(default)r.""")
     p.add_argument('--threshold', default=THRESHOLD, help="""Cutoff for
         ignoring reactions.""", type=float)
