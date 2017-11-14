@@ -111,6 +111,8 @@ def main():
         help="Don't run cram py_solve")
     p.add_argument('--hdf5-file', default='data/results.hdf5', help="""hdf5 file
     to write results to""")
+    p.add_argument('--alpha-as-He4', '--alpha-as-he4', action='store_true',
+        default=False, help="""Alpha reactions create He4 (only affects CRAM)""")
 
     args = p.parse_args()
 
@@ -154,7 +156,8 @@ def main():
                             run_cram_lambdify=args.run_cram_lambdify,
                             run_cram_py_solve=args.run_cram_py_solve,
                             run_origen=args.run_origen,
-                            hdf5_file=args.hdf5_file)
+                            hdf5_file=args.hdf5_file,
+                            alpha_as_He4=args.alpha_as_He4)
                     except AssertionError as e:
                         logger.error("AssertionError with lib %s: %s", tape9, e)
     except BaseException as e:

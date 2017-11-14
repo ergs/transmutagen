@@ -257,7 +257,7 @@ def save_file_cram_py_solve(file, *, CRAM_py_solve_res, lib, nucs, start_nuclide
         table.row.append()
         table.flush()
 
-def test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi, umfpack):
+def test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi, umfpack, alpha_as_He4=False):
     e_complex = CRAM_matrix_exp_lambdify()
 
     lambdify_desc = 'CRAM lambdify UMFPACK' if umfpack else 'CRAM lambdify SuperLU'
@@ -265,8 +265,9 @@ def test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi, umfpack):
         xs_tape9, time, nuclide, phi)
     logger.info('-'*80)
 
+    alpha_part = '_alpha_as_He4' if alpha_as_He4 else ''
     npzfilename = os.path.join('data', os.path.splitext(os.path.basename(xs_tape9))[0] + '_' +
-    str(phi) + '.npz')
+        str(phi) + alpha_part + '.npz')
 
     nucs, mat = load_sparse_csr(npzfilename)
     assert mat.shape[1] == len(nucs)
@@ -281,14 +282,15 @@ def test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi, umfpack):
 
     return CRAM_lambdify_time, CRAM_lambdify_res
 
-def test_origen_against_CRAM_py_solve(xs_tape9, time, nuclide, phi):
+def test_origen_against_CRAM_py_solve(xs_tape9, time, nuclide, phi, alpha_as_He4=False):
     from py_solve.py_solve import expm_multiply14, asflat, N
 
     logger.info("Running CRAM pysolve %s at time=%s, nuclide=%s, phi=%s", xs_tape9, time, nuclide, phi)
     logger.info('-'*80)
 
+    alpha_part = '_alpha_as_He4' if alpha_as_He4 else ''
     npzfilename = os.path.join('data', os.path.splitext(os.path.basename(xs_tape9))[0] + '_' +
-    str(phi) + '.npz')
+        str(phi) + alpha_part + '.npz')
 
     nucs, mat = load_sparse_csr(npzfilename)
     assert mat.shape[1] == len(nucs) == N
@@ -382,10 +384,11 @@ def make_parser():
 
 def execute(xs_tape9, time, phi, nuclide, hdf5_file='data/results.hdf5',
     decay_tape9=decay_TAPE9, origen=ORIGEN, run_origen=True,
-    run_cram_lambdify=True, run_cram_py_solve=True):
+    run_cram_lambdify=True, run_cram_py_solve=True, alpha_as_He4=False):
     lib = os.path.splitext(os.path.basename(xs_tape9))[0]
 
-    npzfilename = os.path.join('data', lib + '_' + str(phi) + '.npz')
+    alpha_part = '_alpha_as_He4' if alpha_as_He4 else ''
+    npzfilename = os.path.join('data', lib + '_' + str(phi) + alpha_part + '.npz')
     nucs, mat = load_sparse_csr(npzfilename)
 
     if run_origen:
@@ -410,7 +413,8 @@ def execute(xs_tape9, time, phi, nuclide, hdf5_file='data/results.hdf5',
             raise ImportError("scikits.umfpack is required. conda install scikit-umfpack")
 
         umfpack = True
-        CRAM_lambdify_umfpack_time, CRAM_lambdify_umfpack_res = test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi, umfpack)
+        CRAM_lambdify_umfpack_time, CRAM_lambdify_umfpack_res = test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi,
+            umfpack, alpha_as_He4=alpha_as_He4)
         save_file_cram_lambdify(hdf5_file,
             CRAM_lambdify_res=CRAM_lambdify_umfpack_res,
             lib=lib,
@@ -423,7 +427,8 @@ def execute(xs_tape9, time, phi, nuclide, hdf5_file='data/results.hdf5',
         )
 
         umfpack = False
-        CRAM_lambdify_superlu_time, CRAM_lambdify_superlu_res = test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi, umfpack)
+        CRAM_lambdify_superlu_time, CRAM_lambdify_superlu_res = test_origen_against_CRAM_lambdify(xs_tape9, time, nuclide, phi,
+            umfpack, alpha_as_He4=alpha_as_He4)
         save_file_cram_lambdify(hdf5_file,
             CRAM_lambdify_res=CRAM_lambdify_superlu_res,
             lib=lib,
@@ -437,7 +442,7 @@ def execute(xs_tape9, time, phi, nuclide, hdf5_file='data/results.hdf5',
 
 
     if run_cram_py_solve:
-        CRAM_py_solve_time, CRAM_py_solve_res = test_origen_against_CRAM_py_solve(xs_tape9, time, nuclide, phi)
+        CRAM_py_solve_time, CRAM_py_solve_res = test_origen_against_CRAM_py_solve(xs_tape9, time, nuclide, phi, alpha_as_He4=alpha_as_He4)
         save_file_cram_py_solve(hdf5_file,
             CRAM_py_solve_res=CRAM_py_solve_res,
             lib=lib,

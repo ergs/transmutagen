@@ -31,9 +31,10 @@ def common_mat(mats):
     return csr_matrix((data, (rows, cols)))
 
 
-def generate_json(tape9s, decaylib, outfile='transmutagen/data/gensolve.json'):
+def generate_json(tape9s, decaylib, outfile='transmutagen/data/gensolve.json',
+    alpha_as_He4=False):
     mats, nucs = tape9_to_sparse(tape9s, phi=1.0, format='csr',
-        decaylib=decaylib)
+        decaylib=decaylib, alpha_as_He4=alpha_as_He4)
     mat = common_mat(mats)
     ij = csr_ij(mat)
     fromto = [(nucs[j], nucs[i]) for i, j in sorted(ij, key=itemgetter(1, 0))]
@@ -57,10 +58,12 @@ def main(args=None):
                    default='decay.lib', dest='decaylib')
     p.add_argument('-o', '--outfile', default='transmutagen/data/gensolve.json',
         help="""File to save the JSON file to. The default is %(default)r.""")
+    p.add_argument('--alpha-as-He4', '--alpha-as-he4', action='store_true',
+        default=False, help="""Generate JSON for alpha going to He4""")
 
     ns = p.parse_args(args=args)
     tape9s = normalize_tape9s(ns.tape9s)
-    generate_json(tape9s, ns.decaylib, outfile=ns.outfile)
+    generate_json(tape9s, ns.decaylib, outfile=ns.outfile, alpha_as_He4=ns.alpha_as_He4)
 
 
 if __name__ == "__main__":

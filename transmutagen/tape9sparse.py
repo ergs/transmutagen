@@ -22,12 +22,14 @@ def make_parser():
     p.add_argument('--no-include-fission', action='store_false',
                    dest='include_fission',
                    help="Don't include fission reactions in the matrix.")
+    p.add_argument('--alpha-as-He4', '--alpha-as-he4', action='store_true', default=False,
+                   help="Alpha reactions go to He4")
     p.add_argument('-o', '--output-dir', default=None,
                    help='The directory to write the output files to, in npz format.')
     return p
 
 def save_sparse(tape9s, phi=4e14, output_dir=None, format='csr',
-    decaylib='decay.lib', include_fission=True):
+    decaylib='decay.lib', include_fission=True, alpha_as_He4=False):
     if output_dir is None:
         output_dir = 'data'
     os.makedirs(output_dir, exist_ok=True)
@@ -39,12 +41,14 @@ def save_sparse(tape9s, phi=4e14, output_dir=None, format='csr',
     tape9s = normalize_tape9s(tape9s)
     mats, nucs = tape9_to_sparse(tape9s, phi, format=format,
                                 decaylib=decaylib,
-                                include_fission=include_fission)
+                                include_fission=include_fission,
+                                alpha_as_He4=alpha_as_He4)
     for tape9, mat in zip(tape9s, mats):
         base = os.path.basename(tape9)
         base, _ = os.path.splitext(base)
         fission_part = '' if include_fission else '_nofission'
-        output = os.path.join(output_dir, base + '_' + str(phi) + fission_part + '.npz')
+        alpha_part = '' if not alpha_as_He4 else '_alpha_as_He4'
+        output = os.path.join(output_dir, base + '_' + str(phi) + fission_part + alpha_part + '.npz')
 
         print("Writing file to", output)
         save_sparse_csr(output, mat, nucs, phi)

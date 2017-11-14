@@ -69,6 +69,7 @@ def decay_data(t9, nlb=(1, 2, 3), nucs=None):
     nucs = set() if nucs is None else nucs
     decay_consts = {}
     gammas = {}
+    gammas_alphas = {}
     for n in nlb:
         decay_consts.update({origen_to_name(nuc): LN2/val
                              for nuc, val in t9[n]['half_life'].items()
@@ -89,6 +90,8 @@ def decay_data(t9, nlb=(1, 2, 3), nucs=None):
                 nucs.add(nname)
                 nucs.add(cname)
                 gammas[nname, cname] = val
+                if key == 'frac_alpha':
+                    gammas_alphas[nname, "He4"] = val
     # add β- decays
     for nname, val in decay_consts.items():
         if val == 0:
@@ -107,7 +110,7 @@ def decay_data(t9, nlb=(1, 2, 3), nucs=None):
             biggest_gamma = max([(i, j) for i, j in gammas if i == nname],
                                 key=lambda t: gammas[t])
             gammas[biggest_gamma] = gammas[biggest_gamma] + 1 - gamma_total
-    return nucs, decay_consts, gammas
+    return nucs, decay_consts, gammas, gammas_alphas
 
 
 XS_RXS = ['gamma', 'z_2n', 'z_3n', 'alpha', 'fission', 'proton', 'gamma_1', 'z_2n_1']
@@ -155,6 +158,7 @@ def cross_section_data(t9, nlb=None, nucs=None):
     nlb = find_nlb(t9, nlb=nlb)
     nucs = set() if nucs is None else nucs
     sigma_ij = {}
+    alpha_ij = {}
     sigma_fission = {}
     fission_product_yields = {}
     for n in nlb:
@@ -176,6 +180,8 @@ def cross_section_data(t9, nlb=None, nucs=None):
                 nucs.add(nname)
                 nucs.add(child)
                 sigma_ij[nname, child] = val
+                if rx == 'sigma_alpha':
+                    alpha_ij[nname, "He4"] = val
         # grab the fission cross section
         if 'sigma_f' in t9[n]:
             rx = 'sigma_f'
@@ -200,7 +206,7 @@ def cross_section_data(t9, nlb=None, nucs=None):
                 nucs.add(fromnuc)
                 nucs.add(tonuc)
                 fission_product_yields[fromnuc, tonuc] = v / 100
-    return nucs, sigma_ij, sigma_fission, fission_product_yields
+    return nucs, sigma_ij, sigma_fission, fission_product_yields, alpha_ij
 
 
 def sort_nucs(nucs):
@@ -209,7 +215,7 @@ def sort_nucs(nucs):
 
 
 def create_dok(phi, nucs, decay_consts, gammas, sigma_ij, sigma_fission,
-               fission_product_yields):
+               fission_product_yields, alpha_ij, gamma_alphas):
     """Creates a dictionary-of-keys representation of the transumation data.
 
     Parameters
@@ -245,6 +251,9 @@ def create_dok(phi, nucs, decay_consts, gammas, sigma_ij, sigma_fission,
         v = sigma_ij.get((i, j), 0.0) * phi
         dok[j, i] += v
         dok[i, i] -= v
+    for i, j in alpha_ij:
+        v = alpha_ij.get((i, j), 0.0) * phi
+        dok[j, i] += v
     # now let's add the fission products
     for (i, j), fpy in fission_product_yields.items():
         dok[j, i] += fpy * sigma_fission.get(i, 0.0) * phi
@@ -252,6 +261,8 @@ def create_dok(phi, nucs, decay_consts, gammas, sigma_ij, sigma_fission,
         dok[i, i] -= sigf * phi
     # now let's add the decay consts
     for (i, j), g in gammas.items():
+        dok[j, i] += g * decay_consts[i]
+    for (i, j), g in gamma_alphas.items():
         dok[j, i] += g * decay_consts[i]
     for i, v in decay_consts.items():
         dok[i, i] -= v
@@ -271,13 +282,13 @@ def dok_to_sparse_info(nucs, dok):
     Returns
     -------
     rows : list
-        Row indexs
+        Row indexes
     cols : list
         Column indexes
     vals : list
         Values at corresponding row/col index
     shape : 2-tuple of ints
-        Represents the size of the matirx
+        Represents the size of the matrix
     """
     shape = (len(nucs), len(nucs))
     nuc_idx = {n: i for i, n in enumerate(nucs)}
@@ -314,7 +325,7 @@ SPMAT_FORMATS = {
 
 
 def tape9_to_sparse(tape9s, phi, format='csr', decaylib='decay.lib',
-                    include_fission=True):
+                    include_fission=True, alpha_as_He4=False):
     """Converts a TAPE9 file to a sparse matrix.
 
     Parameters
@@ -341,6 +352,7 @@ def tape9_to_sparse(tape9s, phi, format='csr', decaylib='decay.lib',
         The list of nuclide names in canonical order.
     """
     all_decays_consts, all_gammas, all_sigma_ij, all_sigma_fission, all_fission_product_yields = [], [], [], [], []
+    all_alpha_ij, all_gamma_alphas = [], []
     nucs = set()
     mats = []
     # seed initial nucs with known atomic masses
@@ -359,24 +371,28 @@ def tape9_to_sparse(tape9s, phi, format='csr', decaylib='decay.lib',
                 pass
 
         # get the tape 9 data
-        nucs, decays_consts, gammas = decay_data(decay, nucs=nucs)
-        nucs, sigma_ij, sigma_fission, fission_product_yields = cross_section_data(t9,
-                                                                    nucs=nucs)
+        nucs, decays_consts, gammas, gammas_alphas = decay_data(decay, nucs=nucs)
+        nucs, sigma_ij, sigma_fission, fission_product_yields, alpha_ij = cross_section_data(t9,
+            nucs=nucs)
 
         if not include_fission:
             sigma_fission = {}
             fission_product_yields = {}
+        if not alpha_as_He4:
+            gammas_alphas = {}
+            alpha_ij = {}
         all_decays_consts.append(decays_consts)
         all_gammas.append(gammas)
         all_sigma_ij.append(sigma_ij)
         all_sigma_fission.append(sigma_fission)
         all_fission_product_yields.append(fission_product_yields)
-
+        all_alpha_ij.append(alpha_ij)
+        all_gamma_alphas.append(gammas_alphas)
 
     nucs = sort_nucs(nucs)
     for i in range(len(tape9s)):
         dok = create_dok(phi, nucs, all_decays_consts[i], all_gammas[i], all_sigma_ij[i], all_sigma_fission[i],
-                     all_fission_product_yields[i])
+                     all_fission_product_yields[i], all_alpha_ij[i], all_gamma_alphas[i])
         rows, cols, vals, shape = dok_to_sparse_info(nucs, dok)
         mats.append(SPMAT_FORMATS[format]((vals, (rows, cols)), shape=shape))
     return mats, nucs
