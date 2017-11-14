@@ -655,7 +655,7 @@ def main(args=None):
         degrees to generate. The default is 14, unless --py-solve is
         specified, in which case the default is '6 8 10 12 14 16 18'. The
         orders should be even integers only.""", metavar="DEGREE", type=int)
-    p.add_argument('--outfile', help="""Location to write the C file to.
+    p.add_argument('-o', '--outfile', help="""Location to write the C file to.
         Should end in '.c'. The default is 'solve.c', unless --py-solve is
         specified, in which case the default is 'py_solve/py_solve/solve.c'.
         The header file will be generated alongside it.""")
