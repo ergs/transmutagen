@@ -58,7 +58,7 @@ def main(args=None):
                    default='decay.lib', dest='decaylib')
     p.add_argument('-o', '--outfile', default='transmutagen/data/gensolve.json',
         help="""File to save the JSON file to. The default is %(default)r.""")
-    p.add_argument('--alpha-as-He4', '--alpha-as-he4', action='store_true',
+    p.add_argument('--alpha-as-He4', action='store_true',
         default=False, help="""Generate JSON for alpha going to He4""")
 
     ns = p.parse_args(args=args)

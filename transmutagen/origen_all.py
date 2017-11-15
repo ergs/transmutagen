@@ -111,7 +111,7 @@ def main():
         help="Don't run cram py_solve")
     p.add_argument('--hdf5-file', default='data/results.hdf5', help="""hdf5 file
     to write results to""")
-    p.add_argument('--alpha-as-He4', '--alpha-as-he4', action='store_true',
+    p.add_argument('--alpha-as-He4', action='store_true',
         default=False, help="""Alpha reactions create He4 (only affects CRAM)""")
 
     args = p.parse_args()

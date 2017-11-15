@@ -22,7 +22,7 @@ def make_parser():
     p.add_argument('--no-include-fission', action='store_false',
                    dest='include_fission',
                    help="Don't include fission reactions in the matrix.")
-    p.add_argument('--alpha-as-He4', '--alpha-as-he4', action='store_true', default=False,
+    p.add_argument('--alpha-as-He4', action='store_true', default=False,
                    help="Alpha reactions go to He4")
     p.add_argument('-o', '--output-dir', default=None,
                    help='The directory to write the output files to, in npz format.')
