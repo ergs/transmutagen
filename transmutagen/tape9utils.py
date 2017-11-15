@@ -155,6 +155,8 @@ def cross_section_data(t9, nlb=None, nucs=None):
         Mapping from (i, j) nuclide name tuples to the fission product yields for
         that nuclide.
     """
+    if rxname.child("Am242M", "gamma") != 952430000:
+        raise RuntimeError("Pyne version too old. Need version 0.5.4 or newer")
     nlb = find_nlb(t9, nlb=nlb)
     nucs = set() if nucs is None else nucs
     sigma_ij = {}
