@@ -38,7 +38,8 @@ def generate_json(tape9s, decaylib, outfile='transmutagen/data/gensolve.json',
     mat = common_mat(mats)
     ij = csr_ij(mat)
     fromto = [(nucs[j], nucs[i]) for i, j in sorted(ij, key=itemgetter(1, 0))]
-    os.makedirs(os.path.dirname(outfile), exist_ok=True)
+    if os.path.dirname(outfile):
+        os.makedirs(os.path.dirname(outfile), exist_ok=True)
 
     with open(outfile, 'w') as f:
         print("Writing", outfile)
