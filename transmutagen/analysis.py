@@ -28,6 +28,9 @@ def setup_matplotlib_rc():
     rcParams['pgf.texsystem'] = 'lualatex'
     rcParams["text.usetex"] = True
     rcParams["font.family"] = 'serif'
+    rcParams["font.serif"] = "Computer Modern Roman"
+    rcParams["font.sans-serif"] = "Computer Modern Sans serif"
+    rcParams["font.monospace"] = "Computer Modern Typewriter"
 
 def analyze_origen(origen_results, *, file=None, title=True):
     plt.clf()
