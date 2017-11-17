@@ -139,7 +139,11 @@ def analyze_nofission(*, run_all=False, file=None, title=True, thetas=None,
 
     return nofission_transmutes
 
-def plot_nofission_transmutes(nofission_transmutes, *, run_all=False, file=None, title=True):
+def plot_nofission_transmutes(nofission_transmutes, *, run_all=False,
+    file=None, title=True):
+
+    setup_matplotlib_rc()
+
     valid_time_names = TIME_STEPS.values() if run_all else ['1 day', '1 year', '1000 years', '1 million years']
     for time, time_name in sorted(TIME_STEPS.items()):
         if time_name not in valid_time_names:
