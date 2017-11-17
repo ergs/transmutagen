@@ -144,6 +144,7 @@ def plot_nofission_transmutes(nofission_transmutes, *, run_all=False, file=None,
     for time, time_name in sorted(TIME_STEPS.items()):
         if time_name not in valid_time_names:
             continue
+        plt.switch_backend('pgf')
         plt.clf()
         fig, axes = plt.subplots(1, 4, sharey=True)
         fig.set_size_inches(1.5*6.4, 1.5/4*4.8)
@@ -169,14 +170,24 @@ def plot_nofission_transmutes(nofission_transmutes, *, run_all=False, file=None,
                 # if title:
                 #     fig.suptitle(time_name, y=1.08)
                 ax.set_yscale('log', nonposy='clip')
+
+                # Matplotlib's default ticks aren't great. We include the
+                # endpoints, and 0 if it isn't too close to the endpoints
+                # (within 5%).
+                xmin, xmax = ax.get_xlim()
+                if xmin < 0 < xmax and abs(xmin) > 0.05*(xmax - xmin) < abs(xmax):
+                    locs = [xmin, 0, xmax]
+                else:
+                    locs = [xmin, xmax]
+                ax.set_xticks(locs)
+
                 # Put "x 10^-19" on every x-axis tick
-                locs = ax.get_xticks()
                 ax.set_xticklabels([pretty_float(i) for i in locs])
 
                 ax.minorticks_off()
                 locs = ax.get_yticks()
-                ax.set_ylim([0.5, 3509])
-                ax.set_yticklabels([str(int(i)) for i in locs])
+                ax.set_ylim([0.5, 4000])
+                ax.set_yticklabels(["$%d$" % int(i) for i in locs])
 
 
                 if title:
@@ -187,7 +198,7 @@ def plot_nofission_transmutes(nofission_transmutes, *, run_all=False, file=None,
             fig.text(0.5, -0.15, r'$\sum_i \left (e^{-At}\right )_{i,j} - 1$', ha='center', va='center')
 
             print(time_name)
-            plt_show_in_terminal()
+            # plt_show_in_terminal()
             if file:
                 path, ext = os.path.splitext(file)
                 filename = '-'.join([path, lib, time_name.replace(' ', '-')]) + ext
@@ -206,11 +217,11 @@ def pretty_float(i):
 
     """
     if i == 0:
-        return '$0$'
+        return r'$0^{\vphantom{0}}$'
     float_exponent = np.floor(np.log10(abs(i)))
 
     if -3 <= float_exponent <= 3:
-        return "$%s$" % str(i)[:6]
+        return r"$%s^{\vphantom{0}}$" % str(i)[:6]
     lead_digit, exponent = ("%.0e" % i).split('e')
     return r"$%s\times 10^{%s}$" % (lead_digit, exponent)
 
