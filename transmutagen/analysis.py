@@ -175,18 +175,20 @@ def plot_nofission_transmutes(nofission_transmutes, *, run_all=False,
                 #     fig.suptitle(time_name, y=1.08)
                 ax.set_yscale('log', nonposy='clip')
 
-                # Matplotlib's default ticks aren't great. We include the
-                # endpoints, and 0 if it isn't too close to the endpoints
-                # (within 5%).
-                xmin, xmax = ax.get_xlim()
-                if xmin < 0 < xmax and abs(xmin) > 0.05*(xmax - xmin) < abs(xmax):
-                    locs = [xmin, 0, xmax]
-                else:
-                    locs = [xmin, xmax]
-                ax.set_xticks(locs)
+                # # Matplotlib's default ticks aren't great. We include the
+                # # endpoints, and 0 if it isn't too close to the endpoints
+                # # (within 5%).
+                # xmin, xmax = ax.get_xlim()
+                # if xmin < 0 < xmax and abs(xmin) > 0.05*(xmax - xmin) < abs(xmax):
+                #     locs = [xmin, 0, xmax]
+                # else:
+                #     locs = [xmin, xmax]
+                # ax.set_xticks(locs)
+                #
+                # # Put "x 10^-19" on every x-axis tick
+                # ax.set_xticklabels([pretty_float(i) for i in locs])
 
-                # Put "x 10^-19" on every x-axis tick
-                ax.set_xticklabels([pretty_float(i) for i in locs])
+                ax.ticklabel_format(scilimits=(-3, 3), axis='x')
 
                 ax.minorticks_off()
                 locs = ax.get_yticks()
@@ -199,7 +201,7 @@ def plot_nofission_transmutes(nofission_transmutes, *, run_all=False,
 
             # Only the last axis
             fig.text(0.07, 0.5, "Count", ha='center', va='center', rotation='vertical')
-            fig.text(0.5, -0.15, r'$\sum_i \left (e^{-At}\right )_{i,j} - 1$', ha='center', va='center')
+            fig.text(0.5, -0.25, r'$\sum_i \left (e^{-At}\right )_{i,j} - 1$', ha='center', va='center')
 
             print(time_name)
             # plt_show_in_terminal()
