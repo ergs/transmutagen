@@ -165,10 +165,14 @@ def plot_nofission_transmutes(nofission_transmutes, *, run_all=False,
                 m = nofission_transmutes[time_name][lib][r]
                 if not isinstance(m, np.ndarray):
                     m = m.toarray()
+
                 if m is None or np.isnan(m).any() or np.isinf(m).any():
                     print("Could not compute", r, "for", lib)
-                    continue
-
+                    ax.text(0.5, 0.5, "Calculation resulted\nin NaNs",
+                        va='center', ha='center', transform=ax.transAxes, size=12)
+                    ax.set_xticks([])
+                else:
+                    ax.hist(np.asarray(np.sum(m, axis=0) - 1).flatten())
 
                 ax.hist(np.asarray(np.sum(m, axis=0) - 1).flatten())
                 # if title:
