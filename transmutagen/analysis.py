@@ -174,7 +174,8 @@ def plot_nofission_transmutes(nofission_transmutes, *, run_all=False,
                 else:
                     ax.hist(np.asarray(np.sum(m, axis=0) - 1).flatten())
 
-                ax.hist(np.asarray(np.sum(m, axis=0) - 1).flatten())
+                ax.xaxis.offsetText.set_size(14)
+
                 # if title:
                 #     fig.suptitle(time_name, y=1.08)
                 ax.set_yscale('log', nonposy='clip')
