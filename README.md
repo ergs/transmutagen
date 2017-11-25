@@ -12,7 +12,7 @@ it.
 Transmutagen also depends on
 
  - mpmath
- - sympy v1.1
+ - sympy >= 1.1
  - matplotlib
  - numpy
  - scipy
@@ -75,13 +75,17 @@ The format of the JSON file is
 ```
 
 Where ``"nucs"`` is a list of nuclides and ``"fromto"`` is a list of lists of
-every possible reaction product pair.
+every possible reaction product pair. Every nuclide should be listed as a
+reaction with itself.
 
 To generate a JSON file from ORIGEN libraries, run
 
     python -m transmutagen.generate_json /path/to/origen/libs/ --outfile gensolve.json
 
-This will save the JSON to ``gensolve.json``.
+This will save the JSON to ``gensolve.json``. Note that transmutagen comes
+with a a JSON file generated from ORIGEN in
+``transmutagen/data/gensolve_origen.json`` as well as one generated from PyNE
+in ``transmutagen/data/gensolve.json``.
 
 The resulting solve.c will have functions
 ``{namespace}_expm_multiply{N}(double* A, double* b, double* x)``, where
