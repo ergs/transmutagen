@@ -5,7 +5,7 @@ before_install:
   - sudo apt-get update && sudo apt-get install -y --no-install-recommends texlive-fonts-recommended
     texlive-latex-extra texlive-fonts-extra texlive-humanities texlive-science latex-xcolor
     dvipng texlive-latex-recommended python-pygments lmodern texlive-xetex
-    latexdiff texlive-generic-recommended latexmk
+    latexdiff texlive-generic-recommended latexmk texlive-luatex
 
 install:
   - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
