@@ -517,12 +517,26 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
 
 def analyze_gensolve(*, origen_json_file=None, json_file=None,
     pairs_per_pass=1, runs=100, warm_up_runs=5):
+
+    from pyne import nucname
+
     origen_json_data = json.load(origen_json_file or open(os.path.join(os.path.dirname(__file__), 'data', 'gensolve_origen.json')))
     json_data = json.load(json_file or open(os.path.join(os.path.dirname(__file__), 'data', 'gensolve.json')))
 
+    # Make the nuclide list the same
+    new_nuclides = set(json_data['nucs']) - set(origen_json_data['nucs'])
+    removed_nuclides = set(origen_json_data['nucs']) - set(json_data['nucs'])
+    [origen_json_data['fromto'].append([i, i]) for i in new_nuclides]
+    [json_data['fromto'].append([i, i]) for i in removed_nuclides]
+    full_nucs = sorted(set(json_data['nucs']) | set(origen_json_data['nucs']), key=nucname.cinder)
+    json_data['nucs'] = origen_json_data['nucs'] = full_nucs
+
     new_json = copy.deepcopy(origen_json_data)
+
+    new_fromtos = sorted(set(map(tuple, json_data['fromto'])) - set(map(tuple,
+        origen_json_data['fromto'])))
+
     all_runtimes = []
-    new_fromtos = sorted(set(map(tuple, json_data['fromto'])) - set(map(tuple, origen_json_data['fromto'])))
     added = [0]
 
     print("Compiling 0/%d" % len(new_fromtos))
