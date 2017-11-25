@@ -8,10 +8,12 @@ except ImportError:
 
 import numpy as np
 
-VERSION = '1.0.1' # Also update __init__.py
+import versioneer
 
+VERSION = versioneer.get_version()
 setup_kwargs = {
     "version": VERSION,
+    "cmdclass": versioneer.get_cmdclass(),
     "description": 'Code geneartion tools for transmutation solvers',
     "license": 'BSD 3-clause',
     "author": 'ERGS',
