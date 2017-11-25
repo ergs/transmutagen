@@ -97,7 +97,7 @@ according to the sparsity pattern the solver was generated from.
 If you'd like to convert an origen file to a matrix representation, please
 use something like:
 
-    python -m transmutagen.tape9sparse ~/origen22/libs/pwru50.lib 4e14
+    python -m transmutagen.tape9sparse ~/origen22/libs/pwru50.lib --decay ~/origen22/libs/decay.lib
 
 See `--help` and the `transmutagen.tape9utils` docs for more details.
 
