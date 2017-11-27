@@ -2,8 +2,10 @@ from argparse import ArgumentParser
 import json
 import os
 import sys
+import time
 import inspect
 import textwrap
+import subprocess
 
 from jinja2 import Environment
 from sympy import im
@@ -592,10 +594,36 @@ from transmutagen.gensolve import make_ijk, get_thetas_alphas
         f.write(SRC)
 
 
+def assemble_gnu(outfile):
+    """Assembles the solver with GCC. Returns the filename that was generated."""
+    base, _ = os.path.splitext(outfile)
+    asmfile = base + '-gnu.s'
+    cmd = ['gcc']
+    cmd.extend(GCC_COMPILER_FLAGS)
+    cmd.extend(['-S', '-o', asmfile, '-c', outfile])
+    print('Running command:\n  $ ' + ' '.join(cmd))
+    t0 = time.time()
+    subprocess.check_call(cmd)
+    t1 = time.time()
+    print('Assembled in {0:.3} seconds'.format(t1 - t0))
+    return asmfile
+
+
+def archive(filename, files):
+    """Creates archive of list of files with a name."""
+    import tarfile
+    with tarfile.open(filename, 'w:gz') as tar:
+        for f in files:
+            print('  archiving ' + f)
+            tar.add(f)
+
+
+
 def generate(json_file=os.path.join(os.path.dirname(__file__),
     'data/gensolve.json'), json_data=None,
     outfile=None, degrees=None, py_solve=False, namespace='transmutagen',
-    decay_matrix_kind='pyne', timing_test=False, include_lost_bits=False):
+    decay_matrix_kind='pyne', timing_test=False, include_lost_bits=False,
+    gnu_asm=False, tar_asm=True):
 
     if degrees is None:
         degrees = [6, 8, 10, 12, 14, 16, 18] if py_solve else [14]
@@ -642,6 +670,19 @@ def generate(json_file=os.path.join(os.path.dirname(__file__),
     print("With gcc, it is recommended to compile the following flags:", ' '.join(GCC_COMPILER_FLAGS))
     print("With clang, it is recommended to compile the following flags:", ' '.join(CLANG_COMPILER_FLAGS))
 
+    assembled = []
+    if gnu_asm:
+        print("Compiling GNU Assembly with GCC...")
+        filename = assemble_gnu(outfile=outfile)
+        assembled.append(filename)
+    if tar_asm and len(assembled) > 0:
+        base, _ = os.path.splitext(outfile)
+        tarfile = base + '-asm.tar.gz'
+        print("Archiving assembled files in " + tarfile)
+        archive(tarfile, assembled)
+
+
+
 def main(args=None):
     p = ArgumentParser('gensolver')
     p.add_argument('--json-file',
@@ -669,7 +710,12 @@ def main(args=None):
         matrix.""")
     p.add_argument("--include-lost-bits", action='store_true', default=False,
         help="""Add an additional argument to the generated expm_multiply functions to keep track of how many floating point bits are potentially lost in the calculation (experimental).""")
-
+    p.add_argument("--gcc-asm", "--gnu-asm", action='store_true', default=False, dest='gnu_asm',
+        help="Creates GCC assembly, so that users don't have to go through full compile.")
+    p.add_argument("--tar-asm", action='store_true', default=True, dest='tar_asm',
+        help="Creates an archive of any assembly files that were generated.")
+    p.add_argument("--no-tar-asm", '--dont-tar-asm', action='store_false', dest='tar_asm',
+        help="Does not creates an archive of any assembly files that were generated.")
 
     ns = p.parse_args(args=args)
     if ns.outfile and not ns.outfile.endswith('.c'):
