@@ -496,7 +496,7 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
             print('degree', degree, 'alpha0:\t\t%.20g' % alpha0)
 
             transmutagen_alpha_error = abs(abs(transmutagen_error) - alpha0)
-            pusa_alpha_error = abs(abs(pusa_error) - alpha0)
+            pusa_alpha_error = abs(abs(pusa_error) - paper_alpha0)
 
             for name, error, alpha_error in [
                 ("Our", transmutagen_error, transmutagen_alpha_error),
