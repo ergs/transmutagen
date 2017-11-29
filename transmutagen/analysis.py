@@ -441,8 +441,14 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
                             latex_pusa_str = latex_pusa_str + 'j'
                             latex_our_str = latex_our_str + 'j'
 
+                        # For whatever reason, \setulcolor only applies to the
+                        # next \ul
+                        if machine_differences:
+                            f.write(r'\setulcolor{red}')
+                        sep = ' & ' if not machine_differences else r' & \setulcolor{red}'
+
                         diff_strs(latex_pusa_str, latex_our_str, end=r'\\',
-                            style='latex separated', sep=' & ',
+                            style='latex separated', sep=sep,
                             stop_chars='e', file=f)
                         if real_imag == 'imag' and typ != 'alpha0':
                             f.write(r'\cline{2-3}')
