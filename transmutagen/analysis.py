@@ -464,6 +464,9 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
     interval = (0, 100)
     prec = 200
 
+    # {degree: {'pusa_alpha_errors': [...], 'transmutagen_alpha_errors': [...], 't0s': [...]}}
+    alpha_errors = defaultdict(lambda: defaultdict(list))
+
     for degree in [14, 16]:
         expr = get_CRAM_from_cache(degree, prec)
         thetas, alphas, alpha0 = thetas_alphas(expr, prec)
@@ -506,12 +509,32 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
 
                 print("Off by:", color, '\t\t\t%.5g' % alpha_error, colorama.Style.RESET_ALL)
                 alpha_error = abs(abs(error) - alpha0)
+
+            alpha_errors[degree]['t0s'].append(t0)
+            alpha_errors[degree]['transmutagen_alpha_errors'].append(transmutagen_alpha_error)
+            alpha_errors[degree]['pusa_alpha_errors'].append(pusa_alpha_error)
+
             if transmutagen_alpha_error >= pusa_alpha_error:
                 print(colorama.Fore.RED, "Pusa error is better",
                     colorama.Style.RESET_ALL, sep='')
             else:
                 print(colorama.Fore.GREEN, "Our error is better",
                     colorama.Style.RESET_ALL, sep='')
+
+    plt.clf()
+    for degree in [14, 16]:
+        plt.figure()
+        plt.plot(alpha_errors[degree]['t0s'],
+            alpha_errors[degree]['transmutagen_alpha_errors'], '.',
+            label=r'transmutagen')
+        plt.plot(alpha_errors[degree]['t0s'],
+            alpha_errors[degree]['pusa_alpha_errors'], '.',
+            label=r'Pusa~\cite{pusa2012correction}')
+        plt.title(r'degree %d' % degree)
+        plt.legend()
+        filename, ext = os.path.splitext(file)
+        filename += '-errors-' + str(degree)
+        plt.savefig(filename + ext)
 
     # analyze_nofission(thetas=paper_thetas, alphas=paper_alphas, alpha0=paper_alpha0)
 
