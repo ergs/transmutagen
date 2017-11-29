@@ -532,9 +532,10 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
             label=r'Pusa~\cite{pusa2012correction}')
         plt.title(r'degree %d' % degree)
         plt.legend()
-        filename, ext = os.path.splitext(file)
-        filename += '-errors-' + str(degree)
-        plt.savefig(filename + ext)
+        if file:
+            filename, ext = os.path.splitext(file)
+            filename += '-errors-' + str(degree)
+            plt.savefig(filename + ext)
 
     # analyze_nofission(thetas=paper_thetas, alphas=paper_alphas, alpha0=paper_alpha0)
 
