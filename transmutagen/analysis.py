@@ -538,6 +538,9 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
             label=r'Pusa~\cite{pusa2012correction}')
         plt.title(r'degree %d' % degree)
         plt.legend()
+        plt.xlabel('$t$')
+        plt.ylabel(r'$||e^{-t_0} - \hat{r}_{%d,%d}(t_0)| - \alpha_0|$' %
+            (degree, degree))
         if file:
             filename, ext = os.path.splitext(file)
             filename += '-errors-' + str(degree)
