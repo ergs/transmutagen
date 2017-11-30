@@ -546,7 +546,8 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
             filename += '-errors-' + str(degree)
             plt.savefig(filename + ext)
 
-    # analyze_nofission(thetas=paper_thetas, alphas=paper_alphas, alpha0=paper_alpha0)
+    # analyze_nofission(thetas=paper_thetas, alphas=paper_alphas,
+    #     alpha0=paper_alpha0, file='test.pdf')
 
 def analyze_gensolve(*, origen_json_file=None, json_file=None,
     pairs_per_pass=1, runs=100, warm_up_runs=5):
