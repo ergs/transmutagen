@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import time
+import shutil
 import inspect
 import textwrap
 import subprocess
@@ -22,7 +23,7 @@ from . import __version__
 # If this changes, also update py_solve/setup.py
 GCC_COMPILER_FLAGS = ['-O0', '-fcx-fortran-rules', '-fcx-limited-range',
         '-ftree-sra', '-ftree-ter', '-fexpensive-optimizations']
-CLANG_COMPILER_FLAGS = ['-O0', '--ffast-math']
+CLANG_COMPILER_FLAGS = ['-O0', '-ffast-math']
 
 HEADER = """\
 /* This file was generated automatically with transmutagen version {{__version__}}. */
@@ -594,18 +595,21 @@ from transmutagen.gensolve import make_ijk, get_thetas_alphas
         f.write(SRC)
 
 
-def assemble_gnu(outfile):
-    """Assembles the solver with GCC. Returns the filename that was generated."""
+def assemble(outfile, compiler, toolchain, flags=()):
+    """Assembles the solver. Returns the filename that was generated."""
+    print('Assembling ' + toolchain)
     base, _ = os.path.splitext(outfile)
-    asmfile = base + '-gnu.s'
-    cmd = ['gcc', '-fPIC']
-    cmd.extend(GCC_COMPILER_FLAGS)
+    asmfile = base + '-' + toolchain.lower() + '.s'
+    prefix = os.path.dirname(os.path.dirname(shutil.which(compiler)))
+    include = os.path.join(prefix, 'include')
+    cmd = [compiler, '-I' + include, '-fPIC', '-O0']
+    cmd.extend(flags)
     cmd.extend(['-S', '-o', asmfile, '-c', outfile])
     print('Running command:\n  $ ' + ' '.join(cmd))
     t0 = time.time()
     subprocess.check_call(cmd)
     t1 = time.time()
-    print('Assembled in {0:.3} seconds'.format(t1 - t0))
+    print('{0} assembled in {1:.3} seconds'.format(toolchain, t1 - t0))
     return asmfile
 
 
@@ -618,12 +622,11 @@ def archive(filename, files):
             tar.add(f)
 
 
-
 def generate(json_file=os.path.join(os.path.dirname(__file__),
     'data/gensolve.json'), json_data=None,
     outfile=None, degrees=None, py_solve=False, namespace='transmutagen',
     decay_matrix_kind='pyne', timing_test=False, include_lost_bits=False,
-    gnu_asm=False, tar=False):
+    gnu_asm=False, clang_asm=False, tar=False):
 
     if degrees is None:
         degrees = [6, 8, 10, 12, 14, 16, 18] if py_solve else [14]
@@ -672,8 +675,12 @@ def generate(json_file=os.path.join(os.path.dirname(__file__),
 
     generated = [outfile, headerfile]
     if gnu_asm:
-        print("Compiling GNU Assembly with GCC...")
-        filename = assemble_gnu(outfile=outfile)
+        filename = assemble(outfile=outfile, compiler='gcc',
+                            toolchain='GNU', flags=GCC_COMPILER_FLAGS)
+        generated.append(filename)
+    if clang_asm:
+        filename = assemble(outfile=outfile, compiler='clang',
+                            toolchain='Clang', flags=CLANG_COMPILER_FLAGS)
         generated.append(filename)
     if tar:
         base, _ = os.path.splitext(outfile)
@@ -712,6 +719,8 @@ def main(args=None):
         help="""Add an additional argument to the generated expm_multiply functions to keep track of how many floating point bits are potentially lost in the calculation (experimental).""")
     p.add_argument("--gcc-asm", "--gnu-asm", action='store_true', default=False, dest='gnu_asm',
         help="Creates GCC assembly, so that users don't have to go through full compile.")
+    p.add_argument("--clang-asm", action='store_true', default=False, dest='clang_asm',
+        help="Creates Clang assembly, so that users don't have to go through full compile.")
     p.add_argument("--tar", action='store_true', default=False, dest='tar',
         help="Creates an archive of all files that were generated.")
     p.add_argument("--no-tar", '--dont-tar', action='store_false', dest='tar',
