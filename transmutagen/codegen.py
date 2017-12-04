@@ -256,6 +256,18 @@ scipy_translations_autoeye = {
     'solve': scipy_sparse_solve_with_autoeye,
     }
 
+numpy_translations = {
+    'solve': np.linalg.solve,
+    'autoeye': autoeye,
+    'matrix_power': lambda a, b: a**b,
+    'float128': np.float128,
+    }
+
+numpy_translations_autoeye = {
+    **scipy_translations,
+    'solve': numpy_solve_with_autoeye,
+    }
+
 @memoize
 def CRAM_matrix_exp_lambdify(degree=14, prec=200, *, use_cache=True,
     form='complex partial fraction', py_solve=False):
