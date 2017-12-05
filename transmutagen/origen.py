@@ -305,7 +305,7 @@ def test_origen_against_CRAM_py_solve(xs_tape9, time, nuclide, phi, alpha_as_He4
 
     return CRAM_py_solve_time, CRAM_py_solve_res
 
-def compute_mismatch(ORIGEN_data, CRAM_lambdify_umfpack_res, CRAM_lambdify_superlu_res, CRAM_py_solve_res, nucs, rtol=1e-3, atol=1e-5):
+def compute_mismatch(ORIGEN_res_weighted, ORIGEN_res_materials, CRAM_lambdify_umfpack_res, CRAM_lambdify_superlu_res, CRAM_py_solve_res, nucs, rtol=1e-3, atol=1e-5):
     """
     Computes a mismatch analysis for an ORIGEN run vs. CRAM
 
@@ -321,10 +321,6 @@ def compute_mismatch(ORIGEN_data, CRAM_lambdify_umfpack_res, CRAM_lambdify_super
     CRAM_lambdify_umfpack_res_normalized = CRAM_lambdify_umfpack_res/np.sum(CRAM_lambdify_umfpack_res)
     CRAM_lambdify_superlu_res_normalized = CRAM_lambdify_superlu_res/np.sum(CRAM_lambdify_superlu_res)
     CRAM_py_solve_res_normalized = CRAM_py_solve_res/np.sum(CRAM_py_solve_res)
-
-    ORIGEN_res_weighted = origen_data_to_array_weighted(ORIGEN_data, nucs,)
-    ORIGEN_res_materials = origen_data_to_array_materials(ORIGEN_data, nucs)
-    # ORIGEN_res_atom_fraction = origen_data_to_array_atom_fraction(origen_data, nucs)
 
     for Clumf, Clsuper, Cpy, O, units in [
         (CRAM_lambdify_umfpack_res, CRAM_lambdify_superlu_res, CRAM_py_solve_res, ORIGEN_res_weighted, 'atom fractions'),
@@ -392,8 +388,11 @@ def execute(xs_tape9, time, phi, nuclide, hdf5_file='data/results.hdf5',
     nucs, mat = load_sparse_csr(npzfilename)
 
     if run_origen:
+        n_fission_fragments = 2.004
         ORIGEN_time, ORIGEN_data = execute_origen(xs_tape9, time, nuclide, phi,
             origen, decay_tape9)
+        ORIGEN_res_weighted = origen_data_to_array_weighted(ORIGEN_data, nucs, n_fission_fragments=n_fission_fragments)
+        ORIGEN_res_materials = origen_data_to_array_materials(ORIGEN_data, nucs)
         test_origen_data_sanity(ORIGEN_data)
         save_file_origen(hdf5_file,
             ORIGEN_data=ORIGEN_data,
@@ -403,6 +402,7 @@ def execute(xs_tape9, time, phi, nuclide, hdf5_file='data/results.hdf5',
             time=time,
             phi=phi,
             ORIGEN_time=ORIGEN_time,
+            n_fission_fragments=n_fission_fragments,
         )
 
     if run_cram_lambdify:
@@ -454,7 +454,7 @@ def execute(xs_tape9, time, phi, nuclide, hdf5_file='data/results.hdf5',
         )
 
     if run_origen and run_cram_lambdify and run_cram_py_solve:
-        compute_mismatch(ORIGEN_data, CRAM_lambdify_umfpack_res, CRAM_lambdify_superlu_res, CRAM_py_solve_res, nucs)
+        compute_mismatch(ORIGEN_res_weighted, ORIGEN_res_materials, CRAM_lambdify_umfpack_res, CRAM_lambdify_superlu_res, CRAM_py_solve_res, nucs)
 
 def main():
     p = make_parser()
