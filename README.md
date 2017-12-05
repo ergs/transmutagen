@@ -107,7 +107,7 @@ See `--help` and the `transmutagen.tape9utils` docs for more details.
 
 ## Running tests against ORIGEN
 
-Put `ORIGEN.zip` in the `docker/` directory. Then run
+Put `ORIGEN.zip` in the `docker/origen_all` directory. Then run
 
     ./docker/origen_all/build_and_run.sh
 
