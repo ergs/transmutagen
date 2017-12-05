@@ -248,12 +248,25 @@ def plot_matrix_sum_histogram(m, *, title='', axis=0, file=None):
     plt.close()
 
 
+def decay_matrix():
+    from .gensolve import pyne_decay_matrix, make_ijk
+    json_data = json.load(os.path.join(os.path.dirname(__file__), 'data', 'gensolve.json'))
+    fromto = json_data['fromto']
+    nucs = json_data['nucs']
+
+    N = len(nucs)
+    ijkeys = [(nucs.index(j), nucs.index(i)) for i, j in json_data['fromto']]
+    ij = {k: l for l, k in enumerate(sorted(ijkeys))}
+    ijk = make_ijk(ij, N)
+    ijnucs = {(nucs[i], nucs[j]): k for (i, j), k in ijk.items()}
+    return pyne_decay_matrix(fromto, ijnucs)
+
 def analyze_eigenvals(*, pwru50_data=None, file=None, title=True):
     if not pwru50_data:
         pwru50_data = os.path.join(os.path.dirname(__file__), 'tests', 'data', 'pwru50_400000000000000.0.npz')
-    from py_solve.py_solve import DECAY_MATRIX, csr_from_flat
+
     nucs, matpwru50 = load_sparse_csr(pwru50_data)
-    matdecay = csr_from_flat(DECAY_MATRIX)
+    matdecay = decay_matrix()
     for desc, mat in {'pwru50': matpwru50, 'decay': matdecay}.items():
         plt.clf()
         print("analyzing eigenvalues of", desc)
