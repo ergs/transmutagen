@@ -530,7 +530,7 @@ def write_if_diff(filename, contents, verbose=True):
 
 
 def generate_python_solver(json_file=os.path.join(os.path.dirname(__file__),
-    'data/gensolve.json'), json_data=None, degree=14):
+    'data', 'gensolve.json'), json_data=None, degree=14):
     if not json_data:
         with open(json_file) as f:
             json_data = json.load(f)
