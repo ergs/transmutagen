@@ -259,7 +259,8 @@ def decay_matrix():
     ij = {k: l for l, k in enumerate(sorted(ijkeys))}
     ijk = make_ijk(ij, N)
     ijnucs = {(nucs[i], nucs[j]): k for (i, j), k in ijk.items()}
-    return pyne_decay_matrix(fromto, ijnucs)
+    return scipy.sparse.csr_matrix((pyne_decay_matrix(fromto, ijnucs),
+        ([i for i, j in sorted(ij)], [j for i, j in sorted(ij)])))
 
 def analyze_eigenvals(*, pwru50_data=None, file=None, title=True):
     if not pwru50_data:
