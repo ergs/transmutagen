@@ -250,7 +250,7 @@ def plot_matrix_sum_histogram(m, *, title='', axis=0, file=None):
 
 def decay_matrix():
     from .gensolve import pyne_decay_matrix, make_ijk
-    json_data = json.load(os.path.join(os.path.dirname(__file__), 'data', 'gensolve.json'))
+    json_data = json.load(open(os.path.join(os.path.dirname(__file__), 'data', 'gensolve.json')))
     fromto = json_data['fromto']
     nucs = json_data['nucs']
 
