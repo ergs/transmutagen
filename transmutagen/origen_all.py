@@ -112,7 +112,9 @@ def main():
     p.add_argument('--hdf5-file', default='data/results.hdf5', help="""hdf5 file
     to write results to""")
     p.add_argument('--alpha-as-He4', action='store_true',
-        default=False, help="""Alpha reactions create He4 (only affects CRAM)""")
+        default=True, help="""Alpha reactions create He4 (only affects CRAM)""")
+    p.add_argument('--no-alpha-as-He4', action='store_false', dest='alpha_as_He4',
+        default=True, help="""Alpha reactions don't create He4 (only affects CRAM)""")
 
     args = p.parse_args()
 
