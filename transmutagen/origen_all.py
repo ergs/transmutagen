@@ -134,7 +134,8 @@ def main():
             base = os.path.basename(xs_tape9)
             base, _ = os.path.splitext(base)
             os.makedirs('data', exist_ok=True)
-            npzfilename = os.path.join('data', base + '_' + str(PHI) + '.npz')
+            alpha_part = '' if not args.alpha_as_He4 else '_alpha_as_He4'
+            npzfilename = os.path.join('data', base + '_' + str(PHI) + alpha_part + '.npz')
             npzfilenames.append(npzfilename)
 
         if args.recompute_matrices or not any(os.path.exists(npzfilename) for
