@@ -141,7 +141,7 @@ def main():
             npzfilename in npzfilenames):
             logger.info("Saving matrices")
             save_sparse(args.libs_dir, phi=PHI, output_dir='data',
-                decaylib=args.decay_tape9)
+                decaylib=args.decay_tape9, alpha_as_He4=args.alpha_as_He4)
 
         for tape9, npzfilename in zip(ALL_LIBS, npzfilenames):
             logger.info("Computing library %s", tape9)
