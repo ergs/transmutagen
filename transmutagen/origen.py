@@ -339,23 +339,38 @@ def compute_mismatch(ORIGEN_res_weighted, ORIGEN_res_materials, CRAM_lambdify_um
             ['CRAM py_solve', 'ORIGEN'],
         ):
             a, b = d[a_desc], d[b_desc]
-            try:
-                np.testing.assert_allclose(a, b, rtol=rtol, atol=atol)
-            except AssertionError as e:
-                logger.info("%s and %s mismatch: %s", a_desc, b_desc, e)
+            mismatching_indices = array_mismatch(a, b, rtol=rtol, atol=atol)
+            if mismatching_indices:
+                logger.info("%s and %s mismatch: Not equal to tolerance rtol=%s, atol=%s", a_desc, b_desc, rtol, atol)
                 logger.info("Mismatching elements sorted by error (%s, %s, symmetric relative error):", a_desc, b_desc)
-                D = np.isclose(a, b, rtol=rtol, atol=atol)
                 rel_error = abs(a - b)/(a + b)
-                for i, in np.argsort(rel_error, axis=0)[::-1]:
-                    if D[i]:
-                        continue
+                for i in mismatching_indices:
                     logger.info("%s %s %s %s", nucs[i], a[i], b[i], rel_error[i])
             else:
                 logger.info("%s and %s arrays match with rtol=%s atol=%s", a_desc, b_desc, rtol, atol)
 
         logger.info('')
-
     # TODO: return some information here
+
+def array_mismatch(a, b, rtol=1e-3, atol=1e-5):
+    """
+    Test if arrays a and b mismatch with rtol and atol
+
+    If they do, return a list of mismatching indices. Otherwise, return False.
+    """
+    mismatching_indices = []
+    try:
+        np.testing.assert_allclose(a, b, rtol=rtol, atol=atol)
+    except AssertionError as e:
+        D = np.isclose(a, b, rtol=rtol, atol=atol)
+        rel_error = abs(a - b)/(a + b)
+        for i, in np.argsort(rel_error, axis=0)[::-1]:
+            if D[i]:
+                continue
+            mismatching_indices.append(i)
+    else:
+        return False
+
 def make_parser():
     p = argparse.ArgumentParser('origen', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     p.add_argument('xs_tape9', metavar='xs-tape9', help="""path to the cross section TAPE9 file. If
