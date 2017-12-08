@@ -16,7 +16,7 @@ import scipy.sparse
 from sympy import re, im, Float, exp, diff
 
 from .tests.test_transmute import run_transmute_test
-from .origen_all import TIME_STEPS
+from .origen_all import TIME_STEPS, DAY, MONTH
 from .origen import array_mismatch
 from .util import (plt_show_in_terminal, load_sparse_csr, diff_strs,)
 from .cram import get_CRAM_from_cache, CRAM_coeffs, nsolve_intervals
@@ -154,6 +154,56 @@ several starting libraries, nuclides, and timesteps.""")
 
         if not mismatching:
             print("No mismatching values found!")
+
+        for time in [i for i in sorted(TIME_STEPS) if i < 100*DAY]:
+            time_step = TIME_STEPS[time]
+            print()
+            print("Checking mismatching ORIGEN values for time", time_step)
+            mismatching = False
+            for lib in h5file.root:
+                nucs = h5file.get_node(lib, 'nucs')
+                runs = len(h5file.get_node(lib, 'origen'))
+                for i in range(runs):
+                    row_time = h5file.get_node(lib,
+                        'cram-lambdify-umfpack')[i]['time']
+                    if row_time != time:
+                        # TODO: Do this more efficiently
+                        continue
+
+                    CRAM_py_solve_res = h5file.get_node(lib, 'cram-py_solve')[i]['CRAM py_solve atom fraction']
+                    CRAM_py_solve_res_normalized = CRAM_py_solve_res/np.sum(CRAM_py_solve_res)
+                    ORIGEN_res_weighted = h5file.get_node(lib, 'origen')[i]['ORIGEN atom fraction']
+                    ORIGEN_res_materials = h5file.get_node(lib, 'origen')[i]['ORIGEN mass fraction']
+
+                    initial_nuc = nucs[np.where(h5file.get_node(lib,
+                        'cram-lambdify-umfpack')[i]['initial vector'])[0]][0].decode()
+
+                    d = {
+                        'ORIGEN atom fractions': ORIGEN_res_weighted,
+                        'ORIGEN mass fractions': ORIGEN_res_materials,
+                        'CRAM py_solve': CRAM_py_solve_res,
+                        'CRAM py_solve normalized': CRAM_py_solve_res_normalized,
+                    }
+
+                    for a_desc, b_desc in (
+                        ['CRAM py_solve', 'ORIGEN atom fractions'],
+                        ['CRAM py_solve normalized', 'ORIGEN mass fractions'],
+                        ):
+                        a, b = d[a_desc], d[b_desc]
+                        mismatching_indices = array_mismatch(a, b)
+                        if mismatching_indices:
+                            mismatching = True
+                            print()
+                            print("%s and %s mismatch with library %s at time %s with starting nuclide %s"
+                                % (a_desc, b_desc, lib._v_name, time_step, initial_nuc))
+                            print("Mismatching elements sorted by error (%s, %s, symmetric relative error, absolute error):" % (a_desc, b_desc))
+                            rel_error = abs(a - b)/(a + b)
+                            abs_error = abs(a - b)
+                            for i in mismatching_indices:
+                                print("%s %s %s %s %s" % (nucs[i].decode(), a[i], b[i],
+                                    rel_error[i], abs_error[i]))
+            if not mismatching:
+                print("No mismatching values found!")
 
 def analyze_nofission(*, run_all=False, file=None, title=True, thetas=None,
     alphas=None, alpha0=None, nofission_data=os.path.join(os.path.dirname(__file__), 'tests',
