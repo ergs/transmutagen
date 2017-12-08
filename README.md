@@ -4,6 +4,8 @@ Transmutation generates CRAM approximations for solving transmutation problems
 
 [![Build Status](https://travis-ci.org/ergs/transmutagen.svg?branch=master)](https://travis-ci.org/ergs/transmutagen)
 
+![logo](logo.png)
+
 # Usage
 
 First, get the git master version of SymPy and set `PYTHONPATH` to point to
