@@ -17,6 +17,7 @@ from sympy import re, im, Float, exp, diff
 
 from .tests.test_transmute import run_transmute_test
 from .origen_all import TIME_STEPS
+from .origen import array_mismatch
 from .util import (plt_show_in_terminal, load_sparse_csr, diff_strs,)
 from .cram import get_CRAM_from_cache, CRAM_coeffs, nsolve_intervals
 from .partialfrac import (thetas_alphas, thetas_alphas_to_expr_complex,
@@ -60,6 +61,7 @@ def analyze_origen(origen_results, *, file=None, title=True):
         'CRAM lambdify SuperLU': 0.25,
         'CRAM py_solve': 0,
     }
+
     with tables.open_file(origen_results, mode='r') as h5file:
         for run in 'ORIGEN', 'CRAM lambdify UMFPACK', 'CRAM lambdify SuperLU', 'CRAM py_solve':
             for lib in h5file.root:
@@ -101,6 +103,45 @@ several starting libraries, nuclides, and timesteps.""")
         plt.savefig(file)
 
     plt_show_in_terminal()
+
+
+    with tables.open_file(origen_results, mode='r') as h5file:
+        # First, check if any of the CRAM methods disagree
+        print("Checking for mismatching CRAM values")
+        mismatching = False
+        for lib in h5file.root:
+            runs = len(h5file.get_node(lib, 'origen'))
+            for i in range(runs):
+                CRAM_lambdify_umfpack_res = h5file.get_node(lib, 'cram-lambdify-umfpack')[i]['CRAM lambdify atom fraction']
+                CRAM_lambdify_superlu_res = h5file.get_node(lib, 'cram-lambdify-superlu')[i]['CRAM lambdify atom fraction']
+                CRAM_py_solve_res = h5file.get_node(lib, 'cram-py_solve')[i]['CRAM py_solve atom fraction']
+
+                d = {
+                    'CRAM lambdify UMFPACK': CRAM_lambdify_umfpack_res,
+                    'CRAM lambdify SuperLU': CRAM_lambdify_superlu_res,
+                    'CRAM py_solve': CRAM_py_solve_res,
+                }
+
+                for a_desc, b_desc in (
+                    ['CRAM lambdify UMFPACK', 'CRAM lambdify SuperLU'],
+                    ['CRAM lambdify UMFPACK', 'CRAM py_solve'],
+                    ['CRAM lambdify SuperLU', 'CRAM py_solve'],
+                    ):
+                    a, b = d[a_desc], d[b_desc]
+                    mismatching_indices = array_mismatch(a, b)
+                    if mismatching_indices:
+                        mismatching = True
+                        nucs = h5file.get_node(lib, 'cram-lambdify-umfpack')[i]['nucs']
+                        time_step = h5file.get_node(lib, 'cram-lambdify-umfpack')[i]['time']
+                        print("%s and %s mismatch with library %s at time %s"
+                            % (a_desc, b_desc, lib, time_step))
+                        print("Mismatching elements sorted by error (%s, %s, symmetric relative error):" * (a_desc, b_desc))
+                        rel_error = abs(a - b)/(a + b)
+                        for i in mismatching_indices:
+                            print("%s %s %s %s", nucs[i], a[i], b[i], rel_error[i])
+
+        if not mismatching:
+            print("No mismatching values found!")
 
 def analyze_nofission(*, run_all=False, file=None, title=True, thetas=None,
     alphas=None, alpha0=None, nofission_data=os.path.join(os.path.dirname(__file__), 'tests',
