@@ -159,6 +159,8 @@ several starting libraries, nuclides, and timesteps.""")
             time_step = TIME_STEPS[time]
             print()
             print("Checking mismatching ORIGEN values for time", time_step)
+            origen_val_missing = []
+            He4_atom_fraction = []
             mismatching = False
             for lib in h5file.root:
                 nucs = h5file.get_node(lib, 'nucs')
@@ -200,8 +202,25 @@ several starting libraries, nuclides, and timesteps.""")
                             rel_error = abs(a - b)/(a + b)
                             abs_error = abs(a - b)
                             for i in mismatching_indices:
+                                if b[i] == 0:
+                                    origen_val_missing.append((lib._v_name,
+                                        time_step, initial_nuc, b_desc))
+                                if nucs[i].decode() == 'He4' and 'atom' in b_desc:
+                                    He4_atom_fraction.append((lib._v_name,
+                                        time_step, initial_nuc))
                                 print("%s %s %s %s %s" % (nucs[i].decode(), a[i], b[i],
                                     rel_error[i], abs_error[i]))
+
+            print("Combinations where ORIGEN has a 0 value and CRAM does not:")
+            for vals in origen_val_missing:
+                print(', '.join(vals))
+            if not origen_val_missing:
+                print("None!")
+            print("Combinations where He4 mismatches in atom fraction:")
+            for vals in He4_atom_fraction:
+                print(", ".join(vals))
+            if not He4_atom_fraction:
+                print("None!")
             if not mismatching:
                 print("No mismatching values found!")
 
