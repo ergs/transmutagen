@@ -106,15 +106,25 @@ several starting libraries, nuclides, and timesteps.""")
 
 
     with tables.open_file(origen_results, mode='r') as h5file:
-        # First, check if any of the CRAM methods disagree
+# First, check if any of the CRAM methods disagree
+        rtol = 0
+        umfpack_pysolve_atol = 1e-13
+        superlu_pysolve_atol = umfpack_superlu_atol = 1e-9
         print("Checking for mismatching CRAM values")
+        print("Using atol=%s for UMFPACK vs. py_solve" % umfpack_pysolve_atol)
+        print("Using atol=%s for SuperLU vs. py_solve" % superlu_pysolve_atol)
+        print("Using atol=%s for UMFPACK vs. SuperLU" % umfpack_superlu_atol)
         mismatching = False
         for lib in h5file.root:
+            nucs = h5file.get_node(lib, 'nucs')
             runs = len(h5file.get_node(lib, 'origen'))
             for i in range(runs):
                 CRAM_lambdify_umfpack_res = h5file.get_node(lib, 'cram-lambdify-umfpack')[i]['CRAM lambdify atom fraction']
                 CRAM_lambdify_superlu_res = h5file.get_node(lib, 'cram-lambdify-superlu')[i]['CRAM lambdify atom fraction']
                 CRAM_py_solve_res = h5file.get_node(lib, 'cram-py_solve')[i]['CRAM py_solve atom fraction']
+                time_step = TIME_STEPS[h5file.get_node(lib, 'cram-lambdify-umfpack')[i]['time']]
+                initial_nuc = nucs[np.where(h5file.get_node(lib,
+                    'cram-lambdify-umfpack')[i]['initial vector'])[0]][0].decode()
 
                 d = {
                     'CRAM lambdify UMFPACK': CRAM_lambdify_umfpack_res,
@@ -122,23 +132,24 @@ several starting libraries, nuclides, and timesteps.""")
                     'CRAM py_solve': CRAM_py_solve_res,
                 }
 
-                for a_desc, b_desc in (
-                    ['CRAM lambdify UMFPACK', 'CRAM lambdify SuperLU'],
-                    ['CRAM lambdify UMFPACK', 'CRAM py_solve'],
-                    ['CRAM lambdify SuperLU', 'CRAM py_solve'],
+                for a_desc, b_desc, atol in (
+                    ['CRAM lambdify UMFPACK', 'CRAM lambdify SuperLU', umfpack_superlu_atol],
+                    ['CRAM lambdify UMFPACK', 'CRAM py_solve', umfpack_pysolve_atol],
+                    ['CRAM lambdify SuperLU', 'CRAM py_solve', superlu_pysolve_atol],
                     ):
                     a, b = d[a_desc], d[b_desc]
-                    mismatching_indices = array_mismatch(a, b)
+                    mismatching_indices = array_mismatch(a, b, rtol=rtol, atol=atol)
                     if mismatching_indices:
                         mismatching = True
-                        nucs = h5file.get_node(lib, 'cram-lambdify-umfpack')[i]['nucs']
-                        time_step = h5file.get_node(lib, 'cram-lambdify-umfpack')[i]['time']
-                        print("%s and %s mismatch with library %s at time %s"
-                            % (a_desc, b_desc, lib, time_step))
-                        print("Mismatching elements sorted by error (%s, %s, symmetric relative error):" * (a_desc, b_desc))
+                        print()
+                        print("%s and %s mismatch with library %s at time %s with starting nuclide %s"
+                            % (a_desc, b_desc, lib._v_name, time_step, initial_nuc))
+                        print("Mismatching elements sorted by error (%s, %s, symmetric relative error, absolute error):" % (a_desc, b_desc))
                         rel_error = abs(a - b)/(a + b)
+                        abs_error = abs(a - b)
                         for i in mismatching_indices:
-                            print("%s %s %s %s", nucs[i], a[i], b[i], rel_error[i])
+                            print("%s %s %s %s %s" % (nucs[i].decode(), a[i], b[i],
+                                rel_error[i], abs_error[i]))
 
         if not mismatching:
             print("No mismatching values found!")
