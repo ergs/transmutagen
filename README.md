@@ -1,6 +1,6 @@
 # Transmutagen
 
-Transmutation SymPy Code Generator
+Transmutation generates CRAM approximations for solving transmutation problems
 
 [![Build Status](https://travis-ci.org/ergs/transmutagen.svg?branch=master)](https://travis-ci.org/ergs/transmutagen)
 
