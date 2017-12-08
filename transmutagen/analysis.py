@@ -107,10 +107,11 @@ several starting libraries, nuclides, and timesteps.""")
 
     with tables.open_file(origen_results, mode='r') as h5file:
 # First, check if any of the CRAM methods disagree
-        rtol = 0
+        cram_rtol = 0
         umfpack_pysolve_atol = 1e-13
         superlu_pysolve_atol = umfpack_superlu_atol = 1e-9
         print("Checking for mismatching CRAM values")
+        print("Using rtol=%s" % cram_rtol)
         print("Using atol=%s for UMFPACK vs. py_solve" % umfpack_pysolve_atol)
         print("Using atol=%s for SuperLU vs. py_solve" % superlu_pysolve_atol)
         print("Using atol=%s for UMFPACK vs. SuperLU" % umfpack_superlu_atol)
@@ -138,7 +139,7 @@ several starting libraries, nuclides, and timesteps.""")
                     ['CRAM lambdify SuperLU', 'CRAM py_solve', superlu_pysolve_atol],
                     ):
                     a, b = d[a_desc], d[b_desc]
-                    mismatching_indices = array_mismatch(a, b, rtol=rtol, atol=atol)
+                    mismatching_indices = array_mismatch(a, b, rtol=cram_rtol, atol=atol)
                     if mismatching_indices:
                         mismatching = True
                         print()
