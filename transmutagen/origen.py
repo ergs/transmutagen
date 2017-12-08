@@ -368,6 +368,7 @@ def array_mismatch(a, b, rtol=1e-3, atol=1e-5):
             if D[i]:
                 continue
             mismatching_indices.append(i)
+        return mismatching_indices
     else:
         return False
 
