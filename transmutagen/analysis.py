@@ -16,7 +16,7 @@ import scipy.sparse
 from sympy import re, im, Float, exp, diff
 
 from .tests.test_transmute import run_transmute_test
-from .origen_all import TIME_STEPS, DAY, MONTH
+from .origen_all import TIME_STEPS, DAY
 from .origen import array_mismatch
 from .util import (plt_show_in_terminal, load_sparse_csr, diff_strs,)
 from .cram import get_CRAM_from_cache, CRAM_coeffs, nsolve_intervals
