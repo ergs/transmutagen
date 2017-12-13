@@ -65,7 +65,8 @@ def run_transmute_test(data, degree, prec, time, *, expr=None, plot=True,
     except ImportError:
         pass
     else:
-        e['transmutagen generated C solver'] = lambda m: py_solve.expmI14(m).T
+        py_solve_expm = getattr(py_solve, 'expmI%d' % degree)
+        e['transmutagen generated C solver'] = lambda m: py_solve_expm(m).T
 
     e['part_frac_complex UMFPACK'] = lambda m: (use_solver(useUmfpack=True) or lambdify_expr(part_frac_complex)(m))
     e['part_frac_complex SuperLU'] = lambda m: (use_solver(useUmfpack=False) or lambdify_expr(part_frac_complex)(m))

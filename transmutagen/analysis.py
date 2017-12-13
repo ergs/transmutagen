@@ -229,7 +229,7 @@ several starting libraries, nuclides, and timesteps.""")
 
 def analyze_nofission(*, run_all=False, file=None, title=True, thetas=None,
     alphas=None, alpha0=None, nofission_data=os.path.join(os.path.dirname(__file__), 'tests',
-        'data', 'pwru50_400000000000000.0_nofission.npz')):
+        'data', 'pwru50_400000000000000.0_nofission.npz'), degree=14):
     try:
         import scikits.umfpack
         del scikits
@@ -251,12 +251,12 @@ def analyze_nofission(*, run_all=False, file=None, title=True, thetas=None,
                     data = os.path.join('data', f)
                     print("analyzing", data, 'on', time_name)
                     nofission_transmutes[time_name][lib] = run_transmute_test(data,
-                        14, 200, time, run_all=False, _print=True,
+                        degree, 200, time, run_all=False, _print=True,
                         thetas=thetas, alphas=alphas, alpha0=alpha0)
         else:
             print("analyzing", nofission_data, 'on', time_name)
             nofission_transmutes[time_name]['pwru50'] = run_transmute_test(nofission_data,
-                14, 200, time, run_all=run_all, _print=True, thetas=thetas,
+                degree, 200, time, run_all=run_all, _print=True, thetas=thetas,
                 alphas=alphas, alpha0=alpha0)
 
     plot_nofission_transmutes(nofission_transmutes, run_all=run_all,
@@ -919,6 +919,8 @@ def analyze():
             'data', 'pwru50_400000000000000.0_nofission.npz'), help="""Data file to use
         for nofission analysis (ignored when --run-all is passed). The default
         is %(default)s.""")
+    nofission.add_argument('--degree', default=14, type=int, help="""CRAM
+        degree to do the nofission analysis with.""")
 
     eigenvals = parser.add_argument_group('eigenvals')
     eigenvals.add_argument('--eigenvals', action='store_true',
@@ -974,7 +976,8 @@ def analyze():
             title=args.title)
     if args.nofission:
         analyze_nofission(run_all=args.run_all, file=args.file,
-            title=args.title, nofission_data=args.nofission_data)
+            title=args.title, nofission_data=args.nofission_data,
+            degree=args.degree)
     if args.eigenvals:
         analyze_eigenvals(pwru50_data=args.pwru50_data,
             file=args.file, title=args.title)
