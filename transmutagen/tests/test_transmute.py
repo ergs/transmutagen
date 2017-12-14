@@ -89,7 +89,7 @@ def run_transmute_test(data, degree, prec, time, *, expr=None, plot=True,
 def test_transmute():
     data = os.path.join(os.path.dirname(__file__), 'data', 'transmute.npz')
     month = 2.6e6
-    run_transmute_test(data, 6, 30, month, plot=False, use_cache=False)
+    run_transmute_test(data, 8, 30, month, plot=False, use_cache=False)
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
