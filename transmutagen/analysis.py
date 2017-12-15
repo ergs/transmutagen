@@ -16,13 +16,14 @@ import scipy.sparse
 from sympy import re, im, Float, exp, diff
 
 from .tests.test_transmute import run_transmute_test
-from .origen_all import TIME_STEPS, DAY
-from .origen import array_mismatch
+from .origen_all import TIME_STEPS, DAY, MILLION_YEARS
+from .origen import array_mismatch, initial_vector
 from .util import (plt_show_in_terminal, load_sparse_csr, diff_strs,)
 from .cram import get_CRAM_from_cache, CRAM_coeffs, nsolve_intervals
 from .partialfrac import (thetas_alphas, thetas_alphas_to_expr_complex,
     customre)
 from .gensolve import make_ijk
+from .codegen import CRAM_matrix_exp_lambdify
 
 def setup_matplotlib_rc():
     from matplotlib import rcParams
@@ -882,6 +883,40 @@ def analyze_lusolve(N):
     plt.show(block=True)
     I.disconnect()
 
+def analyze_degrees(*, pwru50_data=None, file=None):
+    if not pwru50_data:
+        pwru50_data = os.path.join(os.path.dirname(__file__), 'tests', 'data', 'pwru50_400000000000000.0.npz')
+
+    nucs, data = load_sparse_csr(pwru50_data)
+
+    ns = list(range(30, 2, -2)) # [30, 28, ..., 4]
+    print("Computing CRAM functions")
+    fs = []
+    for n in ns + [ns[-1] - 2]:
+        print(n)
+        fs.append(CRAM_matrix_exp_lambdify(n, 200))
+    b = initial_vector("U235", nucs)
+
+    print("Computing the exponential of the matrices")
+    xs = {}
+    diffs = {}
+    for t in TIME_STEPS:
+        xs[t] = [f(-data*t, b) for f in fs]
+        diffs[t] = list(zip(xs[t][:-1], xs[t][1:]))
+
+    plt.clf()
+    for t in sorted(TIME_STEPS):
+        plt.plot(ns, [np.mean(np.abs(a - b)) for a, b in diffs[t]],
+            label=TIME_STEPS[t])
+    plt.legend()
+    plt.xticks(ns)
+    plt.yscale('log')
+    plt.ylabel(r"$\mathrm{mean}(|\hat{r}_{n,n}(-At)b - \hat{r}_{n-2,n-2}(-At)b|)$")
+    plt.xlabel(r"$n$")
+    if file:
+        plt.savefig(file)
+    plt_show_in_terminal()
+
 def analyze():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--file', help="""File name to save the plot(s) to.
@@ -897,6 +932,10 @@ def analyze():
         If not provided the plot is not saved.""")
     parser.add_argument('--no-title', action='store_false', dest='title',
         help="""Don't add a title to plots""")
+    parser.add_argument('--pwru50-data', help="""Path to pwru50 data file to
+        analyze. The default is the data that is in the
+        transmutagen/tests/data directory. Used for the --eigenvals and
+        --degrees analyses.""", default=None)
 
     origen = parser.add_argument_group('origen')
     origen.add_argument('--origen', action='store_true', dest='origen',
@@ -925,9 +964,6 @@ def analyze():
     eigenvals = parser.add_argument_group('eigenvals')
     eigenvals.add_argument('--eigenvals', action='store_true',
         dest='eigenvals', help="""Run the eigenvalue analysis.""")
-    eigenvals.add_argument('--pwru50-data', help="""Path to pwru50 data file
-        to analyze. The default is the data that is in the
-    transmutagen/tests/data directory.""", default=None)
 
     cram_digits = parser.add_argument_group('cram-digits')
     cram_digits.add_argument('--cram-digits', action='store_true', help="""Analyze
@@ -962,6 +998,9 @@ def analyze():
     lusolve.add_argument('--N', help="""Size of the matrix. The default is
         %(default)s""", default=100, type=int)
 
+    degrees = parser.add_argument_group("Degrees")
+    degrees.add_argument('--degrees', action='store_true', help="""Run degrees analysis.""")
+
     try:
         import argcomplete
         argcomplete.autocomplete(parser)
@@ -990,6 +1029,8 @@ def analyze():
             warm_up_runs=args.warm_up_runs)
     if args.lusolve:
         analyze_lusolve(args.N)
+    if args.degrees:
+        analyze_degrees(pwru50_data=args.pwru50_data, file=args.file)
 
 if __name__ == '__main__':
     analyze()
