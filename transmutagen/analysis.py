@@ -906,12 +906,12 @@ def analyze_degrees(*, pwru50_data=None, file=None):
 
     plt.clf()
     for t in sorted(TIME_STEPS):
-        plt.plot(ns, [np.mean(np.abs(a - b)) for a, b in diffs[t]],
+        plt.plot(ns, [np.max(np.abs(a - b)) for a, b in diffs[t]],
             label=TIME_STEPS[t])
     plt.legend()
     plt.xticks(ns)
     plt.yscale('log')
-    plt.ylabel(r"$\mathrm{mean}(|\hat{r}_{n,n}(-At)b - \hat{r}_{n-2,n-2}(-At)b|)$")
+    plt.ylabel(r"$\mathrm{max}(|\hat{r}_{n,n}(-At)b - \hat{r}_{n-2,n-2}(-At)b|)$")
     plt.xlabel(r"$n$")
     if file:
         plt.savefig(file)
