@@ -230,7 +230,7 @@ several starting libraries, nuclides, and timesteps.""")
 
 def analyze_nofission(*, run_all=False, file=None, title=True, thetas=None,
     alphas=None, alpha0=None, nofission_data=os.path.join(os.path.dirname(__file__), 'tests',
-        'data', 'pwru50_400000000000000.0_nofission.npz'), degree=14):
+        'data', 'pwru50_400000000000000.0_nofission.npz'), degree=16):
     try:
         import scikits.umfpack
         del scikits
@@ -958,7 +958,7 @@ def analyze():
             'data', 'pwru50_400000000000000.0_nofission.npz'), help="""Data file to use
         for nofission analysis (ignored when --run-all is passed). The default
         is %(default)s.""")
-    nofission.add_argument('--degree', default=14, type=int, help="""CRAM
+    nofission.add_argument('--degree', default=16, type=int, help="""CRAM
         degree to do the nofission analysis with.""")
 
     eigenvals = parser.add_argument_group('eigenvals')
