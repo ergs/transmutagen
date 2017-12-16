@@ -690,7 +690,7 @@ def analyze_pusa_coeffs(*, file=None, title=True, latex=False):
     #     alpha0=paper_alpha0, file='test.pdf')
 
 def analyze_gensolve(*, origen_json_file=None, json_file=None,
-    pairs_per_pass=1, runs=100, warm_up_runs=5):
+    pairs_per_pass=1, runs=100, warm_up_runs=5, optimize=True):
 
     from pyne import nucname
 
@@ -714,7 +714,7 @@ def analyze_gensolve(*, origen_json_file=None, json_file=None,
     added = [0]
 
     print("Compiling 0/%d" % len(new_fromtos))
-    outfile = generate_gensolve_test(new_json, 0)
+    outfile = generate_gensolve_test(new_json, '0', flags=optimize)
     print("Running 0/%d" % len(new_fromtos))
     runtimes = run_gensolve_test(outfile)
     print("Run", 0, "took", np.mean(runtimes), "seconds on average")
@@ -728,7 +728,7 @@ def analyze_gensolve(*, origen_json_file=None, json_file=None,
 
         added.append(i)
         print("Compiling %d/%d" % (i, len(new_fromtos)))
-        outfile = generate_gensolve_test(new_json, i)
+        outfile = generate_gensolve_test(new_json, str(i), flags=optimize)
         print("Running %d/%d" % (i, len(new_fromtos)))
         runtimes = run_gensolve_test(outfile, warm_up_runs=warm_up_runs, runs=runs)
         print("Run", i, "took", np.mean(runtimes), "seconds on average")
@@ -740,9 +740,11 @@ def analyze_gensolve(*, origen_json_file=None, json_file=None,
         all_runtimes)), alpha=0.5)
     plt_show_in_terminal()
 
-def generate_gensolve_test(json_data, tag, directory='gensolve-tests', recompile=False):
+def generate_gensolve_test(json_data, tag, directory='gensolve-tests',
+    recompile=False, flags=True):
     from transmutagen.gensolve import generate, GCC_COMPILER_FLAGS
 
+    tag += '_O0' if not flags else ''
     outscript = os.path.join(directory, 'test_%s.o' % tag)
 
     if not recompile and os.path.exists(outscript):
@@ -753,10 +755,12 @@ def generate_gensolve_test(json_data, tag, directory='gensolve-tests', recompile
 
     sourcefile = os.path.join(directory, 'test_%s.c' % tag)
     generate(json_data=json_data, py_solve=False, degrees=[14],
-    outfile=sourcefile, timing_test=True)
+        outfile=sourcefile, timing_test=True)
 
-    subprocess.run(['gcc'] + GCC_COMPILER_FLAGS + ['-o', outscript] +
-        [sourcefile], check=True)
+    compiler_flags = GCC_COMPILER_FLAGS if flags else ['-O0']
+    args = ['gcc'] + compiler_flags + ['-o', outscript] + [sourcefile]
+    print(' '.join(args))
+    subprocess.run(args, check=True)
 
     return outscript
 
@@ -991,6 +995,9 @@ def analyze():
         %(default)s.""", default=5, type=int)
     gensolve.add_argument('--runs', help="""Number of times to run the
         command. The default is %(default)s.""", default=100, type=int)
+    gensolve.add_argument('--no-optimize', help="""Don't add optimizing
+        compiler flags. The default is to add them.""", action='store_false',
+        dest='optimize', default=True)
 
     lusolve = parser.add_argument_group("LUSolve")
     lusolve.add_argument('--lusolve', action='store_true', help="""Run
@@ -1026,7 +1033,7 @@ def analyze():
         analyze_pusa_coeffs(file=args.file, title=args.title, latex=args.latex)
     if args.gensolve:
         analyze_gensolve(pairs_per_pass=args.pairs_per_pass, runs=args.runs,
-            warm_up_runs=args.warm_up_runs)
+            warm_up_runs=args.warm_up_runs, optimize=args.optimize)
     if args.lusolve:
         analyze_lusolve(args.N)
     if args.degrees:
