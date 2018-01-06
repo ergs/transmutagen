@@ -800,7 +800,7 @@ class PlotLUMatrix:
         self.adding = None
         self._make_matrix_data()
 
-        self.image = self.make_image()
+        self.make_image()
 
     def _make_matrix_data(self):
         extra = self.extra
@@ -829,7 +829,7 @@ class PlotLUMatrix:
                 label="nonzero value"),
             ]
             plt.legend(handles=patches, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0. )
-            return img
+            self.image = img
         elif self.img_type == 'scatter':
             s = plt.scatter(scipy.sparse.coo_matrix(self.data == 1).col,
                 self.N - scipy.sparse.coo_matrix(self.data == 1).row,
@@ -839,7 +839,7 @@ class PlotLUMatrix:
                 self.N - scipy.sparse.coo_matrix(self.data == 2).row,
                 label='nonzero value', **self.scatter_settings)
             plt.legend()
-            return s
+            self.image = s
 
 
 class InteractiveLUMatrix(PlotLUMatrix):
