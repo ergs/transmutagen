@@ -821,11 +821,11 @@ class PlotLUMatrix:
         if self.img_type == 'imshow':
             img = plt.imshow(self.data)
             patches = [
-            Patch(color=self.image.cmap(self.image.norm(0)),
+            Patch(color=img.cmap(img.norm(0)),
                 label="zero value"),
-            Patch(color=self.image.cmap(self.image.norm(1)),
+            Patch(color=img.cmap(img.norm(1)),
                 label="zero value that must be included for LU"),
-            Patch(color=self.image.cmap(self.image.norm(2)),
+            Patch(color=img.cmap(img.norm(2)),
                 label="nonzero value"),
             ]
             plt.legend(handles=patches, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0. )
