@@ -786,13 +786,12 @@ def run_gensolve_test(outscript, warm_up_runs=5, runs=100):
 
 # Based on https://matplotlib.org/users/event_handling.html
 class PlotLUMatrix:
-    def __init__(self, N, extra=(), *, img_type='imshow'):
-        from matplotlib.patches import Patch
-
+    def __init__(self, N, extra=(), *, img_type='imshow', scatter_settings=None):
         if img_type not in ['imshow', 'scatter']:
             raise ValueError("img_type should be 'imshow' or 'scatter'")
 
         self.img_type = img_type
+        self.scatter_settings = scatter_settings or {}
         self.extra = list(extra)
         self.N = N
         self._make_matrix_data()
@@ -801,15 +800,6 @@ class PlotLUMatrix:
         self._make_matrix_data()
 
         self.image = self.make_image()
-        patches = [
-            Patch(color=self.image.cmap(self.image.norm(0)),
-                label="zero value"),
-            Patch(color=self.image.cmap(self.image.norm(1)),
-                label="zero value that must be included for LU"),
-            Patch(color=self.image.cmap(self.image.norm(2)),
-                label="nonzero value"),
-            ]
-        plt.legend(handles=patches, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0. )
 
     def _make_matrix_data(self):
         extra = self.extra
@@ -826,11 +816,30 @@ class PlotLUMatrix:
         self.data = data
 
     def make_image(self):
+        from matplotlib.patches import Patch
         if self.img_type == 'imshow':
-            return plt.imshow(self.data)
+            img = plt.imshow(self.data)
+            patches = [
+            Patch(color=self.image.cmap(self.image.norm(0)),
+                label="zero value"),
+            Patch(color=self.image.cmap(self.image.norm(1)),
+                label="zero value that must be included for LU"),
+            Patch(color=self.image.cmap(self.image.norm(2)),
+                label="nonzero value"),
+            ]
+            plt.legend(handles=patches, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0. )
+            return img
         elif self.img_type == 'scatter':
-            data = scipy.sparse.csr_matrix(self.data)
-            return plt.scatter(data.nonzero()[1], self.N - data.nonzero()[0])
+            s = plt.scatter(scipy.sparse.coo_matrix(self.data == 1).col,
+                self.N - scipy.sparse.coo_matrix(self.data == 1).row,
+                label='zero value that must be included for LU',
+                **self.scatter_settings)
+            s.axes.scatter(scipy.sparse.coo_matrix(self.data == 2).col,
+                self.N - scipy.sparse.coo_matrix(self.data == 2).row,
+                label='nonzero value', **self.scatter_settings)
+            plt.legend()
+            return s
+
 
 class InteractiveLUMatrix(PlotLUMatrix):
     def __init__(self, N, *, extra=(), img_type='imshow'):
@@ -897,14 +906,6 @@ class InteractiveLUMatrix(PlotLUMatrix):
         self.image.figure.canvas.mpl_disconnect(self.cidpress)
         self.image.figure.canvas.mpl_disconnect(self.cidrelease)
         self.image.figure.canvas.mpl_disconnect(self.cidmotion)
-
-def plot_data(I, title=None, S=np.s_[500:1000, 500:1000], alpha=0.5, marker='.'):
-    plt.figure()
-    plt.scatter(scipy.sparse.coo_matrix(I.data[S] == 1).col, I.N - scipy.sparse.coo_matrix(I.data[S] == 1).row, marker=marker, alpha=alpha, label='1')
-    plt.scatter(scipy.sparse.coo_matrix(I.data[S] == 2).col, I.N - scipy.sparse.coo_matrix(I.data[S] == 2).row, marker=marker, alpha=alpha, label='2')
-    plt.legend()
-    plt.title(title)
-    plt.show()
 
 def analyze_lusolve(N):
     plt.clf()
