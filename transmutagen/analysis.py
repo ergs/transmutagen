@@ -917,6 +917,8 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
         plt.show(block=True)
         I.disconnect()
     else:
+        scatter_settings = dict(alpha=0.5, marker='.')
+
         json_data = json.load(json_file or
             open(os.path.join(os.path.dirname(__file__), 'data',
                 'gensolve.json')))
@@ -925,7 +927,7 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
         ijkeysid = [(nucsid.index(j), nucsid.index(i)) for i, j in
             json_data['fromto']]
         print("Nonzero entries:", len(ijkeysid))
-        Iid = PlotLUMatrix(len(nucsid), extra=ijkeysid, img_type='scatter')
+        Iid = PlotLUMatrix(len(nucsid), extra=ijkeysid, img_type='scatter', scatter_settings=scatter_settings)
         print("id IJK:", len(Iid.ijk))
 
         N = Iid.N
@@ -942,7 +944,8 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
         nucscinder = sorted(json_data['nucs'], key=nucname.cinder)
         ijkeyscinder = [(nucscinder.index(j), nucscinder.index(i)) for i, j in
             json_data['fromto']]
-        Icinder = PlotLUMatrix(len(nucscinder), extra=ijkeyscinder, img_type='scatter')
+        Icinder = PlotLUMatrix(len(nucscinder), extra=ijkeyscinder,
+            img_type='scatter', scatter_settings=scatter_settings)
         print("Cinder IJK:", len(Icinder.ijk))
 
         plt.axis([500, 1000, N - 1000, N - 500])
