@@ -785,10 +785,14 @@ def run_gensolve_test(outscript, warm_up_runs=5, runs=100):
     return runtimes
 
 # Based on https://matplotlib.org/users/event_handling.html
-class InteractiveLUMatrix:
-    def __init__(self, N, extra=()):
+class PlotLUMatrix:
+    def __init__(self, N, extra=(), *, img_type='imshow'):
         from matplotlib.patches import Patch
 
+        if img_type not in ['imshow', 'scatter']:
+            raise ValueError("img_type should be 'imshow' or 'scatter'")
+
+        self.img_type = img_type
         self.extra = list(extra)
         self.N = N
         self._make_matrix_data()
@@ -796,7 +800,7 @@ class InteractiveLUMatrix:
         self.adding = None
         self._make_matrix_data()
 
-        self.image = plt.imshow(self.data)
+        self.image = self.make_image()
         patches = [
             Patch(color=self.image.cmap(self.image.norm(0)),
                 label="zero value"),
@@ -806,8 +810,6 @@ class InteractiveLUMatrix:
                 label="nonzero value"),
             ]
         plt.legend(handles=patches, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0. )
-
-        self._connect()
 
     def _make_matrix_data(self):
         extra = self.extra
@@ -822,6 +824,22 @@ class InteractiveLUMatrix:
             b[i, j] = 1
         data = a + b
         self.data = data
+
+    def make_image(self):
+        if self.img_type == 'imshow':
+            return plt.imshow(self.data)
+        elif self.img_type == 'scatter':
+            data = scipy.sparse.csr_matrix(self.data)
+            return plt.scatter(data.nonzero()[1], self.N - data.nonzero()[0])
+
+class InteractiveLUMatrix(PlotLUMatrix):
+    def __init__(self, N, *, extra=(), img_type='imshow'):
+        if img_type != 'imshow':
+            raise ValueError("InteractiveLUMatrix requires img_type='imshow'")
+
+        super().__init__(N, extra=extra, img_type='imshow')
+
+        self._connect()
 
     def _update_image(self):
         self.image.set_data(self.data)
@@ -879,6 +897,14 @@ class InteractiveLUMatrix:
         self.image.figure.canvas.mpl_disconnect(self.cidpress)
         self.image.figure.canvas.mpl_disconnect(self.cidrelease)
         self.image.figure.canvas.mpl_disconnect(self.cidmotion)
+
+def plot_data(I, title=None, S=np.s_[500:1000, 500:1000], alpha=0.5, marker='.'):
+    plt.figure()
+    plt.scatter(scipy.sparse.coo_matrix(I.data[S] == 1).col, I.N - scipy.sparse.coo_matrix(I.data[S] == 1).row, marker=marker, alpha=alpha, label='1')
+    plt.scatter(scipy.sparse.coo_matrix(I.data[S] == 2).col, I.N - scipy.sparse.coo_matrix(I.data[S] == 2).row, marker=marker, alpha=alpha, label='2')
+    plt.legend()
+    plt.title(title)
+    plt.show()
 
 def analyze_lusolve(N):
     plt.clf()
