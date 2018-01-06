@@ -909,7 +909,7 @@ class InteractiveLUMatrix(PlotLUMatrix):
         self.image.figure.canvas.mpl_disconnect(self.cidrelease)
         self.image.figure.canvas.mpl_disconnect(self.cidmotion)
 
-def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None, slice_=None):
+def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
     plt.clf()
     if interactive:
         plt.interactive(True)
@@ -917,12 +917,6 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None, slic
         plt.show(block=True)
         I.disconnect()
     else:
-        if slice_:
-            # https://stackoverflow.com/a/43090200/161801
-            slice_ = tuple(slice(*(int(i) if i else None for i in part.strip().split(':'))) for part in slice_.strip('[]').split(','))
-
-        scatter_settings = dict(alpha=0.5)
-
         json_data = json.load(json_file or
             open(os.path.join(os.path.dirname(__file__), 'data',
                 'gensolve.json')))
@@ -931,12 +925,9 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None, slic
         ijkeysid = [(nucsid.index(j), nucsid.index(i)) for i, j in
             json_data['fromto']]
         print("Nonzero entries:", len(ijkeysid))
-        Iid = PlotLUMatrix(len(nucsid), extra=ijkeysid, img_type='scatter', scatter_settings=scatter_settings)
+        Iid = PlotLUMatrix(len(nucsid), extra=ijkeysid, img_type='scatter')
         print("id IJK:", len(Iid.ijk))
 
-        if slice_:
-            Iid.data = Iid.data[slice_]
-            Iid.make_image()
 
         if file:
             path, ext = os.path.splitext(file)
@@ -948,13 +939,9 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None, slic
         nucscinder = sorted(json_data['nucs'], key=nucname.cinder)
         ijkeyscinder = [(nucscinder.index(j), nucscinder.index(i)) for i, j in
             json_data['fromto']]
-        Icinder = PlotLUMatrix(len(nucscinder), extra=ijkeyscinder,
-            img_type='scatter', scatter_settings=scatter_settings)
+        Icinder = PlotLUMatrix(len(nucscinder), extra=ijkeyscinder, img_type='scatter')
         print("Cinder IJK:", len(Icinder.ijk))
 
-        if slice_:
-            Icinder.data = Icinder.data[slice_]
-            Icinder.make_image()
 
         if file:
             path, ext = os.path.splitext(file)
@@ -1080,8 +1067,6 @@ def analyze():
     lusolve.add_argument('--interactive', action='store_true', help="""Interactive analysis. The default is a noninteractive analysis of the
     ORIGEN sparsity pattern.""")
     lusolve.add_argument('--N', help="""Size of the matrix when using --interactive. The default is %(default)s""", default=100, type=int)
-    lusolve.add_argument('--slice', help="""Slice to use for the data. Should
-    be formatted like '[0:100,0:100]'.""")
 
     degrees = parser.add_argument_group("Degrees")
     degrees.add_argument('--degrees', action='store_true', help="""Run degrees analysis.""")
