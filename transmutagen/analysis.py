@@ -810,6 +810,7 @@ class PlotLUMatrix:
         for i, j in ij:
             a[i, j] = 1
         ijk = make_ijk(ij, N)
+        self.ijk = ijk
         b = np.zeros((N, N), dtype=int)
         for i, j in ijk:
             b[i, j] = 1
@@ -923,7 +924,10 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
         nucsid = sorted(json_data['nucs'], key=nucname.id)
         ijkeysid = [(nucsid.index(j), nucsid.index(i)) for i, j in
             json_data['fromto']]
+        print("Nonzero entries:", len(ijkeysid))
         Iid = PlotLUMatrix(len(nucsid), extra=ijkeysid, img_type='scatter')
+        print("id IJK:", len(Iid.ijk))
+
 
         if file:
             path, ext = os.path.splitext(file)
@@ -936,6 +940,8 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
         ijkeyscinder = [(nucscinder.index(j), nucscinder.index(i)) for i, j in
             json_data['fromto']]
         Icinder = PlotLUMatrix(len(nucscinder), extra=ijkeyscinder, img_type='scatter')
+        print("Cinder IJK:", len(Icinder.ijk))
+
 
         if file:
             path, ext = os.path.splitext(file)
