@@ -1058,7 +1058,7 @@ def analyze():
     lusolve = parser.add_argument_group("LUSolve")
     lusolve.add_argument('--lusolve', action='store_true', help="""Run
         LU solve analysis.""")
-    lusolve.add_argument('--interactive', help="""Interactive analysis. The default is a noninteractive analysis of the
+    lusolve.add_argument('--interactive', action='store_true', help="""Interactive analysis. The default is a noninteractive analysis of the
     ORIGEN sparsity pattern.""")
     lusolve.add_argument('--N', help="""Size of the matrix when using --interactive. The default is %(default)s""", default=100, type=int)
 
