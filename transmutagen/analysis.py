@@ -798,7 +798,6 @@ class PlotLUMatrix:
         self._make_matrix_data()
         self.press = None
         self.adding = None
-        self._make_matrix_data()
 
         self.make_image()
 
