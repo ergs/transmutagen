@@ -928,6 +928,9 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
         Iid = PlotLUMatrix(len(nucsid), extra=ijkeysid, img_type='scatter')
         print("id IJK:", len(Iid.ijk))
 
+        N = Iid.N
+        # TODO: Allow to pass this in as an option
+        plt.axis([500, 1000, N - 1000, N - 500])
 
         if file:
             path, ext = os.path.splitext(file)
@@ -942,6 +945,7 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
         Icinder = PlotLUMatrix(len(nucscinder), extra=ijkeyscinder, img_type='scatter')
         print("Cinder IJK:", len(Icinder.ijk))
 
+        plt.axis([500, 1000, N - 1000, N - 500])
 
         if file:
             path, ext = os.path.splitext(file)
