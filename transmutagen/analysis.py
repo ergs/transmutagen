@@ -787,7 +787,8 @@ def run_gensolve_test(outscript, warm_up_runs=5, runs=100):
 
 # Based on https://matplotlib.org/users/event_handling.html
 class PlotLUMatrix:
-    def __init__(self, N, extra=(), *, img_type='imshow', scatter_settings=None):
+    def __init__(self, N, extra=(), *, img_type='imshow',
+        scatter_settings=None):
         if img_type not in ['imshow', 'scatter']:
             raise ValueError("img_type should be 'imshow' or 'scatter'")
 
