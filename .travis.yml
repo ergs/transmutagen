@@ -43,6 +43,7 @@ script:
   - PYTHONPATH=py_solve python -m transmutagen.analysis --pusa-coeffs --latex test.tex --file test.pgf
   - python -m transmutagen.analysis --gensolve --pairs-per-pass 3000
   - python -m transmutagen.analysis --degrees
+  - python -m transmutagen.analysis --lusolve
 
   # See if it installs
   - python setup.py sdist
