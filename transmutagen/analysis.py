@@ -14,6 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.sparse
 from sympy import re, im, Float, exp, diff
+from pyne import nucname
 
 from .tests.test_transmute import run_transmute_test
 from .origen_all import TIME_STEPS, DAY
@@ -907,12 +908,40 @@ class InteractiveLUMatrix(PlotLUMatrix):
         self.image.figure.canvas.mpl_disconnect(self.cidrelease)
         self.image.figure.canvas.mpl_disconnect(self.cidmotion)
 
-def analyze_lusolve(N):
+def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
     plt.clf()
-    plt.interactive(True)
-    I = InteractiveLUMatrix(N)
-    plt.show(block=True)
-    I.disconnect()
+    if interactive:
+        plt.interactive(True)
+        I = InteractiveLUMatrix(N)
+        plt.show(block=True)
+        I.disconnect()
+    else:
+        json_data = json.load(json_file or
+            open(os.path.join(os.path.dirname(__file__), 'data',
+                'gensolve.json')))
+
+        nucsid = sorted(json_data['nucs'], key=nucname.id)
+        ijkeysid = [(nucsid.index(j), nucsid.index(i)) for i, j in
+            json_data['fromto']]
+        Iid = PlotLUMatrix(len(nucsid), extra=ijkeysid, img_type='scatter')
+
+        if file:
+            path, ext = os.path.splitext(file)
+            filename = path + '-' + 'id' + ext
+            print("Saving to", filename)
+            plt.savefig(filename)
+
+        plt.figure()
+        nucscinder = sorted(json_data['nucs'], key=nucname.cinder)
+        ijkeyscinder = [(nucscinder.index(j), nucscinder.index(i)) for i, j in
+            json_data['fromto']]
+        Icinder = PlotLUMatrix(len(nucscinder), extra=ijkeyscinder, img_type='scatter')
+
+        if file:
+            path, ext = os.path.splitext(file)
+            filename = path + '-' + 'cinder' + ext
+            print("Saving to", filename)
+            plt.savefig(filename)
 
 def analyze_degrees(*, pwru50_data=None, file=None):
     if not pwru50_data:
@@ -1028,9 +1057,10 @@ def analyze():
 
     lusolve = parser.add_argument_group("LUSolve")
     lusolve.add_argument('--lusolve', action='store_true', help="""Run
-        LU solve interactive analysis.""")
-    lusolve.add_argument('--N', help="""Size of the matrix. The default is
-        %(default)s""", default=100, type=int)
+        LU solve analysis.""")
+    lusolve.add_argument('--interactive', help="""Interactive analysis. The default is a noninteractive analysis of the
+    ORIGEN sparsity pattern.""")
+    lusolve.add_argument('--N', help="""Size of the matrix when using --interactive. The default is %(default)s""", default=100, type=int)
 
     degrees = parser.add_argument_group("Degrees")
     degrees.add_argument('--degrees', action='store_true', help="""Run degrees analysis.""")
@@ -1062,7 +1092,7 @@ def analyze():
         analyze_gensolve(pairs_per_pass=args.pairs_per_pass, runs=args.runs,
             warm_up_runs=args.warm_up_runs, optimize=args.optimize)
     if args.lusolve:
-        analyze_lusolve(args.N)
+        analyze_lusolve(N=args.N, interactive=args.interactive, file=args.file)
     if args.degrees:
         analyze_degrees(pwru50_data=args.pwru50_data, file=args.file)
 
