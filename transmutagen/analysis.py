@@ -788,10 +788,14 @@ def run_gensolve_test(outscript, warm_up_runs=5, runs=100):
 # Based on https://matplotlib.org/users/event_handling.html
 class PlotLUMatrix:
     def __init__(self, N, extra=(), *, include_diagonals=False, img_type='imshow',
-        scatter_settings=None):
+        scatter_settings=None, axes=None):
         if img_type not in ['imshow', 'scatter']:
             raise ValueError("img_type should be 'imshow' or 'scatter'")
 
+        if not axes:
+            fig = plt.figure()
+            axes = fig.add_subplot(111)
+        self.axes = axes
         self.include_diagonals = include_diagonals
         self.img_type = img_type
         self.scatter_settings = scatter_settings or {}
@@ -824,8 +828,9 @@ class PlotLUMatrix:
 
     def make_image(self):
         from matplotlib.patches import Patch
+        axes = self.axes
         if self.img_type == 'imshow':
-            img = plt.imshow(self.data)
+            img = axes.imshow(self.data)
             patches = [
             Patch(color=img.cmap(img.norm(0)),
                 label="zero value"),
@@ -834,17 +839,17 @@ class PlotLUMatrix:
             Patch(color=img.cmap(img.norm(2)),
                 label="nonzero value"),
             ]
-            plt.legend(handles=patches, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0. )
+            axes.legend(handles=patches, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0. )
             self.image = img
         elif self.img_type == 'scatter':
-            s = plt.scatter(scipy.sparse.coo_matrix(self.data == 1).col,
+            s = axes.scatter(scipy.sparse.coo_matrix(self.data == 1).col,
                 self.N - scipy.sparse.coo_matrix(self.data == 1).row,
                 label='zero value that must be included for LU',
                 **self.scatter_settings)
             s.axes.scatter(scipy.sparse.coo_matrix(self.data == 2).col,
                 self.N - scipy.sparse.coo_matrix(self.data == 2).row,
                 label='nonzero value', **self.scatter_settings)
-            plt.legend()
+            axes.legend()
             self.image = s
 
 
@@ -924,6 +929,9 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
     else:
         scatter_settings = dict(alpha=0.5, marker='.')
 
+        fig, (ax1, ax2) = plt.subplots(1, 2, sharey=False)
+        fig.set_size_inches(1.5*6.4, 1.5/2*4.8)
+
         json_data = json.load(json_file or
             open(os.path.join(os.path.dirname(__file__), 'data',
                 'gensolve.json')))
@@ -932,37 +940,29 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
         ijkeysid = [(nucsid.index(j), nucsid.index(i)) for i, j in
             json_data['fromto']]
         print("Nonzero entries:", len(ijkeysid))
-        Iid = PlotLUMatrix(len(nucsid), extra=ijkeysid, img_type='scatter', scatter_settings=scatter_settings)
+        Iid = PlotLUMatrix(len(nucsid), extra=ijkeysid, img_type='scatter',
+            scatter_settings=scatter_settings, axes=ax1)
         print("id IJK:", len(Iid.ijk), "(an additional",
             len(Iid.ijk) - len(ijkeysid), "entries)")
 
         N = Iid.N
         # TODO: Allow to pass this in as an option
-        plt.axis([500, 1000, N - 1000, N - 500])
+        ax1.axis([500, 1000, N - 1000, N - 500])
 
-        if file:
-            path, ext = os.path.splitext(file)
-            filename = path + '-' + 'id' + ext
-            print("Saving to", filename)
-            plt.savefig(filename)
-
-        plt.figure()
         nucscinder = sorted(json_data['nucs'], key=nucname.cinder)
         ijkeyscinder = [(nucscinder.index(j), nucscinder.index(i)) for i, j in
             json_data['fromto']]
         Icinder = PlotLUMatrix(len(nucscinder), extra=ijkeyscinder,
-            img_type='scatter', scatter_settings=scatter_settings)
+            img_type='scatter', scatter_settings=scatter_settings, axes=ax2)
         print("Cinder IJK:", len(Icinder.ijk), "(an additional",
             len(Icinder.ijk) - len(ijkeyscinder), "entries)")
         print("1 - Cinder IJK/id IJK", 1 - len(Icinder.ijk)/len(Iid.ijk))
 
-        plt.axis([500, 1000, N - 1000, N - 500])
+        ax2.axis([500, 1000, N - 1000, N - 500])
 
         if file:
-            path, ext = os.path.splitext(file)
-            filename = path + '-' + 'cinder' + ext
-            print("Saving to", filename)
-            plt.savefig(filename)
+            print("Saving to", file)
+            plt.savefig(file)
 
 def analyze_degrees(*, pwru50_data=None, file=None):
     if not pwru50_data:
