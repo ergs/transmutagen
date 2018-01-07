@@ -947,7 +947,7 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
 
         N = Iid.N
         # TODO: Allow to pass this in as an option
-        ax1.axis([500, 1000, N - 1000, N - 500])
+        ax1.axis([500, 1000, N - 1000, N - 450])
 
         nucscinder = sorted(json_data['nucs'], key=nucname.cinder)
         ijkeyscinder = [(nucscinder.index(j), nucscinder.index(i)) for i, j in
@@ -958,7 +958,7 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
             len(Icinder.ijk) - len(ijkeyscinder), "entries)")
         print("1 - Cinder IJK/id IJK", 1 - len(Icinder.ijk)/len(Iid.ijk))
 
-        ax2.axis([500, 1000, N - 1000, N - 500])
+        ax2.axis([500, 1000, N - 1000, N - 450])
 
         if file:
             print("Saving to", file)
