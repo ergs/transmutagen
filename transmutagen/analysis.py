@@ -844,7 +844,7 @@ class PlotLUMatrix:
         elif self.img_type == 'scatter':
             s = axes.scatter(scipy.sparse.coo_matrix(self.data == 1).col,
                 self.N - scipy.sparse.coo_matrix(self.data == 1).row,
-                label='zero value that must be included for LU',
+                label='zero value that must\nbe included for LU',
                 **self.scatter_settings)
             s.axes.scatter(scipy.sparse.coo_matrix(self.data == 2).col,
                 self.N - scipy.sparse.coo_matrix(self.data == 2).row,
