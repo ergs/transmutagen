@@ -954,6 +954,7 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
         print("Cinder IJK:", len(Icinder.ijk), "(an additional",
             len(Icinder.ijk) - len(ijkeyscinder), "entries)")
         print("1 - Cinder IJK/id IJK", 1 - len(Icinder.ijk)/len(Iid.ijk))
+        print("id IJK/Cinder IJK", len(Iid.ijk)/len(Icinder.ijk))
 
         N = Iid.N
         # TODO: Allow to pass this in as an option
