@@ -962,7 +962,7 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
 
         if file:
             print("Saving to", file)
-            plt.savefig(file)
+            plt.savefig(file, bbox_inches='tight')
 
 def analyze_degrees(*, pwru50_data=None, file=None):
     if not pwru50_data:
