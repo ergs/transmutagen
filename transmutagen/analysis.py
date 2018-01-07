@@ -933,7 +933,8 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
             json_data['fromto']]
         print("Nonzero entries:", len(ijkeysid))
         Iid = PlotLUMatrix(len(nucsid), extra=ijkeysid, img_type='scatter', scatter_settings=scatter_settings)
-        print("id IJK:", len(Iid.ijk))
+        print("id IJK:", len(Iid.ijk), "(an additional",
+            len(Iid.ijk) - len(ijkeysid), "entries)")
 
         N = Iid.N
         # TODO: Allow to pass this in as an option
@@ -951,7 +952,9 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
             json_data['fromto']]
         Icinder = PlotLUMatrix(len(nucscinder), extra=ijkeyscinder,
             img_type='scatter', scatter_settings=scatter_settings)
-        print("Cinder IJK:", len(Icinder.ijk))
+        print("Cinder IJK:", len(Icinder.ijk), "(an additional",
+            len(Icinder.ijk) - len(ijkeyscinder), "entries)")
+        print("1 - Cinder IJK/id IJK", 1 - len(Icinder.ijk)/len(Iid.ijk))
 
         plt.axis([500, 1000, N - 1000, N - 500])
 
