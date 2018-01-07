@@ -979,7 +979,7 @@ def analyze_degrees(*, pwru50_data=None, file=None):
         fs.append(CRAM_matrix_exp_lambdify(n, 200))
     b = initial_vector("U235", nucs)
 
-    print("Computing the exponential of the matrices")
+    print("Computing the exponentials of the matrices")
     xs = {}
     diffs = {}
     for t in TIME_STEPS:
