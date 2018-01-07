@@ -8,7 +8,7 @@ import random
 import mpmath
 from sympy import (nsolve, symbols, Mul, Add, chebyshevt, exp, simplify,
     chebyshevt_root, Tuple, diff, N, solve, Poly, lambdify, sign, fraction,
-    sympify, Float, srepr, Rational, log)
+    sympify, Float, srepr, Rational, log, GoldenRatio)
 
 from sympy.utilities.decorator import conserve_mpmath_dps
 
@@ -155,7 +155,7 @@ def CRAM_exp(degree, prec=200, *, max_loops=30, c=None, maxsteps=None,
     c is the coefficient of the transformation c*(t + 1)/(t - 1) that is
     applied to exp(-t) to translate it to the interval [-1, 1]. It should be
     chosen so that the maximal errors of the approximation are equally spaced
-    in that interval. The default is 0.6*degree.
+    in that interval. The default is 1/GoldenRatio*degree.
 
     maxsteps is the argument passed to the mpmath bisection solver. The
     default is 1.7*prec. See also
@@ -210,7 +210,7 @@ def CRAM_exp(degree, prec=200, *, max_loops=30, c=None, maxsteps=None,
     else:
         num_degree = den_degree = degree
 
-    c = c or 0.6*max(num_degree, den_degree)
+    c = c or 1/GoldenRatio.evalf()*max(num_degree, den_degree)
 
     maxsteps = int(maxsteps or 1.7*prec)
     tol = tol or mpmath.mpf(10)**-(prec - 8)
