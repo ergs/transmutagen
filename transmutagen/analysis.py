@@ -966,6 +966,8 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
             plt.savefig(file, bbox_inches='tight')
 
 def analyze_degrees(*, pwru50_data=None, file=None):
+    from matplotlib import cycler
+
     if not pwru50_data:
         pwru50_data = os.path.join(os.path.dirname(__file__), 'tests', 'data', 'pwru50_400000000000000.0.npz')
 
@@ -987,6 +989,9 @@ def analyze_degrees(*, pwru50_data=None, file=None):
         diffs[t] = list(zip(xs[t][:-1], xs[t][1:]))
 
     plt.clf()
+    default_cycler = plt.rcParams['axes.prop_cycle']
+    plt.axes().set_prop_cycle(default_cycler + cycler('linestyle', ['-', '--',
+        ':', '-.', '-', '--', ':', '-.', '-', '--']))
     for t in sorted(TIME_STEPS):
         plt.plot(ns, [np.max(np.abs(a - b)) for a, b in diffs[t]],
             label=TIME_STEPS[t])
