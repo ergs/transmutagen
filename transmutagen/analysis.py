@@ -787,11 +787,12 @@ def run_gensolve_test(outscript, warm_up_runs=5, runs=100):
 
 # Based on https://matplotlib.org/users/event_handling.html
 class PlotLUMatrix:
-    def __init__(self, N, extra=(), *, img_type='imshow',
+    def __init__(self, N, extra=(), *, include_diagonals=False, img_type='imshow',
         scatter_settings=None):
         if img_type not in ['imshow', 'scatter']:
             raise ValueError("img_type should be 'imshow' or 'scatter'")
 
+        self.include_diagonals = include_diagonals
         self.img_type = img_type
         self.scatter_settings = scatter_settings or {}
         self.extra = list(extra)
@@ -805,10 +806,14 @@ class PlotLUMatrix:
     def _make_matrix_data(self):
         extra = self.extra
         N = self.N
-        ij = {i: j for j, i in enumerate([(i, i) for i in range(N)] + extra)}
+        diags = [(i, i) for i in range(N)] if self.include_diagonals else []
+        ij = {i: j for j, i in enumerate(diags + extra)}
         a = np.zeros((N, N), dtype=int)
         for i, j in ij:
             a[i, j] = 1
+        # Make sure the diagonals are included for this part
+        for j, i in enumerate(range(N), len(diags + extra)):
+            ij[(i, i)] = j
         ijk = make_ijk(ij, N)
         self.ijk = ijk
         b = np.zeros((N, N), dtype=int)
@@ -913,7 +918,7 @@ def analyze_lusolve(*, N=100, interactive=False, json_file=None, file=None):
     plt.clf()
     if interactive:
         plt.interactive(True)
-        I = InteractiveLUMatrix(N)
+        I = InteractiveLUMatrix(N, include_diagonals=True)
         plt.show(block=True)
         I.disconnect()
     else:
