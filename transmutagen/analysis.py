@@ -402,13 +402,14 @@ def analyze_eigenvals(*, pwru50_data=None, file=None, title=True):
         plt.scatter(np.real(eigvals), np.imag(eigvals))
         plt.yscale('symlog', linthreshy=1e-20)
         plt.xscale('symlog')
-        plt.xlim([np.min(np.real(eigvals))*2, 1])
+        # plt.xlim([np.min(np.real(eigvals))*2, 1])
         plt.ylim([np.min(np.imag(eigvals))*10, np.max(np.imag(eigvals))*10])
-        plt.xticks([0] +
-            [-10**i for i in range(1, 1+int(np.ceil(np.log10(-plt.xlim()[0]))), 2)])
-        plt.yticks([-10**i for i in range(-19, int(np.log10(-plt.ylim()[0])), 2)] +
-            [0] +
-            [10**i for i in range(-19, int(np.log10(plt.ylim()[1])), 2)])
+        plt.xticks([-10**i for i in range(1, 1+int(np.ceil(np.log10(-plt.xlim()[0]))), 2)]
+            + [0]
+            + [10**i for i in range(1, int(np.log10(plt.xlim()[1])), 2)])
+        plt.yticks([-10**i for i in range(-19, int(np.log10(-plt.ylim()[0])), 2)]
+            + [0]
+            + [10**i for i in range(-19, int(np.log10(plt.ylim()[1])), 2)])
         plt.minorticks_off()
         if title:
             plt.title("Eigenvalues of transmutation matrix for " + desc)
