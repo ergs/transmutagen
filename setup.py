@@ -26,8 +26,11 @@ setup_kwargs = {
         ],
     "zip_safe": False,
     "data_files": [("", ['LICENSE', 'README.md']),],
-    "package_data": {'transmutagen': ['data/gensolve.json', 'data/CRAM_cache/*']},
-    }
+    "package_data": {
+        'transmutagen': ['data/*.json', 'data/CRAM_cache/*'],
+        'transmutagen.tests': ['data/*.npz', 'data/crv_coeffs'],
+        },
+     }
 
 if HAVE_SETUPTOOLS:
     setup_kwargs['install_requires'] = [
@@ -45,7 +48,7 @@ if HAVE_SETUPTOOLS:
 if __name__ == '__main__':
     setup(
         name='transmutagen',
-        packages=['transmutagen'],
+        packages=['transmutagen', 'transmutagen.tests'],
         long_description=open('README.md').read(),
         include_dirs = [np.get_include()],
         **setup_kwargs
