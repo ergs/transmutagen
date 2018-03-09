@@ -1023,7 +1023,8 @@ def analyze():
     parser.add_argument('--pwru50-data', help="""Path to pwru50 data file to
         analyze. The default is the data that is in the
         transmutagen/tests/data directory. Used for the --eigenvals and
-        --degrees analyses.""", default=None)
+        --degrees analyses.""", default=os.path.join(os.path.dirname(__file__), 'tests',
+            'data', 'pwru50_400000000000000.0.npz'))
 
     origen = parser.add_argument_group('origen')
     origen.add_argument('--origen', action='store_true', dest='origen',
