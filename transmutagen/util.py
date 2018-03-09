@@ -193,12 +193,13 @@ def plot_in_terminal(expr, *args, prec=None, logname=None, file=None, **kwargs):
         if b:
             print(display_image_bytes(b.getvalue()))
 
-def plt_show_in_terminal(logname=None):
+def plt_show_in_terminal(logname=None, show_without_iterm2=False):
     import matplotlib.pyplot as plt
     try:
         from iterm2_tools.images import display_image_bytes
     except ImportError:
-        plt.show()
+        if show_without_iterm2:
+            plt.show()
     else:
         b = io.BytesIO()
         plt.savefig(b, format='png')
