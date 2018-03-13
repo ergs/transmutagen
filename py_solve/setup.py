@@ -35,14 +35,16 @@ setup_kwargs = {
     }
 
 
+this_dir = os.path.dirname(__file__)
 # Cython parts
-if not os.path.exists('py_solve/solve.c'):
+if not os.path.exists(os.path.join(this_dir, 'py_solve', 'solve.c')):
     sys.exit("py_solve/solve.c not found. Run python -m transmutagen.gensolve --py-solve to generate the solver")
 
 from Cython.Build import cythonize
 from distutils.extension import Extension
 
-sourcefiles = ['py_solve/py_solve.pyx', 'py_solve/solve.c']
+sourcefiles = [os.path.join(this_dir, 'py_solve', 'py_solve.pyx'),
+    os.path.join(this_dir, 'py_solve', 'solve.c')]
 extensions = [Extension("py_solve.py_solve", sourcefiles,
     # If this changes, also modify the list in transmutagen/gensolve.py
     # TODO: Use just -O0 --ffast-math with clang
