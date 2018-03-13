@@ -38,8 +38,8 @@ def time_and_run(f, *args, _print=False):
     return res
 
 def run_transmute_test(data, degree, prec, time, *, expr=None, plot=True,
-    _print=False, run_all=True, use_cache=True, thetas=None,
-    alphas=None, alpha0=None):
+    _print=False, run_all=True, use_cache=True, require_py_solve=False,
+    thetas=None, alphas=None, alpha0=None):
     """
     Run transmute test on the data
 
@@ -63,6 +63,8 @@ def run_transmute_test(data, degree, prec, time, *, expr=None, plot=True,
     try:
         from py_solve import py_solve
     except ImportError:
+        if require_py_solve:
+            raise
         pass
     else:
         py_solve_expm = getattr(py_solve, 'expmI%d' % degree)

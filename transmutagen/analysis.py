@@ -253,13 +253,14 @@ def analyze_nofission(*, run_all=False, file=None, title=True, thetas=None,
                     data = os.path.join('data', f)
                     print("analyzing", data, 'on', time_name)
                     nofission_transmutes[time_name][lib] = run_transmute_test(data,
-                        degree, 200, time, run_all=False, _print=True,
+                        degree, 200, time, run_all=False, _print=True, require_py_solve=True,
                         thetas=thetas, alphas=alphas, alpha0=alpha0)
         else:
             print("analyzing", nofission_data, 'on', time_name)
             nofission_transmutes[time_name]['pwru50'] = run_transmute_test(nofission_data,
-                degree, 200, time, run_all=run_all, _print=True, thetas=thetas,
-                alphas=alphas, alpha0=alpha0)
+                degree, 200, time, run_all=run_all, _print=True,
+                require_py_solve=True, thetas=thetas, alphas=alphas,
+                alpha0=alpha0)
 
     plot_nofission_transmutes(nofission_transmutes, run_all=run_all,
         file=file, title=title)
