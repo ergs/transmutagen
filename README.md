@@ -22,6 +22,7 @@ Transmutagen also depends on
  - jinja2
  - gmpy2
  - Cython
+ - scikit-umfpack
 
 ## Generating the CRAM approximation to exp(-x) on [0, oo)
 

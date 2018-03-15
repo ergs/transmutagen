@@ -42,7 +42,8 @@ if HAVE_SETUPTOOLS:
         'pyne',
         'jinja2',
         'gmpy2',
-        'Cython'
+        'Cython',
+        'scikit-umfpack',
         ]
 
 if __name__ == '__main__':
