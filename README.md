@@ -8,10 +8,8 @@ Transmutation generates CRAM approximations for solving transmutation problems
 
 # Usage
 
-First, get the git master version of SymPy and set `PYTHONPATH` to point to
-it.
 
-Transmutagen also depends on
+Transmutagen depends on
 
  - mpmath
  - sympy >= 1.1
@@ -23,6 +21,10 @@ Transmutagen also depends on
  - gmpy2
  - Cython
  - scikit-umfpack
+
+To build transmutagen from source requires GCC. Clang support can be added,
+although the py_solve solver generated from Clang is slower than the one from
+GCC, so presently GCC is supported only.
 
 ## Generating the CRAM approximation to exp(-x) on [0, oo)
 
