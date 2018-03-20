@@ -8,13 +8,19 @@ except ImportError:
 
 import numpy as np
 
+# We have to import transmutagen.gensolve to build py_solve
+import transmutagen
+from distutils.command.build_ext import build_ext
+
+from Cython.Build import cythonize
+from distutils.extension import Extension
+
 import versioneer
 
 VERSION = versioneer.get_version()
 setup_kwargs = {
     "version": VERSION,
-    "cmdclass": versioneer.get_cmdclass(),
-    "description": 'Code geneartion tools for transmutation solvers',
+    "description": 'Code generation tools for transmutation solvers',
     "license": 'BSD 3-clause',
     "author": 'ERGS',
     "author_email": 'ergsonomic@googlegroups.com',
@@ -46,10 +52,25 @@ if HAVE_SETUPTOOLS:
         'scikit-umfpack',
         ]
 
+sourcefiles = ['transmutagen/py_solve/py_solve.pyx',
+    'transmutagen/py_solve/solve.c']
+extensions = [Extension("transmutagen.py_solve.py_solve", sourcefiles,
+    # TODO: Use CLANG_COMPILER_FLAGS with clang
+    extra_compile_args=transmutagen.gensolve.GCC_COMPILER_FLAGS)]
+setup_kwargs['ext_modules'] = cythonize(extensions)
+
+# TODO: Allow passing gensolve options from setup.py
+class transmutagen_build_ext(build_ext):
+    def run(self):
+        transmutagen.gensolve.generate(py_solve=True)
+        return super().run()
+
 if __name__ == '__main__':
     setup(
+        cmdclass={**versioneer.get_cmdclass(), 'build_ext': transmutagen_build_ext},
         name='transmutagen',
-        packages=['transmutagen', 'transmutagen.tests'],
+        packages=['transmutagen', 'transmutagen.tests',
+            'transmutagen.py_solve', 'transmutagen.py_solve.tests'],
         long_description=open('README.md').read(),
         include_dirs = [np.get_include()],
         **setup_kwargs

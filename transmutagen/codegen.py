@@ -316,7 +316,7 @@ def CRAM_matrix_exp_lambdify(degree=14, prec=200, *, use_cache=True,
     n0 = symbols("n0", commutative=False)
 
     if py_solve:
-        from py_solve import py_solve
+        from . import py_solve
         module = [py_solve, 'numpy']
         printer = MatrixNumPyPrinter({'py_solve': True})
         def wrapper(f):

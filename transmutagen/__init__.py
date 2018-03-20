@@ -1,3 +1,6 @@
+# NOTE: Do not import py_solve here. We need to be able to import
+# transmutagen.gensolve in order to build py_solve (in setup.py).
+
 from ._version import get_versions
 __version__ = get_versions()['version']
 del get_versions

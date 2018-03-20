@@ -20,7 +20,6 @@ from .cram import get_CRAM_from_cache
 from .partialfrac import thetas_alphas
 from . import __version__
 
-# If this changes, also update py_solve/setup.py
 GCC_COMPILER_FLAGS = ['-O0', '-fcx-fortran-rules', '-fcx-limited-range',
         '-ftree-sra', '-ftree-ter', '-fexpensive-optimizations']
 CLANG_COMPILER_FLAGS = ['-O0', '-ffast-math']
@@ -631,7 +630,8 @@ def generate(json_file=os.path.join(os.path.dirname(__file__),
     if degrees is None:
         degrees = [6, 8, 10, 12, 14, 16, 18] if py_solve else [14]
     if not outfile:
-        outfile = 'py_solve/py_solve/solve.c' if py_solve else 'solve.c'
+        outfile = os.path.join(os.path.dirname(__file__), 'py_solve',
+            'solve.c') if py_solve else 'solve.c'
     # outfile should always end in .c
     headerfile = outfile[:-2] + '.h'
     headerfilename = os.path.basename(headerfile)
@@ -703,10 +703,11 @@ def main(args=None):
         degrees to generate. The default is 14, unless --py-solve is
         specified, in which case the default is '6 8 10 12 14 16 18'. The
         orders should be even integers only.""", metavar="DEGREE", type=int)
-    p.add_argument('-o', '--outfile', help="""Location to write the C file to.
-        Should end in '.c'. The default is 'solve.c', unless --py-solve is
-        specified, in which case the default is 'py_solve/py_solve/solve.c'.
-        The header file will be generated alongside it.""")
+    p.add_argument('-o', '--outfile', help="""Location to write the C file to. Should end in '.c'. The default is
+        'solve.c', unless --py-solve is specified, in which case the default
+        is in the py_solve module in transmutagen
+        ('transmutagen/py_solve/solve.c'). The header file will be generated
+        alongside it.""")
     p.add_argument('--namespace', default='transmutagen', help="""Namespace
         for the generated solver. The default is %(default)r.""")
     p.add_argument('--decay-matrix', default='pyne', dest='decay_matrix_kind',

@@ -21,10 +21,7 @@ install:
   - conda create -q -n test-environment python=3.5 pip mpmath matplotlib pytest pyflakes numpy scipy pyne gcc jinja2 gmpy2 cython scikit-umfpack colorama sympy
   - source activate test-environment
 
-  - python -m transmutagen.gensolve --py-solve
-  - cd py_solve
   - python setup.py build_ext --inplace
-  - cd ..
 
   # Make matplotlib stuff work
   - export MATPLOTLIBRC=~/matplotlibrc
@@ -34,8 +31,8 @@ install:
 
 script:
   - set -e
-  - pyflakes transmutagen py_solve setup.py
-  - PYTHONPATH=py_solve py.test transmutagen
+  - pyflakes transmutagen setup.py
+  - py.test
 
   # Test the analysis scripts (except ORIGEN, since we need data for that)
   - PYTHONPATH=py_solve python -m transmutagen.analysis --nofission --file test.pgf
