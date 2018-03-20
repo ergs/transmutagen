@@ -35,6 +35,7 @@ setup_kwargs = {
     "package_data": {
         'transmutagen': ['data/*.json', 'data/CRAM_cache/*'],
         'transmutagen.tests': ['data/*.npz', 'data/crv_coeffs'],
+        'transmutagen.py_solve': ['*.pyx', '*.pxd'],
         },
      }
 
